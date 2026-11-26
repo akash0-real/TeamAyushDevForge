@@ -122,6 +122,7 @@ class ShapedDoomEnv(gym.Env):
         self._prev_dmg_dealt = self._damage_dealt()
         self._visited_cells = {(int(ps["x"] // self.cell_size), int(ps["y"] // self.cell_size))}
         self._opened_doors = set()
+        self._key_seen = False
         self._init_ceil = None if ps["sector_ceiling"] is None else ps["sector_ceiling"].copy()
         self._stats = {
             "exit_reached": 0.0,
@@ -182,10 +183,14 @@ class ShapedDoomEnv(gym.Env):
                         reward += 0.8
                         self._stats["doors"] += 1.0
 
-        # 3. Keycard pickup
+        # 3. Keycard pickup (+ a one-off nudge the first time a key is visible in the official observation)
+        ent = raw_obs["visible_entities"]
+        if not self._key_seen and np.any((np.asarray(ent["mask"]) > 0) & (np.asarray(ent["entity_type"]) == 9)):
+            self._key_seen = True
+            reward += 0.5
         new_keys = int(np.sum(ps["keys"]) - np.sum(prev["keys"]))
         if new_keys > 0:
-            reward += 3.0 * new_keys
+            reward += 8.0 * new_keys  # tutor: was 3.0; T3 stalled at ~0.1 keys/episode
             self._stats["keys"] += float(new_keys)
 
         # 4. Combat & survival

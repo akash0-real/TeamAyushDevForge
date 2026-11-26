@@ -31,7 +31,8 @@ IWAD = os.path.join(os.path.dirname(vd.__file__), "freedoom2.wad")
 # Freedoom 2 split: MAP01-24 train, MAP25-32 are the holdout (training/eval_zeroshot.py). Never train on 25-32.
 # "genN" = a freshly generated tier-N map on every map load (maps/gen_maps.py). 48 gen tokens ~= 2/3 of loads:
 # real Freedoom maps step ~3.4x slower (12 envs: 358 vs 1231 env steps/s), so they get 1/3 of the time.
-DEFAULT_TRAIN_MAPS = ["two_rooms"] + [f"MAP{i:02d}" for i in range(1, 25)] + ["gen1", "gen2", "gen3", "gen4"] * 12
+DEFAULT_TRAIN_MAPS = (["two_rooms"] + [f"MAP{i:02d}" for i in range(1, 25)]
+                      + ["gen1"] * 6 + ["gen2"] * 12 + ["gen3"] * 18 + ["gen4"] * 12)  # tutor: T1 ~90% solved, T3 stuck
 
 
 def parse_map_specs(spec_list: list[str], episode_ticks: int) -> list[tuple[str, str, int]]:
