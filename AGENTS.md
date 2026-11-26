@@ -61,11 +61,11 @@ devforge-doom-template/
 
 ## 4. Documentation Map
 Read the specific file for your task:
-1. [01_PROBLEM_AND_CONTRACT.md](./01_PROBLEM_AND_CONTRACT.md) — Official scoring, observation/action contract, sandbox limits, and compliance rules.
-2. [02_MODEL_ARCHITECTURE.md](./02_MODEL_ARCHITECTURE.md) — Exact PyTorch architecture (Ray 1D-CNN, Entity Attention, GRU, Ego-Centric Spatial Grid, Aux Heads).
-3. [03_TRAINING_AND_REWARDS.md](./03_TRAINING_AND_REWARDS.md) — Custom Recurrent PPO, Behavior Cloning warm-start, Reward Shaping, RND Curiosity, and PLR Curriculum.
-4. [04_PROCEDURAL_MAPS.md](./04_PROCEDURAL_MAPS.md) — Procedural UDMF generator, Obsidian CLI pipeline, and 12-map Zero-Shot Holdout Suite.
-5. [05_EXECUTION_AND_HARDWARE.md](./05_EXECUTION_AND_HARDWARE.md) — Two-laptop + Cloud Credits workflow, build order, validation checklist, and 2-page PDF brief structure.
+1. [01_PROBLEM_AND_CONTRACT.md](./doom-rl-docs/01_PROBLEM_AND_CONTRACT.md) — Official scoring, observation/action contract, sandbox limits, and compliance rules.
+2. [02_MODEL_ARCHITECTURE.md](./doom-rl-docs/02_MODEL_ARCHITECTURE.md) — Exact PyTorch architecture (Ray 1D-CNN, Entity Attention, GRU, Ego-Centric Spatial Grid, Aux Heads).
+3. [03_TRAINING_AND_REWARDS.md](./doom-rl-docs/03_TRAINING_AND_REWARDS.md) — Custom Recurrent PPO, Behavior Cloning warm-start, Reward Shaping, RND Curiosity, and PLR Curriculum.
+4. [04_PROCEDURAL_MAPS.md](./doom-rl-docs/04_PROCEDURAL_MAPS.md) — Procedural UDMF generator, Obsidian CLI pipeline, and 12-map Zero-Shot Holdout Suite.
+5. [05_EXECUTION_AND_HARDWARE.md](./doom-rl-docs/05_EXECUTION_AND_HARDWARE.md) — Two-laptop + Cloud Credits workflow, build order, validation checklist, and 2-page PDF brief structure.
 
 ---
 
