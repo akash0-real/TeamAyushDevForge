@@ -37,6 +37,10 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 01:12: shipped v6 = `t2h_0037`** (tag `shipped-v6`, sha `2797f55f…`), per the 01:15 message. The ship rule passes on **both** machines:
+  weighted exits i3 47 vs 43, CUDA 52 vs 45; mean +0.6 ± 3.6; MAP25–32 −4.3 ± 2.6 (i3) / −3.5 (CUDA), so a **real-map dip on both machines**. Watch it.
+  `validate.py` PASSED on a clean clone (p50 5.6 ms). Rollback: `shipped-v5`. Timeline per the 01:15 message: ship any rule-passing gain right away until 03:00;
+  03:00–03:15 `maps/fresh/` check of the top 2 (v6 vs the best of core vA/F/G/H and teammate 2's latest) by exit_points; 03:30 `[core] FINAL`.
 - **UPDATE 01:08: direction + overfitting check** (`training/direction_check.py`; raw CSVs `training/results/chk_*`, `trn_*`; Vast snapshots
   at 00:44, 17 holdout maps × 5 seeds, paired with v3). Exits by tier [T1,T2,T3,T4] and exit_points = 1·T1 + 2·T2 + 3·T3 + 4·T4 (teammate 3's 00:55 ask):
   | run | Δ vs v3 | exits | exit_points | train−unseen gap |
