@@ -628,3 +628,18 @@ those also give 0/6 exits.
 
 ### UPDATE 22:50
 - Round 5b (key warps) reviewed: PASS. No new candidates yet, so the next R2 is on teammate 2's `t2w_2300` when it lands.
+
+### 23:00 — commit f25bd1d (`maps/fresh/` final-exam set): PASS
+- **No leakage (CONFIRMED):**
+  - The fresh generated seeds are 2,000,000,000 + 100·tier + k (`maps/fresh/README.md`). That's disjoint from training
+    (seeds below 1e9, `training/rewards.py:104`) and from the holdout seeds (1e9 + k), and it's below 2³¹.
+  - The Freedoom 1 maps are a different IWAD and appear in no training map list.
+- **Recomputed from core's CSVs** (`untouched_v{2,3}.csv`, 16 maps × seeds 0–2): v3 37.62 vs v2 36.71, Δ **+0.90**,
+  which matches core. The paired-per-seed SE is ±3.2 (n = 3) vs core's ±5.4, probably a per-map pairing. Same
+  conclusion: **no measurable difference on untouched maps.**
+- **This confirms the selection-bias risk:** the 17 holdout maps have now picked three ships.
+- **Teammate 3 won't evaluate anything on `maps/fresh/` before 03:00.**
+
+### UPDATE 23:00
+- Core's untouched-map check: v3 is about level with v2 there (+0.9). The +9.3 was mostly holdout selection bias, but
+  T3/T4 still favour v3. The final pick at 03:00 uses `maps/fresh/`.
