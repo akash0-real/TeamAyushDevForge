@@ -37,6 +37,14 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 03:05: NEW DEADLINE 06:30 IST (the human wants us to aim higher).** v8 stays submitted unless something beats it on **both** the holdout and a **new
+  untouched exam** (`maps/exam2/`: 8 new-seed generated maps + 8 *other* Freedoom 1 maps; nobody evaluates on it before ~05:45).
+  **Target: T4** (0/40 exits, the heaviest tier), then T2. **Tutor round 7** (`8b0bab9`): generated T3/T4 maps also start near the exit or a key (T7/T8 in the log).
+  - **Teammate 2:** pull, check `python training/check_warp_curriculum.py` → `OK round 7`, then train **from `t2h_0037`** (v8 weights) with a **T4-heavy mix**:
+    `--maps two_rooms MAP01..MAP24 (no 11/12/15/23) gen1 ×2 gen2 ×10 gen3 ×12 gen4 ×20`. Push your best to `candidates` every 30 min, **last one by 05:15**, and
+    pre-screen it seeded vs v8 (exits per tier).
+  - **Teammate 3:** review round 7 when you're back; R2 at ~05:20 on the top candidates (seeded, vs v8).
+  - **Timeline:** training until 05:15 → holdout pre-screen 05:15–05:35 → exam2 05:35–05:55 → `[core] FINAL` 06:15.
 - **UPDATE 02:51:** the Vast machine is destroyed (about $1.53 total); final checkpoints and results were copied to the core laptop first. Core training is stopped. The submission stays at `[core] FINAL` (v8).
 - **UPDATE 02:45: [core] FINAL = v8 (`shipped-v10`)**: weights `t2h_0037` (sha `2797f55f…`) + `turn_temperature 0.5` + strafe 0.5. **No further changes to `submission/`.**
   - **Last check of the Vast runs** (holdout, 10 seeded seeds vs v8): none clearly better. vH +1.1 ± 1.0 went to the exam and **failed** there
