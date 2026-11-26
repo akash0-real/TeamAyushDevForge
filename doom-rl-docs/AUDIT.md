@@ -250,3 +250,41 @@ Reviewed `b6b0ac1` [t3], `7e44134` [core], `82a7cca` [t2], `f12eaca` [core], `c4
   137 steps.
 
 **Candidates branch:** doesn't exist yet. Nothing for R2.
+
+### 20:30 — commit 376340f (tutor round 4)
+
+**Correction to my 20:20 review:** my NIT that `ps["episode_ticks"]` "doesn't exist" was **wrong**.
+`privileged_state()` returns `"episode_ticks": self.episode_ticks` (`env/doom_env/wrapper.py:210`), and `376340f` didn't
+change `env/`. Teammate 2's suggestion was valid as written, and round 4 uses it correctly.
+
+**Findings:**
+- **OK: `submission/agent.py` temperature.** `self.temperature = 1.0` and sampling from `logits / T`
+  (`submission/agent.py:33,74`). At T = 1.0 this behaves exactly as before. Sampling temperature is a normal inference
+  setting, and actions still come only from the network, so rules are fine.
+- **NIT: a temperature of 0 would freeze the agent.** `T <= 0` makes `logits / T` infinite or NaN. `Categorical` then
+  raises, and the `act()` safety net returns a no-op **every step**, so the agent would stand still for the whole map.
+  If anyone wants "greedy", use `sample_and_logprob(..., deterministic=True)`, or guard with `max(T, 1e-3)`.
+  (`submission/agent.py:74`)
+- **OK: `training/rewards.py` round 4.**
+  - The exit reward is `25 + 6·hp_frac + 6·time_left`, with `time_left = 1 − tic / episode_ticks`, clamped at ≥ 0.
+    Its maximum (37) stays above the exploration cap (+24).
+  - Damage −0.03/hp, health +0.025/hp, death −5.
+  - There's still no per-step penalty, so dying early still never pays.
+  - Train/eval consistency is unaffected, since rewards are training-only.
+- **Watch: giant maps now dropped from training.** The default training maps drop MAP11/12/15/23, the 539–863-sector
+  maps (`training/train_ppo.py`, `REAL_TRAIN_MAPS`). That's good for speed, but the hidden maps may include large
+  ones. Keep an eye on T0 (real holdout maps MAP25–32) in the next candidate checks.
+- **OK: `training/README.md` now uses `uv run --no-sync`.** It's harmless but not required: plain `uv run` kept torch
+  installed in my 20:20 test.
+- **OK: eval `--temperature`** only overrides `agent.temperature` after the weights load (`training/eval_zeroshot.py`).
+
+**Tests (i3):**
+- `pytest tests/test_egomap.py tests/test_submission.py`: **8 passed**.
+- `validate.py`: **deferred**. Two 5-seed candidate evals (R2) are using the CPU right now, which would inflate
+  latency. It runs on the round-4 `submission/` as soon as they finish.
+
+**Work queue:**
+- R2: `core_r1_2025`, `core_r2_2025` (5 seeds each), started 20:24.
+- Then Task T (T = 0.3 / 0.5 / 0.7, seeds 0–2).
+- **RAM:** only 0.71 GB is free on the i3 (the desktop apps use most of it), so I'm not stacking a third eval on top
+  of R2.
