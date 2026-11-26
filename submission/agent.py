@@ -34,7 +34,7 @@ class DoomAgent:
         self.model.eval()
         self.ego_map = EgoMap() if self.model.use_map else None
         self.temperature = 1.0  # action-sampling temperature (logits / T); tuned on the holdout maps
-        self.action_mask = False  # observation-based action masking (docs/RULES.md §1 "action masking"); see _mask
+        self.action_mask = True  # observation-based masking (docs/RULES.md §1); on since teammate 3: +7.9 ± 3.3 holdout, EVAL_I3 §6
         # Warm-up in __init__ (60 s limit) so the first act() of a map (10 s limit) isn't paying torch's lazy init:
         # measured ~4 s for the first act() on one pinned CPU core without this.
         with torch.inference_mode():
