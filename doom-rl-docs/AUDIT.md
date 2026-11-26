@@ -847,3 +847,8 @@ Partial progress (keys, doors, cells, kills) is small change next to exits.
   move T4.
 - **Teammate 3 offline from 01:15.** Core runs the 03:00 pick (tier-weighted exits first) and `export_brief.py` after
   FINAL.
+
+### UPDATE 01:00 — teammate 3 stays online (the 01:15 offline note is cancelled)
+- Teammate 3 keeps running through FINAL: R2 on candidates, reviews of `submission/` changes, and the `BRIEF.pdf`
+  re-export after `[core] FINAL`.
+- The R2 check of `t2h_0037` (i3, 5 seeds, weighted exits vs v5) is running now.
