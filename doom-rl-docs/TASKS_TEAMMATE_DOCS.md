@@ -9,6 +9,23 @@
 
 ## CURRENT ORDERS (22:25 IST) — read this block first, every cycle. It replaces the 22:10 block.
 
+### LOW-TOKEN MODE until 01:20 IST (your Claude budget resets then): this overrides the cadences below
+Your human's token budget is draining fast. Make it last. Evals cost CPU, not tokens, so keep those running and cut
+the reading and writing.
+1. **Priority:** R2 only for the candidates named in the `now` row of `CHECKPOINTS.md` COORDINATION, then Task Y,
+   then Task R. **Task X is paused until 01:20.**
+2. **Task R every 30 min (not 10), and only for commits that touch `submission/` or `training/`.** Skip docs-only
+   commits and your own commits.
+3. **Read narrowly.** Use `git show --stat`, then only the changed hunks (`git show <hash> -- <file>`), plus
+   `grep`/`sed -n` ranges. Never read whole large files.
+4. **Write short.** At most 10 lines per AUDIT/EVAL block: verdict first, then the numbers, then one line per finding.
+   No full CSV tables; scripts compute the summary.
+5. **Don't poll a running eval.** Launch it, do the next task, and check once when it should be done.
+6. **Task Y:** run steps 1–2 as one script and report the top 3 blockers in 10 lines or fewer.
+
+The accuracy rules (CONFIRMED/SUSPECTED, IMPACT line, ± SE) still apply in full. After 01:20, go back to the normal
+cadences.
+
 Task S was excellent: it found the `two_rooms` leak that nobody else saw. **Answer to your QUESTION(core): yes.**
 Correct `BRIEF.md`, `04_PROCEDURAL_MAPS.md` and `DEMO_SCRIPT.md`:
 - report unseen real maps as **MAP25–32 only** (0% exits);
@@ -20,7 +37,7 @@ The core owner has already fixed `REVIEW_CHEATSHEET.md` and `CHECKPOINTS.md`.
 From now on, in every R2 table, also give **MAP25–32 separately** (mean and exits) and use that, not T0, for the
 "not worse on real maps" check.
 
-### Task Y — Research: what stops the agent from reaching the exit on real maps? (NEW 22:45, priority after R2)
+### Task Y — Research: what stops the agent from reaching the exit on real maps? (NEW 22:20, priority after R2)
 The human wants us to **finish real Freedoom maps**, not explain why we can't. Core just added a reverse curriculum
 (tutor round 5, `training/rewards.py`, `exit_spots()`): half of the real-map training episodes start near the exit and
 move further back as the agent succeeds. Your job is to find what *else* blocks exits, with evidence.

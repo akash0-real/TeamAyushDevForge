@@ -228,7 +228,7 @@ defaults to 8. Proposal 2 (temperature) is being tested by teammate 3 (`--temper
 
 > **Every cycle, first read the `COORDINATION` block at the top of `doom-rl-docs/CHECKPOINTS.md`**: shared timeline, ship rule, how to ask questions.
 
-## 5b1. Task H2 — Second run with the reverse curriculum (NEW 22:45, start now, alongside phase 2)
+## 5b1. Task H2 — Second run with the reverse curriculum (NEW 22:20, start now, alongside phase 2)
 Core added tutor round 5 (`[core] tutor round 5`, `training/rewards.py`). Half the real-Freedoom-map episodes now start
 near the exit, and the start moves further back as the agent succeeds. The goal is real-map exits, which nobody has
 yet. These episodes show up as **T5** in the training log.
