@@ -253,13 +253,13 @@ Seeds split across 3 parallel processes, then merged into `training/results/i3_c
 
 | Slice | `core_r2_2155` | exits | Î” vs shipped v2 Â± SE | seeds worse | beyond 2 SE? |
 |---|---:|---:|---:|---:|---|
-| overall | 39.55 | 34% | +4.69 ± 7.07 | 2/5 | noise |
-| T0 incl two_rooms | 3.46 | 11% | -0.73 ± 5.20 | 3/5 | noise |
-| MAP25-32 | -10.16 | 0% | -3.44 ± 3.84 | 3/5 | noise |
-| T1 | 102.67 | 100% | +0.39 ± 0.46 | 2/5 | noise |
-| T2 | 98.56 | 80% | -0.04 ± 29.90 | 2/5 | noise |
-| T3 | 102.27 | 60% | +37.88 ± 21.20 | 1/5 | noise |
-| T4 | 17.11 | 0% | +4.95 ± 7.08 | 2/5 | noise |
+| overall | 39.55 | 34% | +4.69 Â± 7.07 | 2/5 | noise |
+| T0 incl two_rooms | 3.46 | 11% | -0.73 Â± 5.20 | 3/5 | noise |
+| MAP25-32 | -10.16 | 0% | -3.44 Â± 3.84 | 3/5 | noise |
+| T1 | 102.67 | 100% | +0.39 Â± 0.46 | 2/5 | noise |
+| T2 | 98.56 | 80% | -0.04 Â± 29.90 | 2/5 | noise |
+| T3 | 102.27 | 60% | +37.88 Â± 21.20 | 1/5 | noise |
+| T4 | 17.11 | 0% | +4.95 Â± 7.08 | 2/5 | noise |
 
 **Verdict:** **promising, but not yet proven better than shipped v2.**
 - Overall it scores 39.55 vs 34.85 (+4.7), but that gain is noise (Â±7.1, worse on 2 of 5 seeds).
