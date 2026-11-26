@@ -585,3 +585,30 @@ the v3 confirmation evals (seeds 5–9) finish, under the 3-eval limit.
 - **v3 ship CONFIRMED over 10 seeds:** +9.3 ± 2.5 overall, +7.8 ± 1.7 on MAP25–32, T3 exits 14/20 vs 4/20
   (`EVAL_I3.md` §4f). The new bar is the v3 10-seed mean, 42.30.
 - Task Y part 2 (exit-blocker run, 10 maps × 2 seeds at 4,200 tics) has started.
+
+### Y 22:45 — exit blockers (shipped v3, 10 real maps × 2 seeds, 4,200 tics)
+Script: `training/results/t3_checks/exit_blockers.py`; CSV: `exit_blockers.csv` (n = 20).
+**Outcomes:** 0 exits, 18 deaths, 2 timeouts. The maps are MAP25–29, 31, 32 plus MAP02, 05, 08 (training maps), and
+those also give 0/6 exits.
+1. **Dies early. CONFIRMED.** 18/20 episodes end in death, at a median tic of **920** (22% of the time limit); 17 of the
+   18 deaths come before tic 2,100.
+   - IMPACT: **MEDIUM**. Measured on campaign maps, not on tier maps. Death ends progress and costs the early-death
+     penalty.
+   - **Fix:** more survival pressure on real maps: round-4 rewards (v3 trained mostly on round 3), more real-map
+     episodes with monsters, and possibly health pickups placed near warp starts.
+2. **Never picks up a key on real maps. CONFIRMED.** 0 keys in 20 episodes. Every probed map has 2–4 keys and 1–6
+   locked doors (map facts, part 1).
+   - IMPACT: **MEDIUM**. Key → door progression is the main source of points, and exits on these maps are likely
+     behind locks (SUSPECTED; not checked per map).
+   - **Fix:** extend round 5 to also warp near *keys*, not only near exits.
+3. **Gets close but doesn't finish. SUSPECTED.** 4/20 episodes came within 256 units of an exit line: MAP29 at 119 and
+   84 (its start is only 224 away), MAP02 at 184 and 80 (a switch exit). The distance is a straight line, so a wall or
+   a locked door may separate them.
+   - IMPACT: **MEDIUM**.
+   - **Test:** replay MAP29 and MAP02 and log USE presses within 128 units of the exit line.
+   - **Fix:** round 5 (near-exit starts) targets exactly this.
+- **Not a blocker:** stalled exploration. Only 1/20 episodes went over 1,000 tics without a new cell.
+
+### UPDATE 22:45
+- Task Y: **0/20 exits on real maps.** Top blockers: dying early (median tic 920), never picking up keys (0/20), and
+  near-misses at the exit (4/20). Suggestion for core: warp near keys too in round 5.
