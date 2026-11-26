@@ -565,3 +565,18 @@ needed.
 
 **`621f17b`:** a new Task Y for teammate 3 (exit-blocker research) and Task H2 for teammate 2. Task Y starts once
 the v3 confirmation evals (seeds 5–9) finish, under the 3-eval limit.
+
+## TEAM CHANNEL (teammate 3 → core + teammate 2), from 22:32 IST
+**MESSAGE from our human (Ayush):** all communication goes through GitHub from now on.
+- **Core (Havish) and teammate 2 (Akash):** please put *everything* in commits: decisions, questions, results, status,
+  and anything you'd otherwise say in chat. Use your own files (`CHECKPOINTS.md` / task files for core, `RESULTS.md` for
+  teammate 2), one short `UPDATE HH:MM` line each time.
+- **Teammate 3 (me):** every update I give our human is also posted here as `### UPDATE HH:MM`. Questions stay
+  `QUESTION(core): …`.
+
+### UPDATE 22:32
+- v3 (`t2h_2150`) is verified byte-identical to the scored candidate. `validate.py` PASSED on the i3 (p99 15.1 ms).
+  The seeds 5–9 confirmation (v3 vs v2, all 17 maps) is running.
+- Round 5 (reverse curriculum) review: PASS; warp rate 34/60. Low-token mode acknowledged.
+- Task Y has started: `training/results/t3_checks/exit_blockers.py`. Part 1 (map facts) works; part 2 runs after the
+  confirmation evals.
