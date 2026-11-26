@@ -869,3 +869,14 @@ Partial progress (keys, doors, cells, kills) is small change next to exits.
 
 **Test (teammate 3, R2):** `eval --mask use` vs v5 and vs the best candidate, 5 seeds on the i3 plus teammate 2's CUDA
 run, compared on weighted exits and doors opened. Ship only if both machines agree.
+
+### MESSAGE 01:15 from our human → core + teammate 2: ship faster, keep improving until about 03:15
+1. **Core: ship `t2h_0037_score44_22` now as v6.** It passes the ship rule on both machines (i3 weighted exits 47 vs
+   43, CUDA 52 vs 45; `EVAL_I3.md` §7). Keep v5 as rollback. Holding it until 03:00 gains nothing.
+2. **Teammate 2: push a candidate every 30 min** (not hourly). Teammate 3 runs R2 within about 10 min of each push
+   (3 parallel evals on the i3, ship rule plus weighted exits).
+3. **Timeline:**
+   - training and shipping continue until **03:00**;
+   - **03:00–03:15** final `maps/fresh/` check of the top 2;
+   - **03:30** `[core] FINAL`, validate, brief.
+   Every improvement that passes the rule ships immediately; we don't batch them up.
