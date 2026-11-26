@@ -486,3 +486,46 @@ changes, so no pytest or validate needed) and `c3d4e83` [t2] (candidates branch 
 
 **CONFIRMED: Task F0 (`a330b51`) closes the Docker gap from X 22:08.** The task text quotes my HYPOTHESIS and tells
 teammate 2 to run `validate.py --docker`.
+
+### 22:27 — commits a330b51..fc5e0b5 (`t2h_2150` shipped as v3)
+Reviewed `189b9d5` [t2], `6075137` [core], `2af54a5` [core] (ship), `400a820` [core] and `fc5e0b5` [t2].
+
+**`2af54a5` (ship v3): PASS (CONFIRMED).**
+
+```text
+$ git show shipped-v3:submission/weights/best_agent.pt | grep oid      # tag -> 2af54a5
+oid sha256:5833380514a6cb82d571b6f3824994a0d12caf5f4f202b35217e33760c32a237
+$ git show origin/candidates:t2h_2150_score46_62.pt | grep oid
+oid sha256:5833380514a6cb82d571b6f3824994a0d12caf5f4f202b35217e33760c32a237
+$ sha256sum submission/weights/best_agent.pt
+5833380514a6cb82d571b6f3824994a0d12caf5f4f202b35217e33760c32a237
+```
+
+- Git LFS tracks it, and it's the only `.pt` on `main` (`git lfs ls-files`).
+- The commit message's numbers match `EVAL_I3.md` §4d/§4e.
+- Tests: `pytest tests/test_egomap.py tests/test_submission.py` **8 passed**.
+- `validate.py --device cpu` on the i3: **PASSED**. Init 11.8 s; first step 111 ms; p50 8.7 ms; p99 15.1 ms; test map
+  exited in 206 steps; agent time 1.9 s of 21 s.
+- IMPACT: **LOW** (it passes).
+
+**`189b9d5` (`training/eval_zeroshot.py`): PASS.**
+- It adds a print-only "T0 unseen Freedoom only" line, filtering on `r["map"].startswith("freedoom2.wad:")`. That
+  matches the map labels the eval prints (e.g. `freedoom2.wad:MAP25`).
+- `python -m py_compile training/eval_zeroshot.py`: OK.
+- pytest: 8 passed.
+- IMPACT: **LOW**. It makes the `two_rooms` fix permanent in the eval output.
+
+**`fc5e0b5` (`RESULTS.md`): docs only.**
+- **CONFIRMED:** the demo videos exist. `git ls-tree -r -l origin/demos` lists `FULL_DEMO_SHOWCASE.mp4` (17.2 MB),
+  `03_tier3_keycard_backtrack.mp4` (7.6 MB) and `02_tier2_unseen_exit.mp4` (3.8 MB), committed `5ac6f48` at 20:22.
+- **NIT:** they're plain git blobs, not LFS, so 28.5 MB sits in the repo history.
+  - They're off `main`, so `validate.py`'s size check and the scorer's evaluated commit aren't affected.
+  - IMPACT: **LOW**.
+- Teammate 2's QUESTION(core) items (T4 map mix; Docker without the NVIDIA toolkit) are for the core owner.
+  - Reviewer's note, as a HYPOTHESIS: a `--no-gpu` Docker run still checks the image, the imports and the sandbox
+    limits, and `agent.py:24` falls back to CPU when CUDA is missing. Only GPU memory inside the container would go
+    untested.
+
+QUESTION(core): `DEMO_SCRIPT.md` still has a `TODO(core)` for `demo/agent_demo.mp4` (cheat-sheet numbers: 246 / 364
+steps). The real videos are on `origin/demos` (teammate 2: Tier 2 exit in 123 steps, Tier 3 in 516 steps). May I point
+the script at `FULL_DEMO_SHOWCASE.mp4` and use those step counts?
