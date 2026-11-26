@@ -231,8 +231,8 @@ Reviewed `b6b0ac1` [t3], `7e44134` [core], `82a7cca` [t2], `f12eaca` [core], `c4
   torch: `uv run` syncs inexactly. I tested it on the i3; torch 2.15.0+cpu was still installed afterwards. Only
   `uv sync` removes packages that aren't in the lockfile. No README change needed.
 - **NIT: the PID-named WAD cache** (`training/rewards.py:103`, `GEN_CACHE / f"{os.getpid()}.wad"`) can't collide on one
-  machine, since PIDs are unique there, including across Havish's two parallel runs. It could only collide in separate
-  containers sharing `/tmp`, which we don't do. No action.
+  machine, since PIDs are unique there, including across Havish's two parallel runs. The cache lives in the repo's
+  `training/gen_cache/` (`training/rewards.py:37`), not `/tmp`, so separate machines can't share it either. No action.
 - **OK:**
   - `7e44134` only adds timing logs to `train_ppo.py`; no behaviour change.
   - Akash's numbers match his CSVs exactly. I recomputed: `egomap_s77_best_1948` mean 31.00, T0 7.31, 25% exits over
