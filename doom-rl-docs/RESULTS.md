@@ -1,6 +1,15 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 01:51 (NEW CANDIDATE `t2h_0122_score49_23.pt` PUSHED TO `origin/candidates` — CRUSHING DETERMINISTIC 5-SEED `SHIP RULE: PASS`, `0/5` WORSE SEEDS!):**
+  - **Deterministic seeded 5-seed paired CUDA comparison (`seeds 0..4`, after pulling `6f8bff9`; `t2h_0122_seeded_s04.csv` vs `cuda_v6_seeded_s04.csv`):**
+    - **(1) Overall MEAN:** **`49.23` vs `40.95`** (**`Δ = +8.28 ± 3.89`**, `t = 2.13`, **`worse_seeds = 0/5`** — beat `shipped-v6` on all 5 seeds!) — **PASS**
+    - **(2) Exits per tier:** **`T1 10/10 (100%, 101.21)`**, **`T2 9/10 (90%, 103.78)`**, **`T3 9/10 (90%, 134.77 vs 5/10 87.37)`**, `T4 0/10 (15.57 vs 12.96)` → **`T2+T3+T4` exits `18/30 vs 15/30`**, **`exit_points = 55 vs 45 (+10)`** — **PASS**
+    - **(3) Unseen real `MAP25–32`:** **`+2.18` (POSITIVE!) vs `-5.10`** (**`Δ = +7.28 ± 6.08`**, limit `-12.17`; `MAP32 +43.79` with `27.8` kills, `4.0` doors, `104.8` cells vs `-5.77`) — **PASS**
+    - **`ship_rule.py`: `SHIP RULE: PASS`!**
+  - **Throwaway Linux 1-CPU CUDA `validate.py`:** **PASSED** (`two_rooms` exit in **55 steps**, `130 MB` VRAM, `1618 MB` RAM).
+  - **Pushed to `origin/candidates` (Git LFS):** `t2h_0122_score49_23.pt` (`~12.4M` steps, Round 6 Geodesic + `256/192` warp) — ready for T3/Core verification (`shipped-v7`?) and the `02:30` Vast `maps/fresh/` final exam!
+  - **Next (ahead of `02:15 IST` hard deadline):** Already running deterministic 5-seed CUDA eval of our **`01:48` snapshot (`t2h_0148_seeded_s04`)** — live training just hit **`T2 100%`, `T3 62%/50`** at `662 fps` (`~13.5M` steps); will push `t2h_0148` ONLY if it beats `t2h_0122` (`49.23` / `55` exit_pts).
 - **UPDATE 01:36 (`core_vA_0035` CUDA FAIL + `t2h_0122` hits `53.14` with `100%` T1/T2/T3 exits + `+6.36` `MAP25–32`!):**
   - **`core_vA_0035` 5-seed CUDA pre-screen (`t2_core_vA_0035.csv` vs `t2h_0037_s04.csv`):** **SHIP RULE: FAIL** — `40.24` vs `44.22`, `T2+T3+T4` exits `14 vs 17` (`T1 10/10`, `T2 7/10 (82.78)`, `T3 7/10 (112.66)`, `T4 0/10 (1.75)`), `MAP25–32 -2.98` (`+0.50 ± 2.29`). Confirms T3's `FAIL` verdict (`52439dc`).
   - **`t2h_0122` (3-seed preview, `~12.4M` steps, Round 6 + `256/192` warp):** **`53.14` MEAN (`41%` exits!)** — **`T1 6/6 (100%, 100.93)`**, **`T2 6/6 (100%, 113.83)`**, **`T3 6/6 (100%, 142.88)`**, `T4 0/6 (14.59)`, **`MAP25–32 +6.36`!** (`MAP32 +76.65` with `45.7` kills, `5.0` doors, `149.7` cells).
