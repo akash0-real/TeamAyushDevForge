@@ -202,6 +202,57 @@ Commit: `[t3] docs: match the built system`.
 
 ---
 
+## 4c. Round 2 tasks (after A, B, C) — do them in this order
+
+You may also create/edit: `doom-rl-docs/AUDIT.md`, `doom-rl-docs/EVAL_I3.md`, `doom-rl-docs/DEMO_SCRIPT.md`,
+`training/results/i3_*.csv`. Everything in section 0 still applies: **no code edits**.
+
+### Task D — Independent audit (read-only), `doom-rl-docs/AUDIT.md` (~60 min)
+Read `docs/RULES.md`, `docs/CONTRACT.md`, `docs/EVALUATION.md`, then every file in `submission/` and `training/`,
+plus `maps/gen_maps.py`. Report, each with `file:line` and one sentence of evidence:
+1. **Rule risks:** anything in `submission/` that chooses actions without the network (rule trees, pathfinding,
+   aiming with `atan2` on entities to *turn*, hard-coded button sequences), any network/file access at eval,
+   anything written outside `/tmp`, anything `submission/` imports that isn't in the official image
+   (`docker/requirements.lock`). Note: `atan2` inside `EgoMap.update` is only used to draw a key into the memory map
+   (encoding), which is allowed; say whether you agree after reading it.
+2. **Crash risks at evaluation:** what happens with 0 visible entities, a key that's never seen, a 4,200-tic map,
+   `device="cuda"` on a machine without CUDA, missing weights file, an observation exactly at the limits
+   (distance 1.0, health 0).
+3. **Contract mismatches:** the action returned by `act()` (shape `(9,)`, values in {0,1}), `reset()` clearing all
+   memory (GRU state *and* EgoMap), paths relative to `submission/`.
+4. Severity for each: `BLOCKER` (could disqualify or crash), `RISK`, `NIT`.
+Commit `[t3] audit` and **tell your human right away about any BLOCKER**. The core owner fixes code.
+
+### Task E — Low-end CPU validation + 5-seed score, `doom-rl-docs/EVAL_I3.md` (~60 min, mostly waiting)
+1. Install Python tooling (8 GB RAM is enough):
+   ```powershell
+   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"   # then reopen PowerShell
+   git lfs install
+   git pull --rebase ; git lfs pull
+   uv python install 3.13
+   uv sync
+   uv pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+   ```
+   Check `submission/weights/best_agent.pt` is ~3 MB (not a ~130-byte LFS pointer).
+2. `$env:PYTHONIOENCODING = "utf-8"` then `uv run python validate.py --device cpu`. Close other apps first.
+   Paste the full output into `EVAL_I3.md`. The latency lines (first, p50, p99, agent time vs budget) matter most:
+   your i3 is our slowest machine, so it's the best stand-in for a weak evaluation CPU.
+3. `uv run python training/eval_zeroshot.py --weights submission/weights/best_agent.pt --name i3_shipped --seeds 0 1 2 3 4 --device cpu`
+   (≈ 20–40 min). Paste the MEAN line and the per-tier `T0`–`T4` lines into `EVAL_I3.md`.
+4. Commit `[t3] i3 validation + 5-seed eval` (include `training/results/i3_shipped.csv`).
+   **Tell your human immediately if validate.py fails** or p99 latency is above 30 ms.
+
+### Task F — 3-minute live-demo script, `doom-rl-docs/DEMO_SCRIPT.md` (~30 min)
+For the review (judges may ask for a live demo). Use only facts from section 4 and `doom-rl-docs/REVIEW_CHEATSHEET.md`.
+- 0:00–0:30 pitch; 0:30–1:30 what's on screen (the demo video: left game view, right the agent's memory map;
+  point out the red locked door being remembered and the yellow key); 1:30–2:30 the 3 USPs with one number each;
+  2:30–3:00 limitations + what's next.
+- Add the exact command to run a live game if asked:
+  `uv run python training/eval_zeroshot.py --weights submission/weights/best_agent.pt --maps two_rooms --seeds 0 --device cpu`
+Commit `[t3] demo script`.
+
+---
+
 ## 5. How to commit and push (every time)
 
 ```powershell
