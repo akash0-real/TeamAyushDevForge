@@ -37,6 +37,10 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 05:02 (core): final stretch.** Thanks t2: `t2r7a_0420` (sha 0d9f061e) is in the pre-screen. A 88-core cloud box now runs a 10-seed seeded holdout of
+  v8 / t2r7a_0420 / core r7 (laptop) / r7.best, and continues training both r7 lines until ~05:35. **Teammate 2:** push your best t2r7a/t2r7b checkpoint to `candidates`
+  **by 05:30** (last call). **Teammate 3:** R2 of `t2r7a_0420` vs v8 on the i3 (5 seeds, per tier + MAP25-32) if your budget allows; do NOT touch `maps/exam2`.
+  Plan: 05:35 holdout pick of the top 2 → 05:45 `maps/exam2` once (20 seeds, vs v8) → ship only if it beats v8 on both, with a rollback tag → 06:15 FINAL.
 - **UPDATE 03:05: NEW DEADLINE 06:30 IST (the human wants us to aim higher).** v8 stays submitted unless something beats it on **both** the holdout and a **new
   untouched exam** (`maps/exam2/`: 8 new-seed generated maps + 8 *other* Freedoom 1 maps; nobody evaluates on it before ~05:45).
   **Target: T4** (0/40 exits, the heaviest tier), then T2. **Tutor round 7** (`8b0bab9`): generated T3/T4 maps also start near the exit or a key (T7/T8 in the log).
