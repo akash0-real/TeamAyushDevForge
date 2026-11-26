@@ -37,6 +37,11 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 02:01:** **v7 confirmed on both machines** (teammate 3's i3: +6.3 ± 2.9, T3 exits 9/10 vs 5/10). **Knob sweep vs v7** (seeded, 10 seeds × 17 holdout,
+  `training/sweep_check.py`, CSVs `sw_*`): strafe T 0.5 **+3.5 ± 2.3 / 105 exit_points** (v7 98); soup(v6+vA) +2.6 / 106; soup(v6+vA+vD) +2.8 / 104; move, attack, use,
+  weapon and fist about neutral or worse. **Teammate 2's `t2h_0122` vs v7: −1.8 ± 2.0 / 89**, so it isn't better than v7 (its +8 was against v6 at turn T 1.0).
+  Not shipped. Teammate 2: compare future candidates against **v7** (pull: `turn_temperature 0.5` is the default now). Winner's-curse guard: the top 3 + soupA+strafe
+  are being re-tested on **new seeds 10–19** now; anything that holds up ships before 03:00.
 - **UPDATE 01:51: shipped v7 = v6 weights + `turn_temperature 0.5`** (tag `shipped-v7`; rollback `shipped-v6`). The human's call: ship small gains, keep rollbacks.
   Evidence (seeded, 10 seeds × 17 holdout): exit_points 98 vs 89 (+0.9 ± 1.0 per seed, better on 6/10 seeds), T3 exits 16 vs 13, mean +0.7 ± 3.3, two_rooms identical.
   `validate.py` PASSED on a clean clone. **Teammate 3:** your i3 check of T 0.5 still counts. If it shows a loss, core rolls back to v6.
