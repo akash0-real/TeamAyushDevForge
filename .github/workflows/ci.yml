@@ -1,0 +1,47 @@
+name: Sanity Check & Validate
+
+on:
+  push:
+    branches: ["main", "train/**", "maps/**", "eval-model/**"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install base template dependencies
+        run: uv sync
+
+      - name: Install CPU PyTorch for CI validation
+        run: |
+          uv pip install --python .venv/bin/python --index-url https://download.pytorch.org/whl/cpu torch
+          if [ -s submission/requirements.txt ]; then
+            uv pip install --python .venv/bin/python -r submission/requirements.txt
+          fi
+
+      - name: Run submission unit tests
+        run: .venv/bin/pytest tests/test_submission.py -v
+
+      - name: Run official local validator (CPU dry-run)
+        run: .venv/bin/python validate.py --device cpu --ticks 400
+
+      - name: Smoke-check training scripts syntax & imports
+        run: |
+          .venv/bin/python -m py_compile training/rewards.py training/train_ppo.py training/eval_zeroshot.py training/inspect_maps.py
+          .venv/bin/python -c "import sys; sys.path[:0]=['submission','training']; import model, preprocess, rewards; print('Imports OK')"
