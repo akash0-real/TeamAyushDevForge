@@ -852,3 +852,20 @@ Partial progress (keys, doors, cells, kills) is small change next to exits.
 - Teammate 3 keeps running through FINAL: R2 on candidates, reviews of `submission/` changes, and the `BRIEF.pdf`
   re-export after `[core] FINAL`.
 - The R2 check of `t2h_0037` (i3, 5 seeds, weighted exits vs v5) is running now.
+
+### PROPOSAL 01:05 → core: a "use" mask rule against door reversal (inference only, measurable)
+**Evidence:**
+- **Organizer notice** (relayed in `RESULTS.md`, UPDATE 00:57): USE triggers only on a fresh 0→1 press, and **pressing
+  USE on a moving door reverses it**.
+- **Our agent presses USE on 32–48% of steps** (teammate 2's 22:55 audit). A press, then a release, then another press
+  while the door is still moving would close the door it just opened. That's a SUSPECTED exit blocker, worst on T2–T4
+  where doors gate the exit.
+- The eval is **6 maps**, so each lost exit costs a lot.
+
+**Proposed rule:** add a `"use"` rule to `DoomAgent._mask`: after a USE press, mask USE = 1 for the next *k* ≈ 9 steps
+(about 1 s, one door cycle), tracked from `prev_action` history.
+- It removes only re-presses that can reverse a moving door. The network still decides every first press.
+- Fits `RULES.md` §1 (action masking; previous actions are the agent's own input). Default OFF, like the others.
+
+**Test (teammate 3, R2):** `eval --mask use` vs v5 and vs the best candidate, 5 seeds on the i3 plus teammate 2's CUDA
+run, compared on weighted exits and doors opened. Ship only if both machines agree.
