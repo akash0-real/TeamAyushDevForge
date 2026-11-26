@@ -143,7 +143,7 @@ shutil.rmtree(tmp, ignore_errors=True)
 
 ## Re-check after 3cfa239
 
-Re-run on the teammate-3 i3 at commit `bf9ee12` (which includes `3cfa239`), 20:05 IST, with the shipped
+Re-run on the teammate-3 i3 at commit `bf9ee12` (which includes `3cfa239`), 19:50 IST, with the shipped
 `best_agent.pt`. The edge-case script above gained two cases: a monkeypatched `_act` that raises, and a check that
 the grid scrolls.
 
