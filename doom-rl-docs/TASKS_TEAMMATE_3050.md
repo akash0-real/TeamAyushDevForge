@@ -161,6 +161,23 @@ If your human asks you to run the map model instead, the core owner will give th
 
 ---
 
+## 5c. Task F — Final Linux validation of the shipped agent (≈ 03:30 IST)
+
+Team target: **everything finished by 04:00 IST** (04:00–05:00 is buffer). Your Linux machine is the only one that
+can pin the agent to 1 CPU and measure RAM exactly like the scorer, so the final check is yours.
+
+1. From ~03:15 IST, `git fetch` every 5 minutes until `git log origin/main --oneline` shows a commit starting with
+   `[core] FINAL`. Then `git pull --rebase`.
+2. Check the weights are the real file, not an LFS pointer: `git lfs ls-files` lists `submission/weights/best_agent.pt`
+   and the file is ~3 MB (`ls -la submission/weights/`). If it's ~130 bytes, run `git lfs pull`.
+3. `.venv/bin/python validate.py`. Copy the whole output into `RESULTS.md` under `## FINAL validate.py (Linux, 1 CPU)`.
+4. Run the full holdout eval on the shipped weights:
+   `.venv/bin/python training/eval_zeroshot.py --weights submission/weights/best_agent.pt --name FINAL --seeds 0 1 2`
+   and paste the per-tier summary into `RESULTS.md`.
+5. Commit + push: `[t2] FINAL validation`. **Tell your human immediately if validate.py fails.**
+
+---
+
 ## 6. How to commit and push (every time)
 
 ```powershell

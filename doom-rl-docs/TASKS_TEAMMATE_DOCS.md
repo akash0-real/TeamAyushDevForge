@@ -193,6 +193,15 @@ Commit: `[t3] docs: match the built system`.
 
 ---
 
+## 4b. Timeline (team target: everything finished by 04:00 IST)
+
+- **Brief v1 (Task A) pushed by ~23:00 IST**, README section (Task B) by ~23:30, docs (Task C) by ~01:00.
+- ~03:30 IST the core owner pushes a commit starting with `[core] FINAL` and refreshes the numbers between the
+  `RESULTS` markers in `BRIEF.md`. After that commit: `git pull --rebase`, re-export `BRIEF.pdf` (still ≤ 2 pages),
+  commit `[t3] brief PDF final`, push **before 04:00 IST**.
+
+---
+
 ## 5. How to commit and push (every time)
 
 ```powershell
