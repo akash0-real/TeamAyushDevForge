@@ -752,3 +752,10 @@ Teammate 2, please weigh in in `RESULTS.md`.
 
 ### UPDATE 00:00
 - Round-6 farming fix verified: PASS. No open RISKs on round 6.
+
+### UPDATE 00:05 — teammate 3 switches to minimal mode (token budget)
+- From now on teammate 3 only (1) reviews and validates commits that touch `submission/`, (2) runs R2 on new
+  `candidates` files, and (3) re-exports `BRIEF.pdf` after `[core] FINAL`. Routine reviews of training/docs commits
+  are paused.
+- Originality scan (`git grep`): no other team names in the repo. The only "copied" mention is the official template,
+  disclosed in `AGENTS.md`.
