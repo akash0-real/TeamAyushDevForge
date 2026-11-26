@@ -214,7 +214,10 @@ def load_policy(path, device) -> "DoomSpatialPolicy":
     """Build the right model for a checkpoint (with/without EgoMap) and load its weights."""
     ckpt = torch.load(path, map_location=device, weights_only=True)
     state = ckpt["model"] if isinstance(ckpt, dict) and "model" in ckpt else ckpt
-    model = DoomSpatialPolicy(use_map=any(k.startswith("map_enc.") for k in state)).to(device)
+    model = DoomSpatialPolicy(
+        use_map=any(k.startswith("map_enc.") for k in state),
+        hidden_dim=int(state["gru.weight_hh_l0"].shape[1]),  # GRU size comes from the checkpoint (256 or larger)
+    ).to(device)
     model.load_state_dict(state)
     return model
 

@@ -100,6 +100,8 @@ def main() -> None:
     ap.add_argument("--resume", type=str, default="", help="Path to checkpoint to resume from")
     ap.add_argument("--use-map", action="store_true", help="EgoMap memory grid input (submission/preprocess.py)")
     ap.add_argument("--init-from", type=str, default="", help="no-map checkpoint to warm-start a --use-map model")
+    ap.add_argument("--hidden-dim", type=int, default=256, help="GRU size (bigger model: e.g. 512)")
+    ap.add_argument("--encoders-from", type=str, default="", help="copy every same-shaped tensor (the encoders) from this checkpoint")
     # Never write straight into submission/weights: the final checkpoint is picked by holdout eval.
     ap.add_argument("--save-path", type=str, default=str(ROOT / "training" / "checkpoints" / "main.pt"))
     args = ap.parse_args()
@@ -118,7 +120,15 @@ def main() -> None:
         autoreset_mode=gym.vector.AutoresetMode.SAME_STEP,
     )
 
-    model = DoomSpatialPolicy(use_map=args.use_map).to(device)
+    model = DoomSpatialPolicy(use_map=args.use_map, hidden_dim=args.hidden_dim).to(device)
+    if args.encoders_from:  # bigger GRU: reuse the trained ray / entity / map encoders, new GRU + heads start fresh
+        src = torch.load(args.encoders_from, map_location=device, weights_only=True)
+        src = src["model"] if "model" in src else src
+        own = model.state_dict()
+        same = {k: v for k, v in src.items() if k in own and own[k].shape == v.shape}
+        own.update(same)
+        model.load_state_dict(own)
+        print(f"Copied {len(same)}/{len(own)} tensors from {args.encoders_from}", flush=True)
     if args.init_from:
         base = torch.load(args.init_from, map_location=device, weights_only=True)
         warm_start_map_model(model, base["model"] if "model" in base else base)

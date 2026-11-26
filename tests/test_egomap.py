@@ -148,3 +148,12 @@ def test_chunked_gru_matches_per_step_reference():
             ref_v.append(v)
     assert torch.allclose(val, torch.stack(ref_v), atol=1e-5)
     assert torch.allclose(hT, h, atol=1e-5)
+
+
+def test_load_policy_reads_the_gru_size_from_the_checkpoint(tmp_path):
+    from model import load_policy
+
+    ckpt = tmp_path / "big.pt"
+    torch.save({"model": DoomSpatialPolicy(use_map=True, hidden_dim=512).state_dict()}, ckpt)
+    m = load_policy(ckpt, torch.device("cpu"))
+    assert m.hidden_dim == 512 and m.use_map
