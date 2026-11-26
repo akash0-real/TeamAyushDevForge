@@ -314,7 +314,8 @@ class ShapedDoomEnv(gym.Env):
                 f = phi - self._phi
                 reward += f
                 self._stats["geo"] += f
-            self._phi = phi
+            if phi is not None:  # keep the last defined Phi through BFS-unreachable cells, so A -> U -> B pays Phi_B - Phi_A
+                self._phi = phi  # (teammate 3 review 23:55: resetting to None let a teleport detour skip the loss)
 
         # 5. Terminal outcomes (no negative step penalty -> prevents early suicide)
         if ps["exit_reached"]:
