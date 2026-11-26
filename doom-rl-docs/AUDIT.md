@@ -962,3 +962,10 @@ by expected points:
 ### UPDATE 05:20
 - `core_r7best_0350` on the i3: ship rule FAIL by one exit (16 vs 17; weighted 50 vs 53), mean +2.8 ± 4.7. Level with
   v8. `t2r7b_0447` result about 05:32.
+
+### UPDATE 05:25: `core_r7best_0350`, pooled i3 + CUDA (10 seed pairs, seeded) vs v8
+- overall **+4.4 ± 2.5**, MAP25–32 **+5.5 ± 2.9**, T4 +5.0 ± 6.8; weighted exits 100 vs 98.
+- The i3 (fails by 1 exit) and CUDA (passes) disagree individually. Pooled, it trends better and is near-significant on
+  real maps.
+- **Recommendation: take it into exam 2 as a finalist against v8, and let the untouched set decide.**
+  `t2r7b_0447` (i3) result about 05:32.
