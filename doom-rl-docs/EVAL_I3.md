@@ -425,3 +425,12 @@ v9 swap): **SHIP RULE PASS.**
 - **T4: 0/10 exits for both**, with the same 0.2 keys per run, so round 7 hasn't moved T4 yet.
 
 Teammate 2's CUDA run passed (45.58 vs 42.65). **The two machines disagree, so it's not confirmed. Keep v8.**
+
+### 12. `core_r7best_0350`: SHIP RULE FAIL by one exit (i3, seeded, 5 seeds, vs v8)
+`i3_r7best.csv` vs `i3_v8.csv`:
+- mean 47.76 vs 44.95 (+2.8 ± 4.7, no measurable difference);
+- T2–T4 exits **16 vs 17**; weighted exits **50 vs 53** (T3 8/10 vs 9/10);
+- T4 score +14.0 ± 9.4, but **T4 exits 0 for both**;
+- MAP25–32 +4.5 ± 4.6.
+
+**Level with v8, not better.** It doesn't pass the second-machine check. `t2r7b_0447` is running next (about 05:32).

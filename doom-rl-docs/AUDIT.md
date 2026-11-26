@@ -958,3 +958,7 @@ by expected points:
 ### UPDATE 04:56
 - **Round-7 candidate fails on the i3:** −5.1 ± 2.1 overall, T3 exits 6 vs 9, T4 still 0 (`EVAL_I3.md` §11). The CUDA
   pass isn't confirmed. **v8 stays.**
+
+### UPDATE 05:20
+- `core_r7best_0350` on the i3: ship rule FAIL by one exit (16 vs 17; weighted 50 vs 53), mean +2.8 ± 4.7. Level with
+  v8. `t2r7b_0447` result about 05:32.
