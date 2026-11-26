@@ -299,3 +299,38 @@ Seeds split across 3 parallel processes, then merged into `training/results/i3_t
   - If the core owner wants to decide between the three, the cheapest decisive test is 5 more seeds (5–9) of all 17
     maps for `t2h_2150` and v2. That doubles n and halves the noise.
   - IMPACT of the decision: **MEDIUM**. The possible gain is about 5 points of mean score, mostly on T3/real maps.
+
+### 4e. COORDINATION ship rule applied (22:18 IST)
+
+The rule is from `CHECKPOINTS.md` (22:15). Computed with `training/results/t3_checks/ship_rule.py` from the 5-seed i3
+CSVs. It asserts both CSVs have the same seed set.
+
+```text
+== i3_t2h_2150 vs shipped v2 (i3_core_r2_2025)
+(1) MEAN 40.53 vs 34.85: PASS
+(2) T2+T3+T4 exits 13 vs 11 (of 30 episodes): PASS
+(3) MAP25-32 delta +5.69 +/- 3.12 (limit -2 SE = -6.23): PASS
+SHIP RULE: PASS
+== i3_core_r2_2155 vs shipped v2
+(1) MEAN 39.55 vs 34.85: PASS
+(2) T2+T3+T4 exits 14 vs 11 (of 30 episodes): PASS
+(3) MAP25-32 delta -3.44 +/- 3.84 (limit -2 SE = -7.68): PASS
+SHIP RULE: PASS
+== head-to-head: i3_t2h_2150 vs i3_core_r2_2155
+(1) MEAN 40.53 vs 39.55: PASS
+(2) T2+T3+T4 exits 13 vs 14 (of 30 episodes): FAIL
+(3) MAP25-32 delta +9.13 +/- 1.04 (limit -2 SE = -2.07): PASS
+SHIP RULE: FAIL
+```
+
+**Reading:**
+- **Both candidates pass the ship rule against shipped v2.** Rules (1) and (2) compare point estimates, and the mean
+  gains (+5.7, +4.7) are within noise (§4c, §4d). By the rule, either may ship.
+- **Between the two:**
+  - `t2h_2150` is **significantly better on unseen real maps**: MAP25–32 **+9.1 ± 1.0**, better on 5/5 seeds.
+  - It's level on mean score (+1.0 ± 6.7).
+  - It has **one fewer T2–T4 exit** (13 vs 14 of 30). A one-exit difference is noise.
+- **Recommendation:** if one ships now, ship **`t2h_2150_score46_62.pt`**. It passes the rule against v2, and it's the
+  only candidate with a large, consistent edge somewhere (real maps).
+  - IMPACT: **MEDIUM**. A likely gain of a few points of mean score, mainly on real-map-like and T3 maps.
+- **Tooling:** `ship_rule.py` takes any two CSV stems, so the core owner can rerun it on future candidates.
