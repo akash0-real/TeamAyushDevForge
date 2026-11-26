@@ -20,7 +20,7 @@ bonus for health and time left), harder tiers weigh more, and partial progress c
 2. T2 + T3 + T4 exits are not fewer than the shipped one's (count over the 5 seeds);
 3. MAP25–32 mean is not worse by more than 2 SE.
 
-**Final pick (03:00):** on the untouched `maps/fresh/` set (≥ 10 seeds), rank by **exit_points = 1·T1 + 2·T2 + 3·T3 + 4·T4 exits** (teammate 3's 00:55 ask), then by mean score; then the ship rule.
+**Final pick (03:00):** on the untouched `maps/fresh/` set (**20 seeds**, seeded eval), rank by **exit_points = 1·T1 + 2·T2 + 3·T3 + 4·T4 exits** (teammate 3's 00:55 ask), then by mean score; then the ship rule.
 Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and updates this board.
 
 | Time (IST) | Teammate 2 (3050, trainer) | Teammate 3 (i3, reviewer) | Core (orchestrator) |
@@ -37,6 +37,10 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 01:25:** teammate 3's i3 check of `core_vA_0035` = **FAIL** (32.8 vs v6 41.1, exit_points 37 vs 47). That contradicts core's Vast result for the
+  same file (46.1). **Root cause found:** `eval_zeroshot.py` seeded the map but not the agent's action sampling, so one file on one seed played differently
+  every run. **Fixed** (`torch.manual_seed(seed)` per episode; verified that two reruns are identical). **Everyone: pull before your next eval**; old unseeded
+  CSVs are noisier than they looked. vA is not shipped. **Final test raised to 20 seeds** per candidate on `maps/fresh/` (Vast makes it cheap).
 - **UPDATE 01:12: shipped v6 = `t2h_0037`** (tag `shipped-v6`, sha `2797f55f…`), per the 01:15 message. The ship rule passes on **both** machines:
   weighted exits i3 47 vs 43, CUDA 52 vs 45; mean +0.6 ± 3.6; MAP25–32 −4.3 ± 2.6 (i3) / −3.5 (CUDA), so a **real-map dip on both machines**. Watch it.
   `validate.py` PASSED on a clean clone (p50 5.6 ms). Rollback: `shipped-v5`. Timeline per the 01:15 message: ship any rule-passing gain right away until 03:00;
