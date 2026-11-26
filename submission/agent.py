@@ -34,7 +34,9 @@ class DoomAgent:
         self.model.eval()
         self.ego_map = EgoMap() if self.model.use_map else None
         self.temperature = 1.0  # action-sampling temperature (logits / T); tuned on the holdout maps
-        self.turn_temperature = 1.0  # extra temperature for the turn head only (lower = less left/right jitter)
+        # Turn head only, sharper sampling (less left/right jitter). Seeded test on v6, 10 seeds x 17 holdout maps: exit_points
+        # 98 vs 89 at 0.5 (T3 16 vs 13 exits), mean +0.7 ± 3.3 (training/results/tt*_v6_*.csv). Rollback: tag shipped-v6.
+        self.turn_temperature = 0.5
         # Observation-based masking rules (docs/RULES.md §1), see _mask: "weapon" and/or "fist". Off: pooled over two
         # machines it was neutral (+1.8 ± 3.1) and "weapon" may hurt tier 4 (teammate 3 EVAL_I3 §6b).
         self.action_mask: frozenset[str] = frozenset()
