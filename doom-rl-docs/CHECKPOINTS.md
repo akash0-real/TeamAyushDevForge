@@ -37,6 +37,7 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 00:09:** repo visibility: the human confirms the team will make it **public before the deadline** (owner action; tracked, not blocking). Vast runs A–E training; candidates from them go to `candidates` around 01:30.
 - **UPDATE 00:05: a rented 192-core machine (Vast.ai) is running 3 core runs until 03:30 (auto-destroy).** A = round 6 from v3 (56 envs),
   B = round 6 from core's `warp` run (48), **C = bigger model** (GRU 512, encoders copied from v3, round 6, 56). Bigger-model support is in
   `0438dfc` (`load_policy` reads the GRU size; validated). **New timeline:** every candidate on `candidates` by **02:15**; at **02:30** the
