@@ -206,3 +206,47 @@ if hasattr(a, "_act"):  # 3cfa239+: act() safety net
     act = a.act(obs())  # must be np.zeros((9,), int8)
     a._act = real
 ```
+
+## Continuous review log
+
+### 20:20 — commits 3a9433d..c403d14
+Reviewed `b6b0ac1` [t3], `7e44134` [core], `82a7cca` [t2], `f12eaca` [core], `c403d14` [t2].
+
+**Findings:**
+- **RISK: Task H's start command copies a file that doesn't exist, and the trainer then silently trains from scratch.**
+  - Task H (`TASKS_TEAMMATE_3050.md` §5b3, step 2) runs `cp training/checkpoints/egomap_s77_best.pt …/t2_h_start.pt`.
+  - The run was saved with `--save-path training/checkpoints/egomap_s77.pt` (`RESULTS.md:75`), so its best file is
+    `egomap_s77.best.pt` (`training/train_ppo.py:302`). The backup is `egomap_s77_1948_score31.pt` (`RESULTS.md:79`).
+  - If the `cp` fails, `--resume` silently ignores the missing file (`training/train_ppo.py:124`: `if args.resume and
+    Path(args.resume).is_file()`), and the primary run starts from **random weights**.
+  - **Fix:**
+    - Teammate 2: copy `egomap_s77_1948_score31.pt` (or `egomap_s77.best.pt`), and check that `t2h.log` prints
+      `Resumed weights from …`.
+    - Core: make a missing `--resume` file a hard error.
+- **NIT: Akash's suggested exit-time bonus wouldn't run as written.** It reads `ps["episode_ticks"]`, but
+  `privileged_state()` has no such key. The episode length is the `ticks` that `ShapedDoomEnv` passes to `make_env`
+  (`training/rewards.py:106`), so a version that works would use that value. The idea itself (a time bonus paid only on
+  exit, no per-step penalty) is sound.
+- **NIT: Akash's README note doesn't hold up.** `uv run python …` after `uv pip install torch` does **not** uninstall
+  torch: `uv run` syncs inexactly. I tested it on the i3; torch 2.15.0+cpu was still installed afterwards. Only
+  `uv sync` removes packages that aren't in the lockfile. No README change needed.
+- **NIT: the PID-named WAD cache** (`training/rewards.py:103`, `GEN_CACHE / f"{os.getpid()}.wad"`) can't collide on one
+  machine, since PIDs are unique there, including across Havish's two parallel runs. It could only collide in separate
+  containers sharing `/tmp`, which we don't do. No action.
+- **OK:**
+  - `7e44134` only adds timing logs to `train_ppo.py`; no behaviour change.
+  - Akash's numbers match his CSVs exactly. I recomputed: `egomap_s77_best_1948` mean 31.00, T0 7.31, 25% exits over
+    seeds 0–2; `egomap_s77_1948` 28.55.
+  - Only `submission/weights/best_agent.pt` is on `main`, through LFS (`git lfs ls-files`).
+  - No changes to `submission/` since `3cfa239`, so train/eval EgoMap call order is unchanged.
+- **Note on the candidate bar:** "mean ≥ 31.2 and T0 ≥ 6.9" (Task H step 5) is judged on 3 seeds, and same-seed
+  reruns differ by about 9 points (`EVAL_I3.md`). Treat it as a filter, not a verdict; Task R2's 5-seed check decides.
+- **Brief footprint (Akash's §4 note):** I'll refresh `BRIEF.md`'s footprint table from the final checkpoint's
+  `validate.py` run at `[core] FINAL`, not from a candidate's numbers.
+
+**Tests (i3, CPU):**
+- `pytest tests/test_egomap.py tests/test_submission.py`: **8 passed**.
+- `validate.py --device cpu`: **PASSED**. Init 11.3 s; first step 22 ms; p50 9.5 ms; p99 19.8 ms; test map exited in
+  137 steps.
+
+**Candidates branch:** doesn't exist yet. Nothing for R2.
