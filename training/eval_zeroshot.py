@@ -70,6 +70,9 @@ def eval_map(
         try:
             obs, _ = env.reset(seed=seed)
             agent.reset()
+            # [core] also seed the agent's action sampling, so a seed replays identically and paired comparisons pair
+            # the agent's dice too (before this, reruns of one file on one seed differed by up to ~13 points)
+            __import__("torch").manual_seed(seed)
             ps = env.privileged_state()
             cells = {(int(ps["x"] // 64.0), int(ps["y"] // 64.0))}
             ceil0 = None if ps["sector_ceiling"] is None else ps["sector_ceiling"].copy()
