@@ -37,6 +37,18 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 02:25: FINAL EXAM result → rolled back to v8** (tag `shipped-v10` = v8 state: `t2h_0037` weights + turn 0.5 + strafe 0.5). `maps/fresh/`, 16 untouched maps × 20 seeded
+  seeds (`training/results/fin_*.csv`):
+  | | exit_points | mean | exits [T1,T2,T3,T4] | unseen-real vs v7 |
+  |---|---|---|---|---|
+  | **v8** | **210** | 48.9 | 40,31,36,0 | +0.3 |
+  | t2h_0122 | 197 | **49.4** | 40,20,39,0 | **+5.9** |
+  | v7 | 191 | 45.3 | 40,26,33,0 | — |
+  | soupAFGH | 158 | 45.4 | 40,26,22,0 | +4.1 |
+  | **v9** | **156** | 43.5 | 40,25,22,0 | +1.8 |
+  **v9's holdout gain was selection fit** (the soup was picked on the 17 holdout maps; on untouched maps it loses 11 T3 exits vs v7). By the agreed rule (exit_points first),
+  **v8 wins**. Teammate 3's i3 confirmation of v9 was on the holdout, so it doesn't override the exam. `validate.py` PASSED on a clean clone. Plan: **`[core] FINAL` = this state**,
+  unless a new candidate beats v8 on **both** the holdout and the exam before 03:00.
 - **UPDATE 02:18:** round-2 sweep vs v9 (20 seeds): soup ratios 70/30 and 30/70, turn 0.7, strafe 0.3 and the 5-way soup were all equal or worse, so **v9 stays**. **Final `maps/fresh/`
   test started early** (first use of that set): v9, v8, v7, soupAFGH, t2h_0122 (v9 settings) × 20 seeded seeds × 16 maps. Results around 02:40, then a decision and `[core] FINAL` by 03:30.
 - **UPDATE 02:09: shipped v9 = `core_soupA_0200` weights (average of v6 + Vast run A) + v8 settings** (tag `shipped-v9`, sha `7b2f37c9…`; rollback `shipped-v8`).
