@@ -375,3 +375,13 @@ MAP25–32 not worse), but there's no evidence it helps, and T4 trends worse, wh
 - **Options for core:**
   - keep v4 (neutral, slight real-map edge); or
   - drop only the weapon-switch rule, keep the fist rule, and re-check.
+
+### 7. Candidate `t2h_0037_score44_22` (i3, 5 seeds, vs v5): SHIP RULE PASS, modest gain
+`i3_t2h_0037.csv` vs `i3_t2h_2150.csv`, seeds 0–4, paired:
+- **Weighted exits** (1/2/3/4): **47 vs 43**. T2 8/10 vs 6/10; T1, T3 and T4 equal (10, 7, 0).
+- **Mean:** 41.12 vs 40.53 (+0.6 ± 3.6, no measurable difference).
+- **MAP25–32:** −4.3 ± 2.6, trending worse (1.7 SE; teammate 2's CUDA: −3.5).
+
+**Both machines agree on more T2 exits** (i3 +4 weighted, CUDA 52 vs 45) and on a slight real-map dip. The ship rule
+passes on both. **Verdict:** a real candidate for the 03:00 fresh-map pick. The gain is exits on T2, and the risk is
+real maps. Let `maps/fresh/` (10 seeds) decide between it and v5.
