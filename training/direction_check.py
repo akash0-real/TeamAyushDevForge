@@ -4,6 +4,7 @@ generalising or memorising? Reads training/results/{chk,trn}_<ckpt>_s<seed>.csv 
   trn_* = 8 real Freedoom maps the agent trains on (MAP01 03 05 07 09 13 17 21), seeds 0-2
 usage: python training/direction_check.py v3 vA vB vC vD vE   (first name = baseline)"""
 import csv
+import os
 import sys
 from pathlib import Path
 
@@ -37,7 +38,7 @@ def paired(a, b):
 
 SLICES = {
     "overall": lambda r: True,
-    "MAP25-32": lambda r: r["map"].startswith("freedoom2.wad:"),
+    "unseen-real": lambda r: r["map"].startswith(("freedoom2.wad:", "freedoom1.wad:")),  # MAP25-32 / Freedoom 1
     "T2": lambda r: r["tier"] == "2",
     "T3": lambda r: r["tier"] == "3",
     "T4": lambda r: r["tier"] == "4",
@@ -50,12 +51,13 @@ def exit_points(rows):  # teammate 3 / human, 00:55: harder tiers weigh more
     return sum(t * n for t, n in tier_exits(rows).items())
 
 
+PREFIX, NSEED = os.environ.get("DC_PREFIX", "chk"), int(os.environ.get("DC_SEEDS", "5"))  # final pick: DC_PREFIX=fin DC_SEEDS=10
 base, cks = sys.argv[1], sys.argv[2:]
-B = load("chk", base, range(5))
+B = load(PREFIX, base, range(NSEED))
 Btr = load("trn", base, range(3))
 print(f"baseline {base}: holdout {np.mean([float(r['score']) for r in B]):.2f} (n={len(B)})")
 for ck in cks:
-    C = load("chk", ck, range(5))
+    C = load(PREFIX, ck, range(NSEED))
     if not C:
         print(f"{ck}: no results yet")
         continue
@@ -71,6 +73,6 @@ for ck in cks:
 print("\noverfitting check: score on real maps it TRAINS on vs UNSEEN real maps (MAP25-32)")
 for ck in [base] + cks:
     tr = [float(r["score"]) for r in load("trn", ck, range(3))]
-    un = [float(r["score"]) for r in load("chk", ck, range(5)) if r["map"].startswith("freedoom2.wad:")]
+    un = [float(r["score"]) for r in load(PREFIX, ck, range(NSEED)) if r["map"].startswith("freedoom2.wad:")]
     if tr and un:
         print(f"{ck}: train-maps {np.mean(tr):6.2f}  unseen {np.mean(un):6.2f}  gap {np.mean(tr) - np.mean(un):+6.2f}")
