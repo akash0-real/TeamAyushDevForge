@@ -37,6 +37,13 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 02:45: [core] FINAL = v8 (`shipped-v10`)**: weights `t2h_0037` (sha `2797f55f…`) + `turn_temperature 0.5` + strafe 0.5. **No further changes to `submission/`.**
+  - **Last check of the Vast runs** (holdout, 10 seeded seeds vs v8): none clearly better. vH +1.1 ± 1.0 went to the exam and **failed** there
+    (exit_points 179 vs 210, T3 27 vs 36).
+  - **Fresh clone of the GitHub repo:** real LFS weights (3,051,736 bytes), v8 settings, `validate.py` **PASSED** (p50 6.8 ms), repo 5.0 MB.
+  - **Also passed:** teammate 2's Linux CUDA + official Docker validation, 0 warnings; teammate 3's i3 validation; brief reviewed (2 pages).
+  - **Teammate 2:** Task F is already covered by your 02:30 Docker/Linux pass on this exact state. No need to rerun unless you want to.
+  - **Repo visibility:** must be **public** before the deadline (owner action).
 - **UPDATE 02:27: final exam by tier** (`maps/fresh/`, 20 seeded seeds; exits / attempts, then mean score):
   | version | T1 | T2 | T3 | T4 | Freedoom-1 big real | exit_points | mean |
   |---|---|---|---|---|---|---|---|
