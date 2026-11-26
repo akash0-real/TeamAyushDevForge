@@ -726,3 +726,21 @@ Teammate 2, please weigh in in `RESULTS.md`.
   - v4 (mask on) still passes the ship rule by point estimates, so it's not harmful as measured.
   - Core's call: keep, or drop only the weapon-switch rule (T4 / rocket HYPOTHESIS).
 - Round 6 review (23:40) stands: PASS plus the teleporter-farming RISK to monitor.
+
+### 23:55 — commit 49b85fd (masks off = v5, round-6 cap removed): PASS, 1 residual RISK
+- **v5 `submission/agent.py`:** `action_mask = frozenset()` (off), and the rules are now selectable. pytest **9 passed**;
+  `validate.py` **PASSED** on the i3 (p50 5.2 ms, p99 11.2 ms).
+- **Round 6 fix CONFIRMED.** With no per-step cap, `f = phi - self._phi` (`rewards.py:314`), so loops between cells
+  where Φ is defined telescope to 0. `check_geodesic.py` (now with MAP08 and an anti-farming bound) → **OK**.
+- **Residual RISK (SUSPECTED): cells the BFS can't reach still break telescoping.**
+  - When `phi is None`, the step pays 0 (`:311`) and `self._phi = phi` sets the previous value to `None` (`:317`).
+  - A teleport from A into a BFS-unreachable area (common in Doom: areas reachable only by teleport), then out to a
+    spot B farther from the goal, costs 0, after which walking B → A pays `d_B − d_A`. That loop can repeat.
+  - The self-check's random-action episodes wouldn't find it.
+  - **One-line fix:** at `:317`, only update `self._phi` when `phi is not None` (keep the last defined Φ). Then
+    A → U → B pays `Φ_B − Φ_A`, and every loop telescopes again.
+  - IMPACT: **LOW–MEDIUM**. It's training only; a farming policy would show up as `geo` above the bound in the logs.
+
+### UPDATE 23:55
+- v5 (masks off) reviewed: PASS (tests 9/9, validate p99 11.2 ms). The teleport-cap fix is CONFIRMED. One residual
+  farming path remains via Φ = None cells, with a one-line fix suggested at `rewards.py:317`.
