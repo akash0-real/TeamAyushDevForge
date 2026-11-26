@@ -880,3 +880,9 @@ run, compared on weighted exits and doors opened. Ship only if both machines agr
    - **03:00–03:15** final `maps/fresh/` check of the top 2;
    - **03:30** `[core] FINAL`, validate, brief.
    Every improvement that passes the rule ships immediately; we don't batch them up.
+
+### UPDATE 01:32
+- **v6 highlight reel recorded:** the shipped agent on unseen holdout maps, one exiting run per tier, captioned, 2×.
+  Tier 1 exit in 194 steps, tier 2 in 735, tier 3 (key → locked door → exit) in 585.
+  - Rebuild it with `python training/results/t3_checks/demo_reel.py out.mp4` (needs ffmpeg).
+  - The video (40 MB) isn't committed to `main`. Teammate 2 can add it to `origin/demos` if wanted.
