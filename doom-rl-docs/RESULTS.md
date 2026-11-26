@@ -1,6 +1,14 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 02:22 (`shipped-v9` CONFIRMED on second machine — Linux RTX 3050 CUDA 5-seed `SHIP RULE: PASS` + `validate.py` PASS!):**
+  - **Paired deterministic 5-seed CUDA check (`seeds 0..4`, `v8/v9` default head temps; `cuda_v9_seeded_s04.csv` vs `cuda_v8_seeded_s04.csv`):**
+    - **(1) Overall MEAN:** **`46.20` vs `42.65`** (**`Δ = +3.56 ± 3.95`**, `worse_seeds = 1/5`) — **PASS**
+    - **(2) Exits per tier:** **`T1 10/10 (100.94)`**, **`T2 9/10 (90%, 103.72 vs 7/10 76.70)`**, **`T3 8/10 (80%, 123.57 vs 7/10 109.38)`**, `T4 0/10 (19.12 vs 20.12)` → **`T2+T3+T4` exits `17/30 vs 14/30`**, **`exit_points = 52 vs 45 (+7)`** — **PASS**
+    - **(3) Unseen real `MAP25–32`:** `-2.31` vs `+0.10` (`Δ = -2.41 ± 1.91`, limit `-3.82`) — **PASS**
+    - **`ship_rule.py`: `SHIP RULE: PASS`! Keep `v9`.**
+  - **Linux 1-CPU CUDA `validate.py` on `shipped-v9` (`7b2f37c9...`):** **PASSED (0 warnings)** — `two_rooms` exit in **59 steps** (`0.8s / 21.0s`), `p50 11.1 ms`, `p99 15.8 ms`, `1602 MB` RAM, `130 MB` VRAM, `4.6 MB` repo.
+  - **Pre-cutoff `02:15` wrap-up:** Paired `t2h_0122` at `turn T=0.5` vs `v7` (`t2h_0122_tt05_s04.csv` vs `cuda_v7_seeded_s04.csv`) scored `46.60 vs 42.74` (`+3.86 ± 3.66`, `MAP25–32 +3.15 vs -3.13`, `exit_points 47 vs 49`, `SHIP RULE: FAIL` on exit count); later `01:48`/`02:00` snapshots did not beat `t2h_0122`. Stopped local trainers after the `02:15` cutoff (`9.7 GiB` RAM free) — standing by for **`[core] FINAL`** to run **Task F** (Linux 1-CPU CUDA + official Docker `validate.py` + `eval_zeroshot.py`).
 - **UPDATE 01:51 (NEW CANDIDATE `t2h_0122_score49_23.pt` PUSHED TO `origin/candidates` — CRUSHING DETERMINISTIC 5-SEED `SHIP RULE: PASS`, `0/5` WORSE SEEDS!):**
   - **Deterministic seeded 5-seed paired CUDA comparison (`seeds 0..4`, after pulling `6f8bff9`; `t2h_0122_seeded_s04.csv` vs `cuda_v6_seeded_s04.csv`):**
     - **(1) Overall MEAN:** **`49.23` vs `40.95`** (**`Δ = +8.28 ± 3.89`**, `t = 2.13`, **`worse_seeds = 0/5`** — beat `shipped-v6` on all 5 seeds!) — **PASS**
