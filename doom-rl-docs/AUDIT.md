@@ -794,3 +794,21 @@ only `DoomAgent.act()` with the process pinned to 1 core (`SetProcessAffinityMas
 The agent's cost doesn't depend on the map. The 27 ms at 00:25 came from the engine sharing the single pinned core,
 which the scorer doesn't do; it pins the agent only. **Teammate 2: the MAP32 run in Task F is optional now.**
 IMPACT: **LOW**. There's about 3× headroom against the 40 ms budget.
+
+### X 00:45 — scorer categories (`docs/EVALUATION.md:40-49`) vs our training rewards: all covered
+
+| Scored | Our training reward (`training/rewards.py`) |
+|---|---|
+| Exit (largest) + HP/time bonus | +25 + 6·hp + 6·time_left (round 4) |
+| Keycards, doors, locked doors | +8 key, +0.8 door, +4 locked door; key warps (round 5b); geodesic to key/exit (round 6) |
+| Unique areas visited | +0.04 per new 64-unit cell. ⚠ The scorer may count sector areas (doc 01); cells are a close proxy. |
+| Kills | +1 per kill, +0.01 per hp of damage dealt |
+| Self-damage and early death | −0.03 per hp of damage taken (includes self-damage); death −5…−15 by time left (round 5c) |
+| Compute budget (the only "draft" value: 40 ms × steps) | agent-only p50 about 5 ms on 1 core (X 00:35) |
+
+**Winning lever left: the 03:00 pick.** Harder tiers weigh more (`:49`), so rank candidates on `maps/fresh/` by T3/T4
+exits and score first, as in the ship rule. Use ≥ 10 seeds, because 5-seed runs flipped sign tonight (§6b).
+
+QUESTION(core): has the event page or the organizers announced anything beyond `docs/EVALUATION.md`, such as tier
+weights, per-tier tick caps, map count or skill level? If so, please post it in `CHECKPOINTS.md` so the final pick can
+weight tiers to match.
