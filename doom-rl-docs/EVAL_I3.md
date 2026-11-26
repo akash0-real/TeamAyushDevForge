@@ -119,3 +119,33 @@ That spread is bigger than the gaps used to choose checkpoints: shipped 27.7 vs.
   minor version link"). It isn't needed when Python 3.13 is already installed, so I skipped it; `uv sync` then
   worked.
 - Behind this network's TLS proxy, uv needs `$env:UV_SYSTEM_CERTS = "1"`.
+
+## 4. Candidate checks (Task R2)
+
+**Setup:** 17 holdout maps × seeds 0–4, CPU, i3. Both candidates ran in parallel at 20:23–20:43 IST, at temperature
+1.0. Baseline = the shipped weights from §2 (same maps, same seeds).
+
+**CSVs:** `training/results/i3_core_r1_2025.csv`, `i3_core_r2_2025.csv`.
+
+| Checkpoint | MEAN | exit % | T0 real | T1 | T2 | T3 | T4 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| shipped `best_agent.pt` (§2) | 31.16 | 26% | 6.9 (11%) | 102.0 (100%) | 58.0 (40%) | 67.2 (30%) | 6.9 (0%) |
+| `core_r1_2025` | 31.29 | 28% | −0.3 (9%) | 103.4 (100%) | 91.6 (70%) | 62.3 (30%) | 9.8 (0%) |
+| **`core_r2_2025`** | **34.85** | **29%** | 4.2 (9%) | 102.3 (100%) | **98.6 (80%)** | 64.4 (30%) | **12.2 (0%)** |
+
+**Paired comparison with the shipped weights.** Same seed against same seed, which removes most of the
+seed-to-seed noise:
+
+| Checkpoint | Δ MEAN per seed (0..4) | Δ MEAN ± SE | Δ T0 ± SE |
+|---|---|---:|---:|
+| `core_r1_2025` | −4.0, +3.3, +11.8, +3.7, −14.1 | +0.1 ± 4.4 | **−7.1 ± 2.9** (worse on 5/5 seeds) |
+| `core_r2_2025` | +1.5, +3.5, +4.0, +1.9, +7.6 | **+3.7 ± 1.1** (better on 5/5 seeds) | −2.7 ± 3.6 |
+
+**Verdicts:**
+- **`core_r2_2025`: best candidate so far.** It's consistently better overall: +3.7 on every seed, mostly from tier 2
+  (98.6 vs 58.0, 80% exits). Its lower T0 point estimate (4.2 vs 6.9) is **within noise** (−2.7 ± 3.6). By the strict
+  shipping rule ("not worse on real maps") it's a tie on T0, not a loss.
+  - **Recommendation:** worth shipping if `validate.py` passes on a clean clone.
+  - If the core owner wants more certainty on T0, a 10-seed run of T0 maps only would settle it. I can run that.
+- **`core_r1_2025`: don't ship.** No real overall gain (+0.1 ± 4.4), and it's **genuinely worse on real maps**
+  (−7.1 ± 2.9, lower on all 5 seeds).
