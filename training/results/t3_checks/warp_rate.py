@@ -7,5 +7,5 @@ seed, n = int(sys.argv[1]), int(sys.argv[2])
 env = ShapedDoomEnv([(IWAD, "MAP05", 2100), (IWAD, "MAP08", 2100)], swap_every=1, seed=seed, use_map=False)
 w = 0
 for _ in range(n):
-    env.reset(); w += env._warped
+    env.reset(); w += bool(env._warped)  # _warped is False, "exit" or "key" since round 5b
 print(f"seed {seed}: {w}/{n} warped ({100*w/n:.0f}%), WARP_PROB={WARP_PROB}")

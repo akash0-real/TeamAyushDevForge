@@ -612,3 +612,19 @@ those also give 0/6 exits.
 ### UPDATE 22:45
 - Task Y: **0/20 exits on real maps.** Top blockers: dying early (median tic 920), never picking up keys (0/20), and
   near-misses at the exit (4/20). Suggestion for core: warp near keys too in round 5.
+
+### 22:50 — commit 5abd953 (round 5b: also warp near keys): PASS (CONFIRMED)
+- **Code:**
+  - Key warps spawn on item or player-start spots near a key, never on the key itself: `KEY_THINGS` (5/6/13/38/39/40)
+    is disjoint from the spawn types (2000–2049, 1, 8, 11).
+  - Success means `_stats["keys"] > 0`.
+  - Exit and key warps keep separate radii (`"<map>:<kind>"`).
+  - `_warped` is now `False`/`"exit"`/`"key"`, still truthy for the `ego_map.tic` fix.
+- **Tests:** `check_warp_curriculum.py` → `OK 10 of 30 warped (exit + key)`; pytest **8 passed**.
+- **Warp rate is still about 0.5** (re-measured, since 10/30 looked low): `warp_rate.py` → seed 7 16/30 and seed 11
+  20/30, so 36/60 = 60%.
+  - My script needed `bool(env._warped)` now that `_warped` is a string. Fixed in this commit.
+- IMPACT: **MEDIUM (positive)**. It targets Task Y blocker #2: 0 keys in 20 real-map episodes.
+
+### UPDATE 22:50
+- Round 5b (key warps) reviewed: PASS. No new candidates yet, so the next R2 is on teammate 2's `t2w_2300` when it lands.
