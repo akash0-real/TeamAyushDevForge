@@ -1,6 +1,10 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 00:25 (Warp radius `256/192` live + Linux 1-CPU `MAP32` timing PASS):**
+  - **Pulled `04e63fb` (`WARP_R0=256 / WARP_RMIN=192`)** and restarted **both `t2h` & `t2w`** from their latest Round-6 checkpoints (`t2h` ~`768k` R6 steps, `t2w` ~`491k` R6 steps).
+  - **Closed T3 `X 00:25` `MAP32` 1-CPU timing risk (Linux agent-only 1-CPU pin, `validate.py --device cpu --map freedoom2.wad:MAP32 --ticks 4200`):** **PASSED** with **0 warnings** (`init 2.6s`, **`p50 8.3 ms`**, **`p99 28.0 ms`**, `first 64 ms`, `0.9s / 42.0s` agent budget, `690 MB` RAM) — `4.8×` under the `40 ms` average budget even while training! Will re-run on `[core] FINAL` at `03:30 IST`.
+  - **Task F0 `docker build`:** finished downloading `torch` + `cudnn` + `cublas`; continuing `stage 6/9`.
 - **UPDATE 00:14 (Warp-spot dead-end audit COMPLETE — `training/results/t2_warp_audit.csv`):**
   - Audited all **`907` exit-warp spots `<= 1,500u`** across all 20 `REAL_TRAIN_MAPS` × 3 episodes = **`2,721` episodes** with `shipped-v3` (`2,100` tics).
   - **Huge finding:** **`874 / 907` (`96.4%`) have `0/3` exits**; only **`33 / 907` (`3.6%`)** ever reached an exit! Nine entire maps (`MAP02, 04, 07, 08, 09, 10, 17, 20, 24`) had **0 working spots (`100%` dead)**, while `MAP05` (`10` working) and `MAP14` (`7` working, all `3/3`) carry over half the working spots. Full 20-map table + 33 working spots listed below; all 874 zero-exit `(map, x, y, dist)` rows are in `training/results/t2_warp_audit.csv`.
