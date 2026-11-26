@@ -36,6 +36,7 @@ from doom_env import make_env
 from doom_env.wad import map_lumps, read_wad
 from doom_env.wrapper import IWAD
 from gen_maps import HOLDOUT_SEED_BASE, write_map
+from geodesic import GeoField
 from preprocess import MAP_CHANNELS, MAP_CROP, NUM_ACTIONS, EgoMap, factored_to_multibinary, preprocess_obs
 
 GEN_CACHE = ROOT / "training" / "gen_cache"
@@ -45,6 +46,7 @@ GEN_CACHE.mkdir(parents=True, exist_ok=True)
 # start further back as it succeeds, so the agent experiences finishing big maps it can't yet cross from the start.
 WARP_PROB = 0.5
 EXIT_SPECIALS = (11, 51, 52, 124, 197, 198)  # Doom-format exit line specials (switch / walk-over / shoot)
+GEO_STEP_CAP = 0.1  # round 6: max |geodesic shaping| per step (a step covers <= ~70 units = 0.07)
 KEY_WARP_PROB = 0.4  # of warped episodes on maps with keys: start near a key instead (teammate 3 Task Y: 0 keys on real maps)
 KEY_THINGS = (5, 6, 13, 38, 39, 40)  # blue/yellow/red keycards and skull keys
 _WARP_SPOTS: dict[tuple[str, str], tuple[list, list]] = {}
@@ -103,6 +105,8 @@ class ShapedDoomEnv(gym.Env):
         self._env = None
         self._warp_radius: dict[str, float] = {}  # per real map: max start distance from the exit (grows on success)
         self._warped = False
+        self._geo: GeoField | None = None
+        self._geo_failed: set[str] = set()
         self._cur_spec: tuple[str, str, int] | None = None
         self._ep_on_cur = 0
         self._ep_count = 0
@@ -147,6 +151,7 @@ class ShapedDoomEnv(gym.Env):
             write_map(self._tier, self.rng.randrange(HOLDOUT_SEED_BASE), wad)
         ticks = ticks or self.rng.randint(2100, 4200)  # evaluation caps vary per map in this range
         self._env = make_env(wad, map_name, episode_ticks=ticks, render_buffers=False)
+        self._geo = None  # round 6: rebuilt for the new level at the next reset
         self._cur_spec = spec
         self._ep_on_cur = 0
 
@@ -199,7 +204,19 @@ class ShapedDoomEnv(gym.Env):
             "return": 0.0,
             # T5 / T6 in the log = real map started near the exit / near a key
             "tier": {"exit": 5.0, "key": 6.0}.get(self._warped, float(self._tier)),
+            "geo": 0.0,
         }
+        # round 6: geodesic progress shaping (training/geodesic.py); a level it can't parse just gets no shaping
+        level = f"{self._env.wad}:{self._cur_spec[1]}"
+        if self._geo is None and level not in self._geo_failed and ps["sector_floor"] is not None:
+            try:
+                self._geo = GeoField(self._env.wad, self._cur_spec[1], ps["sector_floor"], ps["sector_ceiling"])
+            except Exception:  # noqa: BLE001
+                if self._tier == 0:  # generated maps reuse one file name per worker; only remember real-map failures
+                    self._geo_failed.add(level)
+        if self._geo is not None:
+            self._geo_src = self._geo.target(ps["keys"])
+            self._phi = self._geo.phi(ps["x"], ps["y"], self._geo_src)
         if self.ego_map is not None:
             self.ego_map.reset()
             self.ego_map.update(raw_obs, None)
@@ -283,6 +300,20 @@ class ShapedDoomEnv(gym.Env):
         if dmg > 0.0:
             reward -= 0.03 * dmg  # tutor round 4: was 0.015 (a kill paid more than tanking its hits cost)
             self._stats["damage_taken"] += dmg
+
+        # 4b. Round 6 geodesic progress: Phi(s') - Phi(s), Phi = -walking distance to the next missing key / exit.
+        # When a key pickup switches the goal, Phi(s) is re-evaluated for the new goal, so the switch itself pays 0.
+        if self._geo is not None:
+            src = self._geo.target(ps["keys"])
+            if src != self._geo_src:
+                self._geo_src = src
+                self._phi = self._geo.phi(prev["x"], prev["y"], src)
+            phi = self._geo.phi(ps["x"], ps["y"], src)
+            if phi is not None and self._phi is not None:
+                f = float(np.clip(phi - self._phi, -GEO_STEP_CAP, GEO_STEP_CAP))
+                reward += f
+                self._stats["geo"] += f
+            self._phi = phi
 
         # 5. Terminal outcomes (no negative step penalty -> prevents early suicide)
         if ps["exit_reached"]:
