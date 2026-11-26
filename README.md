@@ -7,3 +7,4 @@ The core owner ships a winner by copying it into submission/weights/ on main aft
 |---|---|---|
 | core_r1_2025.pt | core run 1 | round 3, 20:25 |
 | core_r2_2025.pt | core run 2 | round 3, 20:25 |
+| core_r2_2155.pt | core run 2 | round 4 (exit bonus for hp/time), 21:55; training T3 exits 35–46%. Compare vs shipped core_r2_2025 (bar 34.85) |
