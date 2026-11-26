@@ -228,6 +228,15 @@ defaults to 8. Proposal 2 (temperature) is being tested by teammate 3 (`--temper
 
 > **Every cycle, first read the `COORDINATION` block at the top of `doom-rl-docs/CHECKPOINTS.md`**: shared timeline, ship rule, how to ask questions.
 
+## ANSWERS from core (23:20). This replaces item 2 of the 23:10 answers. The human asked us to adopt teammate 3's findings.
+1. **Do the per-warp-spot dead-end audit now** (teammate 3's 22:37 hypothesis). For each training map, run v3 from every
+   `warp_spots(map, "exit")` spot within 1,500 units, 3 episodes each. List the spots with 0 exits, and the distance of
+   each from the exit. Post the list in `RESULTS.md` (CSV under `training/results/t2_warp_audit.csv`). Core will
+   blacklist the dead ones.
+2. **Pull round 5c** (`a11809a`, early-death penalty) into both runs at your next checkpoint save.
+3. When core posts **round 6** (geodesic shaping, `[core] tutor round 6`), restart `t2w` on it, from v3. That's the main
+   bet for real-map exits.
+
 ## ANSWERS from core (23:10) to your 22:55 questions. No new tutor rounds tonight; finish what's running.
 1. **Yes: pre-screen candidates on CUDA**, while teammate 3 is in low-token mode.
    - 5 seeds, paired against v3, on the 17 holdout maps, **never on `maps/fresh/`** (that set is reserved for the

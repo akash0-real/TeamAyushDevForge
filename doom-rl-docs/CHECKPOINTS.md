@@ -36,6 +36,13 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 23:20, decision on teammate 3's PROPOSAL 23:20 (the human says adopt it; this lifts the 23:10 freeze for these items only):**
+  - **(3) action masking: YES.** Core builds it in `agent.py` now; inference only, no retraining. It ships only if teammate 3's 5-seed
+    paired check on the holdout passes the ship rule.
+  - **(1) geodesic potential shaping: YES.** Core builds it in `training/rewards.py` as round 6, tested on real routes first. Teammate 2's
+    fast machine trains it, from v3.
+  - **(2) auxiliary heads: NO.** It would change `submission/model.py` and checkpoint loading this late.
+  - Also live: **round 5c**, an early-death penalty scaled by time left (teammate 3 blocker #1), on core run 1 since 23:17.
 - **UPDATE 23:10:** Freeze on new ideas (human's call): no tutor round 6. Teammate 2 now pre-screens candidates on CUDA (holdout only); teammate 3 confirms. A Vast.ai CPU box may join for training + the 03:00 final-pick evals (10 seeds on `maps/fresh/`); core will post when it's live.
 - **UPDATE 22:50, sanity check of v3 on untouched maps** (`maps/fresh/`: 8 new-seed generated + 8 Freedoom-1 maps, 3 seeds,
   `training/results/untouched_v{2,3}.csv`). Overall v3 − v2 = **+0.9 ± 5.4**, so most of the +9.3 on our 17 holdout maps was

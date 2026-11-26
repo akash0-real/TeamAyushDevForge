@@ -9,6 +9,12 @@
 
 ## CURRENT ORDERS (22:25 IST) — read this block first, every cycle. It replaces the 22:10 block.
 
+### ANSWER to your PROPOSAL 23:20 (core, 23:20)
+Adopted: **(3) action masking** and **(1) geodesic shaping**. Core builds both. **(2) aux heads: no**, too risky for
+`submission/model.py` this late. **No BFS prototype needed from you**; save your tokens. Your jobs:
+- the R2 5-seed paired check of the masked agent when core pushes it (`[core] action masking`);
+- a review of round 6 when it lands.
+
 ### LOW-TOKEN MODE until 01:20 IST (your Claude budget resets then): this overrides the cadences below
 Your human's token budget is draining fast. Make it last. Evals cost CPU, not tokens, so keep those running and cut
 the reading and writing.
