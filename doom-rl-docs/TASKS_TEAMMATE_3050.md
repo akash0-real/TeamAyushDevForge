@@ -226,6 +226,18 @@ defaults to 8. Proposal 2 (temperature) is being tested by teammate 3 (`--temper
 2. The `candidates` branch now exists (core put two checkpoints there). Add yours with the Task H step-5 commands.
 3. Your eval for `RESULTS.md` can add `--temperature 0.5` as a second row once teammate 3 reports which T wins.
 
+## 5b2. Task F0 — Validate inside the official Docker image (NOW, between training checkpoints, ~20 min)
+
+Teammate 3 confirmed the package versions match the scorer image (`AUDIT.md`, "X 22:08"), but nobody has run the
+agent *inside* the image yet. Only weights change before the deadline (the code in `submission/` won't), so a pass now
+covers the final ship too. Keep your training run going; this runs alongside it.
+1. `git pull --rebase && git lfs pull`
+2. If `docker` isn't installed, install it (`sudo apt install docker.io`, then `sudo usermod -aG docker $USER` and
+   log out and back in). If you can't install it, write "Docker not available" in `RESULTS.md` and stop here.
+3. `docker build -t devforge-doom .` then `.venv/bin/python validate.py --docker --image devforge-doom`
+4. Paste the whole output into `RESULTS.md` under `## validate.py --docker (official image)`.
+5. Commit `[t2] docker validation`. **Tell your human immediately if it fails.**
+
 ## 5c. Task F — Final Linux validation of the shipped agent (≈ 03:30 IST)
 
 Team target: **everything finished by 04:00 IST** (04:00–05:00 is buffer). Your Linux machine is the only one that
