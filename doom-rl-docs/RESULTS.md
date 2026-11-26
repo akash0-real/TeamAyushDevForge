@@ -1,6 +1,11 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 01:36 (`core_vA_0035` CUDA FAIL + `t2h_0122` hits `53.14` with `100%` T1/T2/T3 exits + `+6.36` `MAP25–32`!):**
+  - **`core_vA_0035` 5-seed CUDA pre-screen (`t2_core_vA_0035.csv` vs `t2h_0037_s04.csv`):** **SHIP RULE: FAIL** — `40.24` vs `44.22`, `T2+T3+T4` exits `14 vs 17` (`T1 10/10`, `T2 7/10 (82.78)`, `T3 7/10 (112.66)`, `T4 0/10 (1.75)`), `MAP25–32 -2.98` (`+0.50 ± 2.29`). Confirms T3's `FAIL` verdict (`52439dc`).
+  - **`t2h_0122` (3-seed preview, `~12.4M` steps, Round 6 + `256/192` warp):** **`53.14` MEAN (`41%` exits!)** — **`T1 6/6 (100%, 100.93)`**, **`T2 6/6 (100%, 113.83)`**, **`T3 6/6 (100%, 142.88)`**, `T4 0/6 (14.59)`, **`MAP25–32 +6.36`!** (`MAP32 +76.65` with `45.7` kills, `5.0` doors, `149.7` cells).
+  - **Now running:** Pulled `6f8bff9` (deterministic `torch.manual_seed` eval) and running **paired 5-seed deterministic CUDA check** of `t2h_0122` vs `shipped-v6` (`t2h_0122_seeded_s04.csv` vs `cuda_v6_seeded_s04.csv`) + throwaway `validate.py` before pushing to `origin/candidates`.
+  - **Training live:** `t2h` (`673 fps`, `T5: 30–33%`!), `t2w` (`435 fps`, `T2 68%`, `T5: 32–43%`!).
 - **UPDATE 00:57 (Official Organizer Track-1 Notice relayed from Akash — answers T3 `00:45` QUESTION):**
   - **Evaluation format:** **6 unseen maps across 4 tiers** (`two_rooms.wad` is verification only).
   - **Compliance audit against organizer checklist — ALL PASS:** (1) `submission/agent.py` loads real LFS weights (`3.0 MB`, `4.1 MB` repo ≤ 1 GB); (2) synced to latest template limits (`2 GB` VRAM, `8 GB` RAM, `1 CPU`), self-contained `submission/` (zero `training/` imports); (3) **pure custom RL** (explicitly preferred over heuristic/rule-based models; `training/` kept in repo); (4) **`validate.py --docker` PASSED** (`00:53 IST`, `p50 5.9 ms`, `797 MB` RAM); (5) repo visibility — Akash will flip repo to **PUBLIC** before submission deadline.
@@ -188,7 +193,8 @@ T4 mean score:  -17.73 (n=2, exit=   0%)
 | 00:06 | t2h_0006 (Round-6 early; T0:8.76 / MAP25-32:-3.86(0%) T1:100.73(100%) T2:78.58(67%) T3:83.06(50%) T4:17.77) | ~11,240,000 | 37.60 | 31% | 0.1 | 1.2 | 1.0 | 15.12* | — |
 | 00:37 | t2w_0037 (Round-6 + 256/192 warp; T0:-1.18 / MAP25-32:-6.50(0%) T1:100.67(100%) T2:60.18(50%) T3:25.07(0%) T4:16.43) | ~9,350,000 | 23.18 | 20% | 0.1 | 1.0 | 1.1 | 12.30* | — |
 | 00:37 | **t2h_0037** (Round-6 + 256/192 warp; T0:10.57 / MAP25-32:**-1.78(0%)** T1:101.00(100%) T2:88.82(**83%**) T3:**123.80(83%)** T4:7.27) | ~12,000,000 | **43.35** | **37%** | 0.1 | 1.0 | 1.1 | 12.99* | — |
-| 00:37 | **t2h_0037** *(5-seed CUDA `SHIP RULE: PASS`, pushed to `candidates`!)* (T0:9.06 / MAP25-32:-3.49(0%) T1:101.13(100%) T2:**99.21(90%)** T3:**120.35(80%)** T4:14.44; `exit_pts 52 vs 45`) | ~11,700,000 | **44.22** (5s) | **38%** | 0.1 | 1.1 | 1.1 | 11.0* | **PASS (exit in 60 steps, 9.0 ms p50, 130 MB VRAM)** |
+| 00:37 | **t2h_0037** *(shipped as `shipped-v6`!)* (T0:9.06 / MAP25-32:-3.49(0%) T1:101.13(100%) T2:**99.21(90%)** T3:**120.35(80%)** T4:14.44; `exit_pts 52 vs 45`) | ~11,700,000 | **44.22** (5s) | **38%** | 0.1 | 1.1 | 1.1 | 11.0* | **PASS (exit in 60 steps, 9.0 ms p50, 130 MB VRAM)** |
+| 01:22 | **t2h_0122** (Round-6 + `256/192` warp, 3s preview; T0:**17.66** / MAP25-32:**+6.36(0%)** T1:100.93(100%) T2:**113.83(100%)** T3:**142.88(100%)** T4:14.59) | ~12,400,000 | **53.14** | **41%** | 0.1 | 1.3 | **3.7** | 11.10* | *(running 5s deterministic check)* |
 | 00:37 | t2w_0037 (Round-6 + `256/192` warp; T0:-1.18 / MAP25-32:-6.50(0%) T1:100.67(100%) T2:60.18(50%) T3:25.07(0%) T4:16.43) | ~9,300,000 | 23.18 | 20% | 0.1 | 1.1 | 1.0 | 13.5* | — |
 
 *\*`ms/step` inflated because 36 ViZDoom training workers + `docker build` ran simultaneously on the same CPU.*
