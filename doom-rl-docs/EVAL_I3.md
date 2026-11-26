@@ -208,3 +208,23 @@ covers seeds 0–4 and is paired with `i3_shipped.csv` (T = 1.0). Δ = mean pair
   - Cheaper alternative: re-check the trade-off on the final checkpoint, because a checkpoint that's stronger on
     tier 3 may tolerate T = 0.7 better.
 
+### 5c. Best candidate at T = 0.5 (21:19 IST)
+
+`core_r2_2025` at T = 0.5, seeds 0–4 (`i3_core_r2_2025_T05.csv`).
+
+| Run | MEAN | T0 real | T1 | T2 | T3 | T4 |
+|---|---:|---:|---:|---:|---:|---:|
+| `core_r2_2025`, T = 1.0 (§4) | 34.85 | 4.2 | 102.3 | 98.6 | 64.4 | 12.2 |
+| `core_r2_2025`, T = 0.5 | 36.64 | 7.7 | 102.9 | 89.9 | 50.0 | 33.9 |
+
+Paired per-seed differences:
+
+| Comparison | Δ MEAN | Δ T0 | Δ T3 |
+|---|---:|---:|---:|
+| `core_r2` T = 0.5 vs `core_r2` T = 1.0 | +1.8 ± 3.1 | +3.5 ± 5.9 | −14.4 ± 22.1 |
+| `core_r2` T = 0.5 vs shipped T = 1.0 | +5.5 ± 2.1 | +0.9 ± 2.9 | −17.2 ± 10.3 |
+
+**Verdict:** lowering the temperature adds nothing measurable on top of `core_r2` (+1.8 ± 3.1). The tier-3 dip shows up
+again, as in §5b. It's not significant here, but it points the same way. **Recommendation unchanged: ship
+`core_r2_2025` at T = 1.0** (§4: +3.7 ± 1.1 vs the shipped weights, better on 5/5 seeds).
+
