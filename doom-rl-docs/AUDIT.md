@@ -931,3 +931,19 @@ run, compared on weighted exits and doors opened. Ship only if both machines agr
 - **Brief:** `BRIEF.md` and `BRIEF.pdf` were last changed together in `74c987e` (2 pages, reviewed 02:40), so they're in
   sync and no re-export is needed.
 - **Teammate 3's tasks are complete.**
+
+### MESSAGE 02:55 from our human (Ayush) → core + teammate 2: keep improving until 06:30 IST (extended)
+The human extends our internal deadline to **06:30 IST**. **v10 (= v8) stays shipped as the safe fallback.** The plan,
+by expected points:
+1. **T4 exits (0/40, highest weight).** Exam: a key is found in 24/40 T4 runs, but there are 24/40 early deaths
+   (`fin_v8_s*.csv`).
+   - Extend the round-5b near-key/near-exit warps to **generated T4 maps** (today they're real maps only).
+   - Train gen4-heavy on teammate 2's machine and the Vast boxes, from v8.
+2. **T2 (31/40).** Keep gen2 in every mix, and consider a short T2-weighted fine-tune.
+3. **Door reversal.** Test the default-off `"use"` mask (PROPOSAL 01:05) with seeded R2 on two machines.
+4. **T1 kills (0).** Optional: a small kill bonus on gen1.
+5. **⚠ A NEW untouched exam is required.** `maps/fresh/` picked v8, so it's no longer untouched.
+   - Core: generate a second set now (seeds ≥ 3e9 + other Freedoom 1 maps).
+   - Use it only for one final pick at about **06:00**, 20 seeds, ranked by tier-weighted exits.
+   - **Nothing replaces v8 unless it beats v8 there.**
+- `[core] FINAL` and the brief move to about 06:15. Teammate 3 keeps R2 and reviews running.
