@@ -37,6 +37,9 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 01:51: shipped v7 = v6 weights + `turn_temperature 0.5`** (tag `shipped-v7`; rollback `shipped-v6`). The human's call: ship small gains, keep rollbacks.
+  Evidence (seeded, 10 seeds × 17 holdout): exit_points 98 vs 89 (+0.9 ± 1.0 per seed, better on 6/10 seeds), T3 exits 16 vs 13, mean +0.7 ± 3.3, two_rooms identical.
+  `validate.py` PASSED on a clean clone. **Teammate 3:** your i3 check of T 0.5 still counts. If it shows a loss, core rolls back to v6.
 - **UPDATE 01:39:** jitter check (the human asked why the agent twitches). New `agent.turn_temperature` (turn head only; default 1.0 = unchanged). Seeded
   test of v6, 10 seeds × 17 holdout maps: turn T 0.7 **+1.5 ± 3.0**, T 0.5 **+0.7 ± 3.3** (exit_points 95 / 98 vs 89; T 0.5 unseen-real −2.2). **No measurable
   gain, so not enabled.** Both go into the 03:00 `maps/fresh/` test as `v6_tt07` / `v6_tt05` and ship only if they clearly win there. CSVs: `training/results/tt*_v6_*.csv`.
