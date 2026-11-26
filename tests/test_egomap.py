@@ -85,3 +85,66 @@ def test_map_agent_plays_valid_fast_actions(tmp_path, monkeypatch):
                 break
         assert np.mean(times[1:]) < 0.040, f"{1000 * np.mean(times[1:]):.1f} ms/act"
     env.close()
+
+
+def _blank_obs():
+    return {
+        "rays": {"distance": np.ones(64, np.float32), "hit_type": np.zeros(64, np.int64)},
+        "visible_entities": {"features": np.zeros((32, 5), np.float32), "entity_type": np.zeros(32, np.int64),
+                             "mask": np.zeros(32, np.int8)},
+        "vitals": np.zeros(17, np.float32),
+    }
+
+
+def test_grid_scrolls_on_big_maps_and_keeps_memory():
+    em = EgoMap()
+    em.update(_blank_obs(), None)  # visited: spawn cell (64, 64)
+    assert em.grid[0, 64, 64] == 1
+    em.x = 2500.0  # 39 cells east of spawn: within 1/4 of the edge -> scroll
+    em.update(_blank_obs(), None)
+    assert em.ox == 32 and em.oy == 0
+    assert em.grid[0, 64, 64 - 32] == 1, "spawn memory must move with the scroll"
+    assert em.grid[0, 64, 64 + 39 - 32] == 1, "agent's current cell is marked inside the grid"
+    assert em.crops().shape == (12, 15, 15)
+    em.reset()
+    assert em.ox == em.oy == 0 and em.grid.sum() == 0
+
+
+def test_act_survives_internal_errors(monkeypatch):
+    import agent as agent_mod
+
+    env = make_env(WAD, "MAP01", episode_ticks=2100, render_buffers=False)
+    ag = agent_mod.DoomAgent(env.observation_space, env.action_space, "cpu")
+    obs, _ = env.reset(seed=0)
+
+    def boom(_obs):
+        raise RuntimeError("simulated failure")
+
+    monkeypatch.setattr(ag, "_act", boom)
+    act = ag.act(obs)
+    assert act.shape == (9,) and act.dtype == np.int8 and not act.any()
+    env.close()
+
+
+def test_chunked_gru_matches_per_step_reference():
+    """forward_sequence runs the GRU per stretch between episode ends; must equal stepping one tic at a time."""
+    torch.manual_seed(0)
+    m = DoomSpatialPolicy(use_map=True)
+    T, B = 40, 3
+    obs = {
+        "rays": torch.rand(T, B, 7, 64), "ent_feat": torch.rand(T, B, 32, 5),
+        "ent_type": torch.randint(0, 12, (T, B, 32)), "ent_mask": torch.rand(T, B, 32) > 0.5,
+        "vitals": torch.rand(T, B, 30), "map": torch.rand(T, B, 12, 15, 15),
+    }
+    dones = torch.zeros(T, B)
+    dones[0, 1] = dones[7, 0] = dones[7, 2] = dones[23, 1] = 1.0
+    h0 = torch.rand(1, B, m.hidden_dim)
+    with torch.no_grad():
+        lg, val, hT = m.forward_sequence(obs, h0, dones)
+        h, ref_v = h0, []
+        for t in range(T):
+            h = h * (1.0 - dones[t]).view(1, B, 1)
+            _, v, h = m.forward_step({k: x[t] for k, x in obs.items()}, h)
+            ref_v.append(v)
+    assert torch.allclose(val, torch.stack(ref_v), atol=1e-5)
+    assert torch.allclose(hT, h, atol=1e-5)

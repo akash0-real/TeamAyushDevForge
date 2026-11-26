@@ -15,16 +15,21 @@ from pathlib import Path
 
 import gymnasium as gym
 import numpy as np
-import torch
-import torch.nn as nn
 import vizdoom as vd
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "submission"))
 sys.path.insert(0, str(ROOT / "training"))
 
-from model import DoomSpatialPolicy, warm_start_map_model
 from rewards import ShapedDoomEnv
+
+if __name__ != "__mp_main__":
+    # Windows/spawn re-runs this file in every env worker as __mp_main__; workers never need torch, and loading it
+    # there cost ~490 MB per worker (43 MB without) -- the RAM that now goes into more parallel envs.
+    import torch
+    import torch.nn as nn
+
+    from model import DoomSpatialPolicy, warm_start_map_model
 
 IWAD = os.path.join(os.path.dirname(vd.__file__), "freedoom2.wad")
 
@@ -78,7 +83,6 @@ def main() -> None:
     ap.add_argument("--maps", nargs="+", default=DEFAULT_TRAIN_MAPS, help="Map specs: two_rooms, MAP01..MAP24, or path.wad:MAP01")
     ap.add_argument("--num-envs", type=int, default=8)
     ap.add_argument("--rollout-steps", type=int, default=128)
-    ap.add_argument("--seq-len", type=int, default=64)
     ap.add_argument("--total-steps", type=int, default=500_000)
     ap.add_argument("--episode-ticks", type=int, default=0, help="0 = random 2100-4200 per map load, like evaluation")
     ap.add_argument("--swap-every", type=int, default=4)

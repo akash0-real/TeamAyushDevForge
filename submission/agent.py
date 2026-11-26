@@ -49,8 +49,19 @@ class DoomAgent:
         if self.ego_map is not None:
             self.ego_map.reset()
 
-    @torch.inference_mode()
     def act(self, observation: dict) -> np.ndarray:
+        # Safety net only: an uncaught error would freeze the player for the rest of the map (docs/EVALUATION.md).
+        # On an unexpected error we press nothing for this step and keep going; actions otherwise come only from
+        # the network.
+        try:
+            return self._act(observation)
+        except Exception as e:  # noqa: BLE001
+            print(f"DoomAgent.act error, no-op this step: {e!r}", flush=True)
+            self.prev_action = np.zeros(NUM_ACTIONS, dtype=np.int8)
+            return self.prev_action
+
+    @torch.inference_mode()
+    def _act(self, observation: dict) -> np.ndarray:
         enc = preprocess_obs(observation, self.prev_action)
         if self.ego_map is not None:
             # same call order as training (training/rewards.py): no action before the first observation

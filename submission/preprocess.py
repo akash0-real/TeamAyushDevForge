@@ -129,12 +129,29 @@ class EgoMap:
         self.x = self.y = self.theta = 0.0
         self.turn_held = 0          # consecutive tics with a turn button down
         self.tic = 0                # game tics since reset
+        self.ox = self.oy = 0       # grid origin shift in cells (the grid scrolls to keep the agent inside)
         self.prev_vel = np.zeros(2, dtype=np.float32)
 
     def _cells(self, wx: np.ndarray, wy: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        cx = np.floor(wx / MAP_CELL_UNITS).astype(np.int64) + MAP_CELLS // 2
-        cy = np.floor(wy / MAP_CELL_UNITS).astype(np.int64) + MAP_CELLS // 2
+        cx = np.floor(wx / MAP_CELL_UNITS).astype(np.int64) + MAP_CELLS // 2 - self.ox
+        cy = np.floor(wy / MAP_CELL_UNITS).astype(np.int64) + MAP_CELLS // 2 - self.oy
         return np.clip(cx, 0, MAP_CELLS - 1), np.clip(cy, 0, MAP_CELLS - 1)
+
+    def _recenter(self) -> None:
+        """Scroll the grid when the agent gets within 1/4 of its edge (big maps): keep everything near the agent,
+        drop what falls off the far side. Shifts are multiples of MAP_COARSE so the coarse view stays aligned."""
+        n, k = MAP_CELLS, MAP_COARSE
+        cx = int(np.floor(self.x / MAP_CELL_UNITS)) + n // 2 - self.ox
+        cy = int(np.floor(self.y / MAP_CELL_UNITS)) + n // 2 - self.oy
+        if n // 4 <= cx < n - n // 4 and n // 4 <= cy < n - n // 4:
+            return
+        sx, sy = (cx - n // 2) // k * k, (cy - n // 2) // k * k
+        new = np.zeros_like(self.grid)
+        src = self.grid[:, max(sy, 0): n + min(sy, 0), max(sx, 0): n + min(sx, 0)]
+        new[:, max(-sy, 0): n - max(sy, 0), max(-sx, 0): n - max(sx, 0)] = src
+        self.grid = new
+        self.ox += sx
+        self.oy += sy
 
     def update(self, obs: dict, action: np.ndarray | None) -> None:
         """Advance the pose with the action just taken, then write this observation into the grid."""
@@ -158,6 +175,7 @@ class EgoMap:
             self.y += float(step[1])
             self.prev_vel = vel
 
+        self._recenter()
         g = self.grid
         px, py = self._cells(np.array([self.x]), np.array([self.y]))
         g[0, py, px] = 1.0
@@ -189,8 +207,8 @@ class EgoMap:
             u = MAP_CELL_UNITS * scale
             wx = self.x + (fwd * c - left * s) * u
             wy = self.y + (fwd * s + left * c) * u
-            cx = np.floor(wx / u).astype(np.int64) + grid.shape[2] // 2
-            cy = np.floor(wy / u).astype(np.int64) + grid.shape[1] // 2
+            cx = np.floor(wx / u).astype(np.int64) + grid.shape[2] // 2 - self.ox // scale
+            cy = np.floor(wy / u).astype(np.int64) + grid.shape[1] // 2 - self.oy // scale
             inside = (cx >= 0) & (cx < grid.shape[2]) & (cy >= 0) & (cy < grid.shape[1])
             crop = grid[:, np.clip(cy, 0, grid.shape[1] - 1), np.clip(cx, 0, grid.shape[2] - 1)]
             out.append(crop * inside)

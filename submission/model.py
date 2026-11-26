@@ -180,14 +180,15 @@ class DoomSpatialPolicy(nn.Module):
         flat_obs = {k: v.reshape(T * B, *v.shape[2:]) for k, v in obs_seq.items()}
         feats = self.encode(flat_obs).reshape(T, B, -1)
 
+        # dones[t] == 1 means an episode ended BEFORE step t (reset h before processing step t). Run one cuDNN GRU
+        # call per stretch between such steps instead of one call per step: identical math, far fewer launches.
+        cuts = (torch.nonzero(dones[1:].any(dim=1)).flatten() + 1).tolist()
         outputs = []
         h = h0
-        for t in range(T):
-            # dones[t] == 1 means episode ended BEFORE step t (reset h before processing step t)
-            mask = (1.0 - dones[t]).view(1, B, 1)
-            h = h * mask
-            out_t, h = self.gru(feats[t : t + 1], h)
-            outputs.append(out_t)
+        for a, b in zip([0] + cuts, cuts + [T]):
+            h = h * (1.0 - dones[a]).view(1, B, 1)
+            out_ab, h = self.gru(feats[a:b], h)
+            outputs.append(out_ab)
         out = self.post_norm(torch.cat(outputs, dim=0))  # (T, B, H)
         logits = list(torch.split(self.actor(out), FACTORED_DIMS, dim=-1))
         values = self.critic(out).squeeze(-1)  # (T, B)
