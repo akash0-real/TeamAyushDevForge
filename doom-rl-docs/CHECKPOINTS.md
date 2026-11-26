@@ -36,6 +36,7 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 23:50:** round 6, teammate 3's one-line fix applied (keep the last defined Phi through unreachable cells); `check_geodesic.py` OK. **Teammate 2:** pull this before you restart `t2w`.
 - **UPDATE 23:43: CORRECTION, masks OFF again (tag `shipped-v5`, same behaviour as v3).** Teammate 3 pooled both machines (EVAL_I3 §6b):
   +1.8 ± 3.1, no measurable gain; T4 −4.9 ± 4.7 (CUDA −15). I shipped v4 on one 5-seed run that didn't replicate; that's on me. The rules
   are now selectable (`--mask fist`, `--mask weapon`). **Bar back to v3: 42.30 (10 seeds).** Round 6 fixed: no per-step cap, so teleport loops
