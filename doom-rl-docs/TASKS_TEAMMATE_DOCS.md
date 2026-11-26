@@ -249,6 +249,30 @@ the EgoMap grid scrolls on big maps instead of smearing at the edge (your 2.2). 
 Also re-check the long 1,050-step run: the pose should end inside the grid now (`a.ego_map.ox` is non-zero after
 scrolling). Append the results to `AUDIT.md` under `## Re-check after 3cfa239` and commit `[t3] audit re-check`.
 
+### Task R — Continuous reviewer (every 30 min until 03:30 IST)
+You are now the team's code reviewer, so the core owner can spend its time on training. Use the token budget freely.
+Each cycle:
+1. `git pull --rebase && git lfs pull`. Review **every new commit** since your last cycle (`git log --oneline <last>..HEAD`,
+   `git show <hash>`), from all three of us (`[core]`, `[t2]`, `[t3]`).
+2. Check each against: `docs/RULES.md` (no hand-coded control in `submission/`, no downloaded weights, no network/disk
+   writes at eval), train/eval consistency (`training/rewards.py` and `submission/agent.py` must call `EgoMap` the same
+   way), crash risks, wrong numbers in docs, `.pt` files accidentally on `main`, anything that breaks
+   `docs/CONTRACT.md`.
+3. Run `uv run pytest tests/test_egomap.py tests/test_submission.py -q` and
+   `$env:PYTHONIOENCODING="utf-8"; uv run python validate.py --device cpu`. Record pass/fail + p50/p99.
+4. Append a block to `AUDIT.md` under `## Continuous review log`:
+   `### HH:MM — commits <a>..<b>` with findings (`BLOCKER` / `RISK` / `NIT`, `file:line`, one sentence each) and test results.
+5. Commit `[t3] review HH:MM`. **Tell your human immediately about any BLOCKER.** Suggest fixes in the text, but
+   don't edit code; the core owner fixes it.
+
+### Task R2 — Independent check of candidate checkpoints
+When a new `.pt` appears on the `candidates` branch (`git fetch origin && git ls-tree -r --name-only origin/candidates`),
+check it out into a separate folder (`git worktree add ../cand origin/candidates`, then `git lfs pull` inside it) and run
+the 5-seed eval you did in Task E on it:
+`uv run python training/eval_zeroshot.py --weights ../cand/<file>.pt --name i3_<file> --seeds 0 1 2 3 4 --device cpu`.
+Post MEAN + T0–T4 in `EVAL_I3.md` and commit `[t3] candidate check <file>`. Your 5-seed numbers are the tie-breaker for the
+final pick.
+
 ### Task F — 3-minute live-demo script, `doom-rl-docs/DEMO_SCRIPT.md` (~30 min)
 For the review (judges may ask for a live demo). Use only facts from section 4 and `doom-rl-docs/REVIEW_CHEATSHEET.md`.
 - 0:00–0:30 pitch; 0:30–1:30 what's on screen (the demo video: left game view, right the agent's memory map;

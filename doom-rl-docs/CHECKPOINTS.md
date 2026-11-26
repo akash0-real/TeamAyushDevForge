@@ -9,6 +9,10 @@ Unless noted, scores use the current eval (`[t2]` version: generated maps at 2,1
 
 ## Team status board (updated 19:55 IST)
 
+**Roles from 20:15 IST:** Core = orchestrator (lessons/rewards, final pick, validation, shipping) + 2 training runs.
+Teammate 2 = **primary trainer** (fastest machine, Linux, ~974 steps/s), hands candidates over via the `candidates`
+branch (Task H). Teammate 3 = **continuous reviewer**, every 30 min + independent 5-seed checks of candidates (Tasks R, R2).
+
 | Who | Doing now | Next |
 |---|---|---|
 | Core (i7 + RTX 4050) | **Two** memory-grid runs in parallel (run 1: 20 envs, run 2: 16 envs, different seeds). PPO update 3 s → 0.6 s; the single-threaded game loop is the remaining limit, so a 2nd process uses the idle CPU/GPU/RAM | Score new checkpoints every ~40 min; ship only if it beats the shipped one incl. real maps |

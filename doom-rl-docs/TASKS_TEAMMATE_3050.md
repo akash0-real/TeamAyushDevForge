@@ -181,6 +181,40 @@ Your plain seed-7 run scores 9.7 vs 27.7 for the shipped memory-grid model, so c
 6. If a `t2map` checkpoint beats the shipped score in `doom-rl-docs/CHECKPOINTS.md` (mean **and** T0), tell your human
    and send the `.pt` file to the core owner (not via git `main`). The core owner validates and ships it.
 
+## 5b3. Task H — You are now the PRIMARY trainer (replaces Task G; run until 03:00 IST)
+
+Your Linux laptop runs ~974 env steps/s, about 3× one Windows run, and your `egomap_s77_best` (31.0) is level with the
+shipped agent (31.2). From now on your machine trains our main candidate. The core owner still picks and ships the
+final weights. Use the token budget freely: check on the run often.
+
+1. **Pull first:** `git pull --rebase && git lfs pull`. You need commit `3cfa239` or later. It changed the
+   EgoMap (the grid now *scrolls* on big maps) and the trainer (torch-free workers, faster GRU update). Training must
+   use the same EgoMap code as `submission/` or the model sees different memory maps than at evaluation.
+2. **Restart your EgoMap run from its best weights** with the new code (keep your settings, they're fast):
+   ```bash
+   cp training/checkpoints/egomap_s77_best.pt training/checkpoints/t2_h_start.pt
+   OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python -u training/train_ppo.py --use-map \
+     --resume training/checkpoints/t2_h_start.pt --lr 1.5e-4 --num-envs 24 --rollout-steps 256 --num-minibatches 2 \
+     --swap-every 8 --seed 78 --total-steps 30000000 --save-path training/checkpoints/t2h.pt \
+     --maps <your 20 compact Freedoom maps + two_rooms> gen3 gen3 gen3 gen3 gen3 gen3 gen4 gen4 gen4 gen4 \
+     2>&1 | tee training/checkpoints/t2h.log
+   ```
+   Adding the `gen3`/`gen4` slots keeps the key → locked door → backtrack skill alive (your run is our real-map
+   specialist; the core owner's runs are generator-heavy). **Never** add MAP25–MAP32.
+3. **Use the whole machine.** Every ~15 min check `htop`, `free -h`, `nvidia-smi`. If CPU < 85% and ≥ 3 GB RAM is free,
+   start a **second** run from the same start weights with `--seed 79 --num-envs 12 --save-path training/checkpoints/t2h2.pt`
+   (log `t2h2.log`). Keep ≥ 1.5 GB RAM free at all times; if it drops below, stop the second run first.
+4. **Every 30 min:** evaluate the newest `t2h*.pt` and `*.best.pt` with `--seeds 0 1 2`, add rows to `RESULTS.md`,
+   push `[t2] results HHMM`.
+5. **Hand candidates to the core owner** when a checkpoint scores **mean ≥ 31.2 and T0 ≥ 6.9**. Never put `.pt`
+   files on `main`; use the `candidates` branch (Git LFS):
+   ```bash
+   git fetch origin && git worktree add -B candidates ../cand origin/candidates 2>/dev/null || git worktree add -b candidates ../cand
+   cp training/checkpoints/t2h.best.pt ../cand/t2h_HHMM_score<SCORE>.pt
+   cd ../cand && git add *.pt && git commit -m "[t2] candidate HHMM score <SCORE> T0 <T0>" && git push -u origin candidates && cd -
+   ```
+   Then tell your human. The core owner validates it on a clean clone and ships it if it wins.
+
 ## 5c. Task F — Final Linux validation of the shipped agent (≈ 03:30 IST)
 
 Team target: **everything finished by 04:00 IST** (04:00–05:00 is buffer). Your Linux machine is the only one that
