@@ -29,7 +29,9 @@ from rewards import ShapedDoomEnv
 IWAD = os.path.join(os.path.dirname(vd.__file__), "freedoom2.wad")
 
 # Freedoom 2 split: MAP01-24 train, MAP25-32 are the holdout (training/eval_zeroshot.py). Never train on 25-32.
-DEFAULT_TRAIN_MAPS = ["two_rooms"] + [f"MAP{i:02d}" for i in range(1, 25)]
+# "genN" = a freshly generated tier-N map on every map load (maps/gen_maps.py). 48 gen tokens ~= 2/3 of loads:
+# real Freedoom maps step ~3.4x slower (12 envs: 358 vs 1231 env steps/s), so they get 1/3 of the time.
+DEFAULT_TRAIN_MAPS = ["two_rooms"] + [f"MAP{i:02d}" for i in range(1, 25)] + ["gen1", "gen2", "gen3", "gen4"] * 12
 
 
 def parse_map_specs(spec_list: list[str], episode_ticks: int) -> list[tuple[str, str, int]]:
@@ -37,6 +39,8 @@ def parse_map_specs(spec_list: list[str], episode_ticks: int) -> list[tuple[str,
     for item in spec_list:
         if item == "two_rooms":
             out.append((str(ROOT / "maps" / "two_rooms.wad"), "MAP01", episode_ticks))
+        elif item in ("gen1", "gen2", "gen3", "gen4"):
+            out.append((item, "MAP01", episode_ticks))
         elif ":" in item:
             wad, m = item.split(":", 1)
             p = Path(wad) if Path(wad).is_absolute() else ROOT / wad
@@ -256,11 +260,16 @@ def main() -> None:
                     doors = float(np.mean([s["doors"] for s in window]))
                     keys = float(np.mean([s["keys"] for s in window]))
                     cells = float(np.mean([s["cells"] for s in window]))
+                    # exit rate per map tier (0 = real Freedoom/template maps) over the last 200 episodes
+                    by_tier = {}
+                    for s in recent_stats[-200:]:
+                        by_tier.setdefault(int(s.get("tier", 0)), []).append(s["exit_reached"])
+                    tiers = " ".join(f"T{t}:{100*np.mean(v):.0f}%/{len(v)}" for t, v in sorted(by_tier.items()))
                     print(
                         f"upd {update:4d}/{num_updates} | step {global_step:8d} | fps {fps:6.0f} | "
                         f"ret {avg_ret:6.2f} | exit {exit_r*100:4.0f}% | kills {kills:4.1f} | "
                         f"doors {doors:3.1f} | keys {keys:3.1f} | cells {cells:4.1f} | "
-                        f"ent {np.mean(ent_losses):.2f}",
+                        f"ent {np.mean(ent_losses):.2f} | exit-by-tier {tiers}",
                         flush=True,
                     )
                     if avg_ret > best_return:

@@ -7,6 +7,7 @@ Never imported by `submission/agent.py`.
 
 from __future__ import annotations
 
+import os
 import random
 import sys
 from pathlib import Path
@@ -26,8 +27,15 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT / "submission") not in sys.path:
     sys.path.insert(0, str(ROOT / "submission"))
 
+if str(ROOT / "maps") not in sys.path:
+    sys.path.insert(0, str(ROOT / "maps"))
+
 from doom_env import make_env
+from gen_maps import HOLDOUT_SEED_BASE, write_map
 from preprocess import NUM_ACTIONS, factored_to_multibinary, preprocess_obs
+
+GEN_CACHE = ROOT / "training" / "gen_cache"
+GEN_CACHE.mkdir(parents=True, exist_ok=True)
 
 
 class ShapedDoomEnv(gym.Env):
@@ -75,16 +83,22 @@ class ShapedDoomEnv(gym.Env):
         self._stats: dict[str, float] = {}
 
     def _ensure_env(self) -> None:
-        need_swap = self._env is None or (len(self.map_specs) > 1 and self._ep_on_cur >= self.swap_every)
+        multi = len(self.map_specs) > 1 or self.map_specs[0][0].startswith("gen")
+        need_swap = self._env is None or (multi and self._ep_on_cur >= self.swap_every)
         if not need_swap:
             return
         spec = self.rng.choice(self.map_specs)
-        if self._env is not None and spec == self._cur_spec:
+        if self._env is not None and spec == self._cur_spec and not spec[0].startswith("gen"):
             self._ep_on_cur = 0
             return
         if self._env is not None:
             self._env.close()
+            self._env = None
         wad, map_name, ticks = spec
+        self._tier = int(wad[3]) if wad.startswith("gen") else 0  # 0 = real map (Freedoom / template)
+        if self._tier:  # brand-new procedural map; seeds < 1e9 (>= 1e9 reserved for holdout)
+            wad = str(GEN_CACHE / f"{os.getpid()}.wad")
+            write_map(self._tier, self.rng.randrange(HOLDOUT_SEED_BASE), wad)
         ticks = ticks or self.rng.randint(2100, 4200)  # evaluation caps vary per map in this range
         self._env = make_env(wad, map_name, episode_ticks=ticks, render_buffers=False)
         self._cur_spec = spec
@@ -117,6 +131,7 @@ class ShapedDoomEnv(gym.Env):
             "damage_taken": 0.0,
             "steps": 0.0,
             "return": 0.0,
+            "tier": float(self._tier),
         }
         return preprocess_obs(raw_obs, self._prev_action), info
 
