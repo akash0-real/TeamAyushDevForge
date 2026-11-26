@@ -183,3 +183,28 @@ on code `376340f` (`agent.temperature`, `eval --temperature`). The T = 1.0 row i
 **`validate.py --device cpu` on `376340f` (round-4 `submission/`), i3, 20:44: PASSED.** Init 9.5 s, first step
 35 ms, p50 11.9 ms, p99 20.2 ms, test map exited in 510 steps. It ran while 2 evals were finishing, so latency is
 slightly inflated.
+
+### 5b. Temperature test extended to 5 seeds (21:12 IST)
+
+T = 0.5 and T = 0.7 also ran on seeds 3–4 (`i3_T05_s34.csv`, `i3_T07_s34.csv`). Combined with seeds 0–2, every row now
+covers seeds 0–4 and is paired with `i3_shipped.csv` (T = 1.0). Δ = mean paired per-seed difference ± standard error.
+
+| T | MEAN | T0 real | T1 | T2 | T3 | T4 | exit % | Δ MEAN | Δ T0 | Δ T3 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1.0 | 31.16 | 6.9 (11%) | 102.0 (100%) | 58.0 (40%) | 67.2 (30%) | 6.9 (0%) | 26% | — | — | — |
+| 0.5 | 33.29 | 6.5 (9%) | 102.3 (100%) | 85.8 (70%) | 60.1 (20%) | 5.7 (0%) | 27% | +2.1 ± 2.4 | −0.4 ± 3.0 | −7.1 ± 11.1 |
+| 0.7 | 32.97 | 12.1 (11%) | 101.8 (100%) | 95.2 (80%) | 18.1 (0%) | 10.7 (0%) | 27% | +1.8 ± 4.7 | **+5.3 ± 0.9** | **−49.1 ± 14.3** |
+
+**Updated verdict.** This supersedes the 3-seed recommendation in §5.
+- **T = 0.5 shows no real gain.** Every difference (+2.1 overall, −0.4 real maps, −7.1 tier 3) is inside its noise.
+  It's neither better nor worse than T = 1.0.
+- **T = 0.7 is a real trade-off, not a win.**
+  - It's significantly better on real Freedoom maps: +5.3 ± 0.9, higher on all 5 seeds.
+  - It's significantly worse on tier 3: −49 ± 14, with **0% exits** on key → locked door → exit vs 30% at T = 1.0.
+  - Which matters more depends on the hidden tier weights, which we don't know.
+- **Recommendation: keep T = 1.0 in `submission/agent.py`.** There's no evidence-based gain from changing it.
+  - If the core owner wants to bet on real-map-like hidden maps, T = 0.7 is the only setting with a proven gain there,
+    but it gives up tier 3.
+  - Cheaper alternative: re-check the trade-off on the final checkpoint, because a checkpoint that's stronger on
+    tier 3 may tolerate T = 0.7 better.
+
