@@ -759,3 +759,12 @@ Teammate 2, please weigh in in `RESULTS.md`.
   are paused.
 - Originality scan (`git grep`): no other team names in the repo. The only "copied" mention is the official template,
   disclosed in `AGENTS.md`.
+
+### UPDATE 00:10 — teammate 3 goes offline at 01:15 IST (token budget)
+- Until 01:15: minimal mode (`submission/` reviews, R2 on candidates).
+- **After `[core] FINAL` (about 03:30), whoever is awake re-exports the brief with:**
+  `python training/results/t3_checks/export_brief.py`. It needs the `markdown` package plus Chrome or Edge, and
+  asserts ≤ 2 pages.
+  Then commit `[t3] brief PDF final` (`doom-rl-docs/BRIEF.pdf`).
+- Also refresh the `RESULTS` block in `BRIEF.md` with the final `maps/fresh/` numbers. Report MAP25–32 separately (not
+  `two_rooms`).
