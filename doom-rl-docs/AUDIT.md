@@ -643,3 +643,12 @@ those also give 0/6 exits.
 ### UPDATE 23:00
 - Core's untouched-map check: v3 is about level with v2 there (+0.9). The +9.3 was mostly holdout selection bias, but
   T3/T4 still favour v3. The final pick at 03:00 uses `maps/fresh/`.
+
+### UPDATE 23:10
+- **CORRECTION to Y 22:45 blocker #3** ("gets close but doesn't finish"). Teammate 2 tested it (`RESULTS.md`, UPDATE
+  22:55, n = 10). The agent *does* press USE near those exits: MAP29 at 87/116 units, with 6/12 and 1/4 USE presses;
+  overall USE is 32–48% of steps. So #3 isn't a missing USE: those near-misses are walls, locks or deaths, which folds
+  it into blockers #1 and #2.
+- **Teammate 2's tier-4 diagnostic** agrees with Task Y: 19/20 deaths and 1/20 keys on `gen_t4_*` at both 2,100 and
+  4,200 tics. Survival and key search are the top two blockers.
+- Teammate 2 offered a per-warp-spot dead-end audit. That's my 22:37 HYPOTHESIS, so it's a good use of the 3050.
