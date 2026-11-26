@@ -7,8 +7,10 @@ Never imported by `submission/agent.py`.
 
 from __future__ import annotations
 
+import math
 import os
 import random
+import struct
 import sys
 from pathlib import Path
 
@@ -31,11 +33,39 @@ if str(ROOT / "maps") not in sys.path:
     sys.path.insert(0, str(ROOT / "maps"))
 
 from doom_env import make_env
+from doom_env.wad import map_lumps, read_wad
+from doom_env.wrapper import IWAD
 from gen_maps import HOLDOUT_SEED_BASE, write_map
 from preprocess import MAP_CHANNELS, MAP_CROP, NUM_ACTIONS, EgoMap, factored_to_multibinary, preprocess_obs
 
 GEN_CACHE = ROOT / "training" / "gen_cache"
 GEN_CACHE.mkdir(parents=True, exist_ok=True)
+
+# Reverse curriculum (training only): on real Freedoom maps, sometimes start the player near the exit and move the
+# start further back as it succeeds, so the agent experiences finishing big maps it can't yet cross from the start.
+WARP_PROB = 0.5
+EXIT_SPECIALS = (11, 51, 52, 124, 197, 198)  # Doom-format exit line specials (switch / walk-over / shoot)
+_EXIT_SPOTS: dict[str, tuple[list, list]] = {}
+
+
+def exit_spots(map_name: str) -> tuple[list, list]:
+    """(exit line midpoints, spawn spots sorted by distance to the nearest exit) for an IWAD map.
+    Spawn spots are item and player-start positions: always on a reachable floor, never inside a monster."""
+    if map_name not in _EXIT_SPOTS:
+        L = map_lumps(read_wad(IWAD), map_name)
+        vx = [struct.unpack_from("<hh", L["VERTEXES"], i) for i in range(0, len(L["VERTEXES"]), 4)]
+        exits = []
+        for i in range(0, len(L["LINEDEFS"]), 14):
+            v1, v2, _fl, sp, _tag, _f, _b = struct.unpack_from("<HHHHhHH", L["LINEDEFS"], i)
+            if sp in EXIT_SPECIALS:
+                exits.append(((vx[v1][0] + vx[v2][0]) / 2, (vx[v1][1] + vx[v2][1]) / 2))
+        spots = []
+        for i in range(0, len(L["THINGS"]), 10):
+            x, y, _a, t, _f = struct.unpack_from("<hhhhh", L["THINGS"], i)
+            if exits and (2000 <= t <= 2049 or t in (1, 8, 11)):
+                spots.append((min(math.hypot(x - ex, y - ey) for ex, ey in exits), x, y))
+        _EXIT_SPOTS[map_name] = (exits, sorted(spots))
+    return _EXIT_SPOTS[map_name]
 
 
 class ShapedDoomEnv(gym.Env):
@@ -60,6 +90,8 @@ class ShapedDoomEnv(gym.Env):
         self.rng = random.Random(seed)
 
         self._env = None
+        self._warp_radius: dict[str, float] = {}  # per real map: max start distance from the exit (grows on success)
+        self._warped = False
         self._cur_spec: tuple[str, str, int] | None = None
         self._ep_on_cur = 0
         self._ep_count = 0
@@ -115,6 +147,24 @@ class ShapedDoomEnv(gym.Env):
         self._ep_count += 1
         ep_seed = self.rng.randint(0, 2**30 - 1)
         raw_obs, info = self._env.reset(seed=ep_seed)
+        self._warped = False
+        wad, map_name, _ = self._cur_spec
+        if wad == IWAD and self.rng.random() < WARP_PROB:
+            _exits, spots = exit_spots(map_name)
+            if spots:
+                radius = self._warp_radius.setdefault(map_name, 768.0)
+                near = [sp for sp in spots if sp[0] <= radius] or spots[:3]
+                _d, x, y = self.rng.choice(near)
+                g = self._env._game
+                tic0 = int(info["tic"])
+                g.send_game_command("sv_cheats 1")
+                g.send_game_command(f"warp {x} {y}")
+                raw_obs, _, term, trunc, info = self._env.step(np.zeros(NUM_ACTIONS, dtype=np.int8))  # 1 no-op step
+                if term or trunc:  # shouldn't happen; fall back to a normal start
+                    raw_obs, info = self._env.reset(seed=ep_seed)
+                else:
+                    self._warped = True
+                    self._warp_tics = int(info["tic"]) - tic0
         ps = self._env.privileged_state()
 
         self._prev_action = np.zeros(NUM_ACTIONS, dtype=np.int8)
@@ -135,11 +185,13 @@ class ShapedDoomEnv(gym.Env):
             "damage_taken": 0.0,
             "steps": 0.0,
             "return": 0.0,
-            "tier": float(self._tier),
+            "tier": 5.0 if self._warped else float(self._tier),  # T5 in the log = real map, started near the exit
         }
         if self.ego_map is not None:
             self.ego_map.reset()
             self.ego_map.update(raw_obs, None)
+            if self._warped:
+                self.ego_map.tic = self._warp_tics  # the no-op step used game tics; keep the turn dead-time model exact
         return self._encode(raw_obs), info
 
     def _encode(self, raw_obs: dict) -> dict:
@@ -236,6 +288,10 @@ class ShapedDoomEnv(gym.Env):
         self._prev_action = mb_action
 
         if terminated or truncated:
+            if self._warped:  # move the start further back after a success, closer after a failure
+                m = self._cur_spec[1]
+                r = self._warp_radius[m]
+                self._warp_radius[m] = min(r * 1.25, 12000.0) if ps["exit_reached"] else max(r * 0.95, 512.0)
             info = dict(info)
             info["episode_stats"] = dict(self._stats)
             info["map"] = f"{Path(self._cur_spec[0]).name}:{self._cur_spec[1]}"
