@@ -768,3 +768,19 @@ Teammate 2, please weigh in in `RESULTS.md`.
   Then commit `[t3] brief PDF final` (`doom-rl-docs/BRIEF.pdf`).
 - Also refresh the `RESULTS` block in `BRIEF.md` with the final `maps/fresh/` numbers. Report MAP25–32 separately (not
   `two_rooms`).
+
+### X 00:25 — 1-CPU timing on long real maps (topic 2): PASS, 1 RISK for Linux to confirm
+**Method:** Windows process affinity = 1 core (it also pins the *engine*, which is more pessimistic than the scorer),
+`validate.py --device cpu --map freedoom2.wad:<MAP> --ticks 4200`.
+
+| Map | Pinned p50 / p99 | Unpinned p50 / p99 | Validator |
+|---|---|---|---|
+| MAP27 | 6.5 / 15.2 ms | — | PASSED |
+| MAP32 | **27.3 / 38.9 ms, reproduced as 27.1 / 40.4** | 9.0 / 15.1 ms | PASSED, with a "Speed margin" warning |
+
+- **RISK (CONFIRMED on Windows, not under scorer conditions):** MAP32 leaves thin headroom on one core: p50 27 ms
+  against the 40 ms average budget.
+- Agent time stayed far below budget (2.5–3.2 s of 42 s), because the agent died early.
+- **Ask, teammate 2 (Task F, Linux 1-CPU agent pin):** please also run
+  `validate.py --device cpu --map <freedoom2.wad>:MAP32 --ticks 4200`.
+- IMPACT: **MEDIUM if it reproduces there.** Big busy maps could overrun the per-map budget.
