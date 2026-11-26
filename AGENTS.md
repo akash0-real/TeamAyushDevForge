@@ -18,24 +18,25 @@ The agent must play **unseen Freedoom 2 maps zero-shot** across 4 difficulty tie
 ---
 
 ## 2. Hard Rules (NEVER VIOLATE)
-1. **No Hardcoded Control Logic in `submission/agent.py`:** No rule trees (`if enemy: shoot`), no classical pathfinders (`A*`, `Dijkstra`), no trigonometry aimbots (`atan2`). Decisions must come from trained neural parameters.
+1. **No Hardcoded Control Logic in `submission/agent.py`:** No rule trees (`if enemy: shoot`), no classical pathfinders or planners (`A*`, `Dijkstra`, BFS over our memory grid), no trigonometry aimbots (`atan2`). Decisions must come from trained neural parameters. Allowed: observation preprocessing/encoding, action masking from observation fields, frame stacking, learned memory (so `EgoLocalMap` is fine as long as it is only an *input* to the network, never used to pick actions).
 2. **No Pretrained External Models / Vanilla SB3:** Do not download pretrained ViZDoom weights from Hugging Face/GitHub, and do not submit an off-the-shelf Stable-Baselines3 PPO script. Build our custom PyTorch architecture and custom Recurrent PPO loop cleanly.
 3. **Engine Rules:** You MAY modify rewards/curriculum/maps during *training* (e.g., dense exploration reward using engine coords). At *evaluation*, the agent runs strictly on the unmodified DOOM engine and ONLY sees the `observation` dictionary passed to `act(obs)`.
 4. **Submission Limits:**
-   - Public GitHub repo created from `devforge-doom-template`, total size **≤ 1 GB** (weights via Git LFS).
-   - **No Dockerfile** in submission (runs in organizers' Python 3.13 base image).
-   - Eval sandbox: RTX 3090, **≤ 2 GB VRAM**, **≤ 8 GB RAM**, **1 CPU thread**, offline, read-only repo.
-   - Timeouts: 60s `__init__`, 10s `reset()`, 10s first `act()`, 5s any other `act()`, **~40 ms/step average**.
-   - Must pass `python validate.py` before any checkpoint is considered valid.
+   - Public GitHub repo **created during the hackathon from [`Reinforce-SST/devforge-doom-template`](https://github.com/Reinforce-SST/devforge-doom-template)** ("Use this template" on GitHub), total size **≤ 1 GB** (weights via Git LFS). The template files were copied into this repo (commit `35a32ee`) rather than generated with GitHub's template button; contents match the official template exactly.
+   - Scorer runs the organizers' Python 3.13 image; don't rely on any Dockerfile of ours. Keep the template's own `Dockerfile` — `validate.py --docker` uses it.
+   - Eval sandbox: RTX 3090, **≤ 2 GB VRAM**, **≤ 8 GB RAM** (incl. `/tmp`), **1 CPU thread**, offline, read-only repo.
+   - Timeouts: 60s `__init__`, 10s `reset()`, 10s first `act()`, 5s any other `act()`, plus a **per-map compute budget of 40 ms × decision steps** (e.g. 21 s on a 2,100-tick map). Source of truth: `env/doom_env/limits.py`.
+   - Must pass `python validate.py` (ideally `--docker`) before any checkpoint is considered valid.
 
 ---
 
 ## 3. Target Repository Layout (Inside `devforge-doom-template`)
 ```text
 devforge-doom-template/
-├── docs/
-│   └── CONTRACT.md                 # Official obs/action contract (READ FIRST once cloned)
-├── env/doom_env/                   # Official wrapper & limits.py (DO NOT MODIFY FOR EVAL)
+├── docs/                           # CONTRACT.md (obs/action), EVALUATION.md, RULES.md, SUBMISSION.md
+├── env/doom_env/                   # Official wrapper, spaces.py, limits.py (scorer ignores our env/ folder)
+├── tests/fixtures/                 # 13 tiny official test WADs (good smoke-test maps)
+├── Dockerfile, docker/             # Official image recipe for `validate.py --docker` (keep as-is)
 ├── submission/
 │   ├── agent.py                    # DoomAgent entrypoint (__init__, reset, act)
 │   ├── model.py                    # Custom Ray1DCNN + EntityAttention + GRU + SpatialMemory
@@ -70,6 +71,6 @@ Read the specific file for your task:
 ---
 
 ## 5. First Step for Any Agent Starting Now
-1. Check if `devforge-doom-template` is cloned. If yes, read `docs/CONTRACT.md`, `env/doom_env/limits.py`, and `validate.py` **before writing any code** so tensor shapes and action indices match 100%.
+1. Check if the team repo (created from `devforge-doom-template`) is cloned. If yes, read `docs/CONTRACT.md`, `env/doom_env/spaces.py`, `env/doom_env/limits.py`, and `validate.py` **before writing any code** so tensor shapes and action indices match 100%. [01_PROBLEM_AND_CONTRACT.md](./doom-rl-docs/01_PROBLEM_AND_CONTRACT.md) already mirrors contract `1.0.0-draft`; re-check if `doom_env.CONTRACT_VERSION` changes.
 2. Run `python validate.py` on the baseline template to confirm the local environment works.
-3. Follow the build order in [05_EXECUTION_AND_HARDWARE.md](./05_EXECUTION_AND_HARDWARE.md).
+3. Follow the build order in [05_EXECUTION_AND_HARDWARE.md](./doom-rl-docs/05_EXECUTION_AND_HARDWARE.md).

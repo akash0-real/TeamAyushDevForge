@@ -13,6 +13,14 @@ from pathlib import Path
 
 import gymnasium as gym
 import numpy as np
+import vizdoom as vd
+
+if sys.platform == "win32":
+    # Windows' default 15.6 ms timer makes several ViZDoom games stall each other (measured 51 -> 380 steps/s
+    # for 4 games in one process). Every env worker imports this module, so each process gets 1 ms timers.
+    import ctypes
+
+    ctypes.windll.winmm.timeBeginPeriod(1)
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT / "submission") not in sys.path:
@@ -77,6 +85,7 @@ class ShapedDoomEnv(gym.Env):
         if self._env is not None:
             self._env.close()
         wad, map_name, ticks = spec
+        ticks = ticks or self.rng.randint(2100, 4200)  # evaluation caps vary per map in this range
         self._env = make_env(wad, map_name, episode_ticks=ticks, render_buffers=False)
         self._cur_spec = spec
         self._ep_on_cur = 0
@@ -93,6 +102,7 @@ class ShapedDoomEnv(gym.Env):
 
         self._prev_action = np.zeros(NUM_ACTIONS, dtype=np.int8)
         self._prev_ps = ps
+        self._prev_dmg_dealt = self._damage_dealt()
         self._visited_cells = {(int(ps["x"] // self.cell_size), int(ps["y"] // self.cell_size))}
         self._opened_doors = set()
         self._init_ceil = None if ps["sector_ceiling"] is None else ps["sector_ceiling"].copy()
@@ -110,6 +120,10 @@ class ShapedDoomEnv(gym.Env):
         }
         return preprocess_obs(raw_obs, self._prev_action), info
 
+    def _damage_dealt(self) -> float:
+        # Training-only: privileged_state() has no damage-dealt field, so read the engine counter directly.
+        return float(self._env._game.get_game_variable(vd.GameVariable.DAMAGECOUNT))
+
     def step(self, action):
         mb_action = factored_to_multibinary(action)
         raw_obs, _, terminated, truncated, info = self._env.step(mb_action)
@@ -118,11 +132,11 @@ class ShapedDoomEnv(gym.Env):
 
         reward = 0.0
 
-        # 1. Exploration: unique 64x64 grid cells visited (capped at 200 cells/ep)
+        # 1. Exploration: unique 64x64 grid cells visited (capped at 600 cells/ep -> max +24, below the exit)
         cell = (int(ps["x"] // self.cell_size), int(ps["y"] // self.cell_size))
-        if cell not in self._visited_cells and len(self._visited_cells) < 200:
+        if cell not in self._visited_cells and len(self._visited_cells) < 600:
             self._visited_cells.add(cell)
-            reward += 0.08
+            reward += 0.04
             self._stats["cells"] += 1.0
 
         # 2. Door opening & locked door unlocking
@@ -157,6 +171,17 @@ class ShapedDoomEnv(gym.Env):
         if new_items > 0:
             reward += 0.15 * new_items
 
+        # Damage dealt to enemies: dense aiming signal (imp = 60 hp -> +0.6 total)
+        if not (terminated or truncated):  # engine state is gone after the episode ends
+            dealt = self._damage_dealt()
+            reward += 0.01 * max(0.0, dealt - self._prev_dmg_dealt)
+            self._prev_dmg_dealt = dealt
+
+        # Health pickups while hurt (the scorer's exit bonus counts remaining health)
+        hp_gain = float(ps["health"] - prev["health"])
+        if hp_gain > 0.0 and prev["health"] < 100.0:
+            reward += 0.01 * hp_gain
+
         dmg = max(0.0, float(ps["damage_taken"] - prev["damage_taken"]))
         if dmg > 0.0:
             reward -= 0.015 * dmg
@@ -165,7 +190,7 @@ class ShapedDoomEnv(gym.Env):
         # 5. Terminal outcomes (no negative step penalty -> prevents early suicide)
         if ps["exit_reached"]:
             hp_bonus = 2.0 * max(0.0, min(1.0, ps["health"] / 100.0))
-            reward += 15.0 + hp_bonus
+            reward += 25.0 + hp_bonus  # exit is the largest score category: keep it above max exploration (+24)
             self._stats["exit_reached"] = 1.0
         elif ps["dead"]:
             reward -= 3.0

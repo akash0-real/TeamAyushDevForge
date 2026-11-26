@@ -14,11 +14,13 @@ Interconnecting a 3050 laptop and 4050 laptop over LAN/Wi-Fi adds huge sync over
 ## 2. Step-by-Step Build Order
 
 ### Phase 1: Contract & Skeleton (First 60–90 mins)
-- [ ] Clone `devforge-doom-template` and read `docs/CONTRACT.md` + `env/doom_env/limits.py`.
+- [x] Template files from [`Reinforce-SST/devforge-doom-template`](https://github.com/Reinforce-SST/devforge-doom-template) copied into `TeamAyushDevForge` (commit `35a32ee`). Keep the repo public.
+- [ ] Read `docs/CONTRACT.md`, `docs/EVALUATION.md`, `docs/RULES.md`, `env/doom_env/spaces.py`, `env/doom_env/limits.py`.
 - [ ] Run `python validate.py` on the untouched template to verify ViZDoom + Python 3.13 environment.
-- [ ] Inspect exact keys/shapes of `observation_space` and `action_space`.
+- [ ] Confirm `observation_space`/`action_space` still match doc 01 (contract `1.0.0-draft`).
 - [ ] Implement `submission/preprocess.py`, `submission/model.py`, and `submission/agent.py` (untrained random weights).
-- [ ] Re-run `python validate.py` — verify **0 errors**, **< 10 ms/step**, **< 400 MB VRAM**.
+- [ ] Re-run `python validate.py` — verify **0 errors**, **< 5 ms/step**, **< 400 MB VRAM**.
+- [ ] Calibrate odometry: turn table + velocity integration vs `privileged_state()` angle/x/y (see doc 02, Module 4).
 
 ### Phase 2: Map Factory & Zero-Shot Eval (Parallel with Phase 1)
 - [ ] Build `maps/gen_udmf.py` (Tiers 1–3) + `maps/verify_wads.py` (confirms every WAD loads cleanly in `doom_env`).
@@ -38,8 +40,9 @@ Interconnecting a 3050 laptop and 4050 laptop over LAN/Wi-Fi adds huge sync over
 - [ ] Save best zero-shot checkpoint into `submission/weights/best_agent.pt` (tracked via Git LFS).
 
 ### Phase 5: Final Verification & 2-Page Project Brief PDF
-- [ ] Run `python validate.py` on the final `submission/` with `torch.set_num_threads(1)` and verify all latency/memory limits.
-- [ ] Confirm repo size (including Git LFS) is **≤ 1 GB**, no Dockerfile added, all training code included in repo.
+- [ ] Run `python validate.py --docker` on the final **committed and pushed** `submission/` with `torch.set_num_threads(1)` and verify all latency/memory limits. The validator fails if anything under `submission/` is untracked, ignored or uncommitted.
+- [ ] `git lfs ls-files` lists the weights; repo size (including Git LFS) is **≤ 1 GB**; template `Dockerfile` untouched; all training code included in repo.
+- [ ] Evaluated code = last commit on the default branch **at the deadline**; push the final checkpoint well before.
 - [ ] Write the **2-Page Project Brief PDF**:
   - **Page 1:** USP (*Ego-Centric Spatial Memory + Entity Attention + PLR Procedural Curriculum*), full architecture diagram, observation encoding, and how `EgoLocalMap + GRU` solves Tier 3 backtracking without global coordinates.
   - **Page 2:** Training pipeline (BC warm-start + Custom Recurrent PPO + RND + PLR), procedural map factory (UDMF + Obsidian), zero-shot benchmark table across Tiers 1–4, latency/VRAM footprint, and failure mode analysis.

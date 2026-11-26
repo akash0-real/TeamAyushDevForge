@@ -28,12 +28,8 @@ from rewards import ShapedDoomEnv
 
 IWAD = os.path.join(os.path.dirname(vd.__file__), "freedoom2.wad")
 
-# Default Freedoom 2 train/holdout split (verified <= 2048 sectors at runtime)
-DEFAULT_TRAIN_MAPS = [
-    "two_rooms",
-    "MAP01", "MAP02", "MAP03", "MAP04", "MAP05", "MAP06", "MAP07", "MAP08",
-    "MAP09", "MAP10", "MAP11", "MAP12", "MAP13", "MAP14", "MAP15", "MAP16",
-]
+# Freedoom 2 split: MAP01-24 train, MAP25-32 are the holdout (training/eval_zeroshot.py). Never train on 25-32.
+DEFAULT_TRAIN_MAPS = ["two_rooms"] + [f"MAP{i:02d}" for i in range(1, 25)]
 
 
 def parse_map_specs(spec_list: list[str], episode_ticks: int) -> list[tuple[str, str, int]]:
@@ -71,12 +67,12 @@ def obs_to_torch(obs_dict: dict[str, np.ndarray], device: torch.device) -> dict[
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--maps", nargs="+", default=["two_rooms"], help="Map specs: two_rooms, MAP01..MAP32, or path.wad:MAP01")
+    ap.add_argument("--maps", nargs="+", default=DEFAULT_TRAIN_MAPS, help="Map specs: two_rooms, MAP01..MAP24, or path.wad:MAP01")
     ap.add_argument("--num-envs", type=int, default=8)
     ap.add_argument("--rollout-steps", type=int, default=128)
     ap.add_argument("--seq-len", type=int, default=64)
     ap.add_argument("--total-steps", type=int, default=500_000)
-    ap.add_argument("--episode-ticks", type=int, default=2100)
+    ap.add_argument("--episode-ticks", type=int, default=0, help="0 = random 2100-4200 per map load, like evaluation")
     ap.add_argument("--swap-every", type=int, default=4)
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--gamma", type=float, default=0.995)
@@ -88,7 +84,8 @@ def main() -> None:
     ap.add_argument("--num-minibatches", type=int, default=4)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--resume", type=str, default="", help="Path to checkpoint to resume from")
-    ap.add_argument("--save-path", type=str, default=str(ROOT / "submission" / "weights" / "best_agent.pt"))
+    # Never write straight into submission/weights: the final checkpoint is picked by holdout eval.
+    ap.add_argument("--save-path", type=str, default=str(ROOT / "training" / "checkpoints" / "main.pt"))
     args = ap.parse_args()
 
     torch.manual_seed(args.seed)
@@ -100,6 +97,9 @@ def main() -> None:
     envs = gym.vector.AsyncVectorEnv(
         [make_thunk(map_specs, args.swap_every, args.seed + i) for i in range(args.num_envs)],
         context="spawn",
+        # SAME_STEP: the done step already returns the next episode's first obs (CleanRL-style buffers);
+        # the default NEXT_STEP would insert one junk transition with an ignored action per episode.
+        autoreset_mode=gym.vector.AutoresetMode.SAME_STEP,
     )
 
     model = DoomSpatialPolicy().to(device)
@@ -176,17 +176,11 @@ def main() -> None:
                     next_obs = obs_to_torch(obs_np, device)
                     next_done = torch.as_tensor(done_np, dtype=torch.float32, device=device)
 
-                    # Extract episode stats from Gymnasium AsyncVectorEnv info dict
-                    if "episode_stats" in infos:
-                        ep_arr = infos["episode_stats"]
-                        mask_arr = infos.get("_episode_stats", [True] * B)
-                        for idx in range(B):
-                            if mask_arr[idx] and isinstance(ep_arr[idx], dict):
-                                recent_stats.append(ep_arr[idx])
-                    elif "final_info" in infos:
-                        for fi in infos["final_info"]:
-                            if fi and "episode_stats" in fi:
-                                recent_stats.append(fi["episode_stats"])
+                    # Gymnasium 1.x packs finished-episode infos as dicts of per-env arrays plus "_key" masks
+                    st = infos.get("final_info", {}).get("episode_stats")
+                    if st is not None:
+                        for idx in np.nonzero(infos["final_info"]["_episode_stats"])[0]:
+                            recent_stats.append({k: float(v[idx]) for k, v in st.items() if not k.startswith("_")})
 
                 # Bootstrap value
                 boot_h = next_h * (1.0 - next_done).view(1, B, 1)
@@ -250,6 +244,8 @@ def main() -> None:
                     v_losses.append(v_loss.item())
                     ent_losses.append(ent_loss.item())
 
+            if update % 10 == 0 or update == num_updates:
+                torch.save({"model": model.state_dict(), "step": global_step}, save_path)  # latest, for holdout eval
             if update % 5 == 0 or update == num_updates:
                 fps = global_step / (time.perf_counter() - t_start)
                 if recent_stats:
@@ -269,7 +265,8 @@ def main() -> None:
                     )
                     if avg_ret > best_return:
                         best_return = avg_ret
-                        torch.save({"model": model.state_dict(), "step": global_step, "avg_return": avg_ret}, save_path)
+                        torch.save({"model": model.state_dict(), "step": global_step, "avg_return": avg_ret},
+                                   save_path.with_suffix(".best.pt"))
                 else:
                     print(
                         f"upd {update:4d}/{num_updates} | step {global_step:8d} | fps {fps:6.0f} | "
@@ -277,10 +274,7 @@ def main() -> None:
                         flush=True,
                     )
 
-        # Always save final weights if no episode finished yet
-        if not save_path.is_file():
-            torch.save({"model": model.state_dict(), "step": global_step}, save_path)
-        print(f"Done. Best checkpoint saved to {save_path} (best_return={best_return:.2f})", flush=True)
+        print(f"Done. Latest: {save_path} | best train return: {save_path.with_suffix('.best.pt')} ({best_return:.2f})", flush=True)
     finally:
         envs.close()
 

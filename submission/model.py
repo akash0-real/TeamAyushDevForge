@@ -122,6 +122,8 @@ class DoomSpatialPolicy(nn.Module):
         self.critic = nn.Linear(hidden_dim, 1)
         _ortho_init(self.actor, gain=0.01)
         _ortho_init(self.critic, gain=1.0)
+        with torch.no_grad():  # prior: start out mostly walking forward instead of jittering in place
+            self.actor.bias[0:3] = torch.tensor([0.0, 1.0, -1.0])  # move: none / fwd / back
 
     def initial_state(self, batch_size: int = 1, device: torch.device | str = "cpu") -> torch.Tensor:
         return torch.zeros(1, batch_size, self.hidden_dim, device=device)

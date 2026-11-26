@@ -222,3 +222,7 @@ _vizdoom.ini
 
 # Local validator / scorer artifacts
 *.lmp
+
+# Team: local training outputs (final weights go to submission/weights via Git LFS)
+training/checkpoints/
+training/gen_cache/
