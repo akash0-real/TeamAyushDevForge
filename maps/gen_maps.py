@@ -97,7 +97,8 @@ def _tree_depths(n: int, edges: list[tuple[int, int]]) -> list[int]:
 
 def generate(tier: int, seed: int) -> MapSpec:
     rng = random.Random(seed * 10 + tier)
-    n_rooms = {1: rng.randint(1, 2), 2: rng.randint(4, 7), 3: rng.randint(4, 7), 4: rng.randint(7, 11)}[tier]
+    # tier 3 skews small (3 rooms = key branch + locked exit branch): curriculum for key -> backtrack -> unlock
+    n_rooms = {1: rng.randint(1, 2), 2: rng.randint(4, 7), 3: rng.choice((3, 3, 4, 5, 6, 7)), 4: rng.randint(7, 11)}[tier]
     # Tier 3 needs 2 dead ends (exit + key), tier 4 needs 3 (exit + 2 keys); a chain layout has only 1, so re-roll.
     need_leaves = {3: 2, 4: 3}.get(tier, 0)
     while True:
