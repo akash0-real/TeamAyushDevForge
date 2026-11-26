@@ -1,6 +1,16 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 23:59 (Round-6 fixed live + 3-hour win plan for T3 & Core review):**
+  - Pulled `2cde54b` (`shipped-v5` masks off + both Round-6 anti-farming fixes), verified `check_geodesic.py` (`MAP08` included → `OK`), and **restarted both `t2h` & `t2w` onto fixed Round 6** (`t2h` resumed from `522k` R6 steps, `t2w` from `322k` R6 steps).
+  - **Task M2 (`--mask fist`, 5 seeds CUDA)** is past `MAP32` (~2 min left); **907-spot warp dead-end audit (`t2_warp_audit.csv`)** is at **`827/907` (`91%` done, ~2 min left!)** and already shows **>90% of Euclidean near-exit warp spots are `0/3`-exit dead ends** (`MAP04/07/09/17/24` = 100% dead; `MAP05` 10 working, `MAP14` 7 working, `MAP13` 3 working).
+  - **Proposal for 00:00–03:00 IST final push (asking Ayush + Havish's opinion):**
+    1. **BFS-filtered warp spots (3-line fix in `rewards.py`, zero changes to `submission/`):** Since `training/geodesic.py` already computes exact BFS walking distances on every map, sort/filter `warp_spots()` by **BFS walking distance** instead of Euclidean straight-line distance — instantly eliminates walled-off / behind-locked-door warp dead ends for *both* `T5` (exits) and `T6` (keys), boosting real-map reverse-curriculum signal ~5–10× on top of our `t2_warp_audit.csv` blacklist!
+    2. **Scale fixed Round 6 (`10–12M+` more Geodesic steps on RTX 3050 before `03:00`)** once `task-996` finishes and frees 8 workers + GPU, plus Task M2 `--mask fist` ONLY if it clears the paired ship rule without hurting T4.
+    3. **Final judge package (`~02:15–03:45 IST`):** Pick final ship on untouched `maps/fresh/`, run Task F Linux 1-CPU + Task F0 Docker `validate.py`, and record a final champion gameplay + scrolling EgoMap showcase on `origin/demos` showing every tier solved live.
+
+**QUESTION(t3 & core):** What's your opinion on this 3-hour plan — especially **#1 (filtering `warp_spots()` by `geodesic.py` BFS distance instead of Euclidean distance)** once `t2_warp_audit.csv` lands in ~2 min? Any blind spots or anything higher-leverage we should prioritize before `03:00 IST`? (Short reply fine for T3 low-token mode!)
+
 - **UPDATE 23:34 (Task M + Round 6 Geodesic live):**
   - **Task M (`t2_v3_mask.csv` vs `cuda_v3_s04.csv`, 5 seeds CUDA, 17 holdout maps):** **SHIP RULE: FAIL** on CUDA (`38.85` vs `43.11`, **Δ overall `-4.26 ± 3.74`**, worse 3/5; `T2+T3+T4` exits `11 vs 14`; `T1 -0.21 ± 0.39`, `T2 -20.11 ± 20.49`, `T3 -15.97 ± 15.26`, `T4 -15.25 ± 5.80`). **However, `MAP25–32` agrees with T3's exact gain: `+3.75 ± 6.16`** (`+1.64` vs `-2.10`, `MAP32` jumped `0.06 → +36.72` with `21.4` kills from keeping loaded guns!). Pooled across T3's 5 seeds (`+7.9 ± 3.3`) + T2's 5 seeds (`-4.26 ± 3.74`), overall is ~`+1.8` (noisy on T2–T4) while `MAP25–32` is consistently ~`+3.8`. Leaving mask decision to Core (`pytest`: `9/9` passed).
   - **Round 6 Geodesic Shaping (`467034f`) live:** Pulled `100d54e`, ran `check_geodesic.py` (`17/20` real maps reachable from start), and **restarted `t2w` fresh from `v3` (`t2h_2150_score46_62.pt`)** + `t2h` (`2×gen2+6×gen3+6×gen4`) onto Round 6!
