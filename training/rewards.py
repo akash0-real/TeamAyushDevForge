@@ -37,6 +37,8 @@ from doom_env.wad import map_lumps, read_wad
 from doom_env.wrapper import IWAD
 from gen_maps import HOLDOUT_SEED_BASE, write_map
 from geodesic import GeoField
+from geodesic import _targets as geo_targets
+from doom_env.mapinfo import parse_udmf
 from preprocess import MAP_CHANNELS, MAP_CROP, NUM_ACTIONS, EgoMap, factored_to_multibinary, preprocess_obs
 
 GEN_CACHE = ROOT / "training" / "gen_cache"
@@ -47,15 +49,27 @@ GEN_CACHE.mkdir(parents=True, exist_ok=True)
 WARP_PROB = 0.5
 WARP_R0, WARP_RMIN = 256.0, 192.0  # start radius / floor (was 768 / 512: the floor sat beyond where v3 can succeed)
 EXIT_SPECIALS = (11, 51, 52, 124, 197, 198)  # Doom-format exit line specials (switch / walk-over / shoot)
+GEN_WARP_PROB = 0.4  # round 7: also start generated tier-3/4 maps near the exit or a key (T4 had 0 exits)
 KEY_WARP_PROB = 0.4  # of warped episodes on maps with keys: start near a key instead (teammate 3 Task Y: 0 keys on real maps)
 KEY_THINGS = (5, 6, 13, 38, 39, 40)  # blue/yellow/red keycards and skull keys
 _WARP_SPOTS: dict[tuple[str, str], tuple[list, list]] = {}
 
 
-def warp_spots(map_name: str, kind: str = "exit") -> tuple[list, list]:
+def warp_spots(map_name: str, kind: str = "exit", wad: str = IWAD) -> tuple[list, list]:
     """(targets, spawn spots sorted by distance to the nearest target) for an IWAD map; targets are exit line
     midpoints (kind "exit") or key positions (kind "key"). Spawn spots are item and player-start positions: always on
     a reachable floor, never inside a monster."""
+    if wad != IWAD:  # round 7: generated (UDMF) maps change every load, so no cache
+        exits, keys = geo_targets(wad, map_name)
+        targets = [(x, y) for x, y, _k in keys] if kind == "key" else exits
+        b = parse_udmf(map_lumps(read_wad(wad), map_name)["TEXTMAP"].decode("utf-8", "replace"))
+        things = [(float(t.get("x", 0)), float(t.get("y", 0)), int(t.get("type", 0))) for t in b.get("thing", [])]
+        spots = sorted(
+            (min(math.hypot(x - tx, y - ty) for tx, ty in targets), x, y)
+            for x, y, t in things
+            if targets and (2000 <= t <= 2049 or t in (1, 8, 11))
+        )
+        return targets, spots
     if (map_name, kind) not in _WARP_SPOTS:
         L = map_lumps(read_wad(IWAD), map_name)
         things = [struct.unpack_from("<hhhhh", L["THINGS"], i) for i in range(0, len(L["THINGS"]), 10)]
@@ -165,12 +179,15 @@ class ShapedDoomEnv(gym.Env):
         raw_obs, info = self._env.reset(seed=ep_seed)
         self._warped = False  # False, "exit" or "key"
         wad, map_name, _ = self._cur_spec
-        if wad == IWAD and self.rng.random() < WARP_PROB:
-            kind = "key" if warp_spots(map_name, "key")[1] and self.rng.random() < KEY_WARP_PROB else "exit"
-            _targets, spots = warp_spots(map_name, kind)
+        real = wad == IWAD
+        if (real and self.rng.random() < WARP_PROB) or (self._tier in (3, 4) and self.rng.random() < GEN_WARP_PROB):
+            src = IWAD if real else self._env.wad
+            kind = "key" if warp_spots(map_name, "key", src)[1] and self.rng.random() < KEY_WARP_PROB else "exit"
+            _targets, spots = warp_spots(map_name, kind, src)
             if spots:
                 # start at 256 (teammate 2 audit: v3 exits from 25/64 spots within 250 units, 8/843 beyond)
-                radius = self._warp_radius.setdefault(f"{map_name}:{kind}", WARP_R0)
+                self._warp_key = f"{map_name}:{kind}" if real else f"gen{self._tier}:{kind}"
+                radius = self._warp_radius.setdefault(self._warp_key, WARP_R0)
                 near = [sp for sp in spots if sp[0] <= radius] or spots[:3]
                 _d, x, y = self.rng.choice(near)
                 g = self._env._game
@@ -203,8 +220,8 @@ class ShapedDoomEnv(gym.Env):
             "damage_taken": 0.0,
             "steps": 0.0,
             "return": 0.0,
-            # T5 / T6 in the log = real map started near the exit / near a key
-            "tier": {"exit": 5.0, "key": 6.0}.get(self._warped, float(self._tier)),
+            # T5 / T6 = real map started near the exit / a key; T7 / T8 = generated tier-3/4 map started near the exit / a key
+            "tier": ({"exit": 5.0, "key": 6.0} if self._tier == 0 else {"exit": 7.0, "key": 8.0}).get(self._warped, float(self._tier)),
             "geo": 0.0,
         }
         # round 6: geodesic progress shaping (training/geodesic.py); a level it can't parse just gets no shaping
@@ -340,7 +357,7 @@ class ShapedDoomEnv(gym.Env):
 
         if terminated or truncated:
             if self._warped:  # move the start further back after a success, closer after a failure
-                m = f"{self._cur_spec[1]}:{self._warped}"
+                m = self._warp_key
                 won = ps["exit_reached"] if self._warped == "exit" else self._stats["keys"] > 0
                 r = self._warp_radius[m]
                 self._warp_radius[m] = min(r * 1.25, 12000.0) if won else max(r * 0.95, WARP_RMIN)

@@ -25,3 +25,26 @@ for ep in range(30):
     print(env._cur_spec[1], env._warped or "normal", f"dist to target {d:6.0f}", "tic", info["tic"])
 assert 6 <= warped <= 24 and {"exit", "key", False} <= kinds, kinds
 print("OK", warped, "of 30 warped (exit + key); radius", env._warp_radius)
+
+# round 7: generated tier-3/4 maps also start near the exit or a key (logged as T7 / T8)
+from rewards import warp_spots
+genv = ShapedDoomEnv([("gen4", "MAP01", 2100), ("gen3", "MAP01", 2100)], swap_every=1, seed=5, use_map=True)
+gk = set()
+for ep in range(30):
+    obs, info = genv.reset()
+    if genv._warped:
+        ps = genv._env.privileged_state()
+        tg, sp = warp_spots("MAP01", genv._warped, genv._env.wad)
+        d = min(math.hypot(ps["x"] - a, ps["y"] - b) for a, b in tg)
+        assert d <= max(256, sp[min(2, len(sp) - 1)][0]) + 200, d
+        gk.add(genv._warped)
+        assert genv.ego_map.tic == genv._warp_tics
+    for t in range(20):
+        obs, r, term, trunc, info = genv.step(genv.action_space.sample())
+        if term or trunc:
+            break
+    if term or trunc:
+        assert info["episode_stats"]["tier"] in (3.0, 4.0, 7.0, 8.0)
+print("gen warps:", gk, "radius", genv._warp_radius)
+assert gk, "no generated-map warps in 30 episodes"
+print("OK round 7")
