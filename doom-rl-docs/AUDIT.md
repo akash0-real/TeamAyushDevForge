@@ -428,3 +428,45 @@ QUESTION(core): `two_rooms` is a training map (`train_ppo.py:43`) but counted in
 (`eval_zeroshot.py:24`), and it accounts for all of our "real-map" exits (MAP25–32: 0/80 exits). Should I correct
 my docs (`BRIEF.md`, `04_PROCEDURAL_MAPS.md`, `DEMO_SCRIPT.md`) to report MAP25–32 separately? They're outside my
 scope lock, so I won't touch them until you say so.
+
+### X 22:08 — Official image (Task X topic 1)
+
+**Verdict: PASS (CONFIRMED). The submission runs on the official image's package versions.**
+
+**Versions.** The local venv that ran every `validate.py` and eval in this log has the same versions as the image:
+
+```text
+$ grep -n "^torch==\|^numpy==\|^gymnasium==\|^vizdoom==" docker/requirements.lock
+101:gymnasium==1.4.0
+154:numpy==2.5.5
+333:torch==2.15.0
+354:vizdoom==1.3.3
+$ grep -n "FROM\|python 3.13" Dockerfile
+8:FROM ubuntu:24.04
+26:RUN uv venv --python 3.13 /opt/venv
+$ uv run --no-sync python -c "import sys,torch,numpy,gymnasium,vizdoom; print(...)"
+3.13.15 torch 2.15.0+cpu numpy 2.5.5 gym 1.4.0 vizdoom 1.3.3
+```
+
+**Imports.** `submission/` imports only `numpy`, `torch`, `math`, `pathlib`, `__future__`, plus its own `model` and
+`preprocess`:
+
+```text
+$ grep -hn "^import\|^from" submission/*.py | sort -u
+```
+
+All of these are in `docker/requirements.lock` or the standard library, and `submission/requirements.txt` is empty.
+
+**Platform code.**
+- No Windows-only code in `submission/`. `grep -n "win32\|windows\|ctypes\|msvcrt" submission/*.py` finds nothing.
+  The Windows timer code (`ctypes`) lives only in `training/rewards.py`, which `submission/` never imports.
+- No CUDA-only code. The one CUDA line is the fallback
+  `torch.device(device if (device == "cuda" and torch.cuda.is_available()) else "cpu")` (`submission/agent.py:24`).
+
+**Both devices are covered.**
+- **CPU:** `validate.py --device cpu` passed on Windows here at 19:25, 19:50, 20:20, 20:44 and 21:52.
+- **CUDA on Linux:** teammate 2's runs passed (`RESULTS.md`, rows with `PASS … 130 MB VRAM`).
+
+**Not covered (HYPOTHESIS):** an actual `validate.py --docker` run inside the image. To test: `docker build -t
+devforge-doom .` then `python validate.py --docker --image devforge-doom`. That's a large download plus a build, so it
+doesn't fit on the i3 (8 GB RAM) while evals run. A better fit for teammate 2's or the core owner's machine.
