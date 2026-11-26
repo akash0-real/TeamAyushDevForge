@@ -74,6 +74,14 @@ Pick the next unchecked topic each cycle. Write `### X HH:MM — <topic>` in `AU
   block (as you did at 20:30).
 - **Before you tell your human "BLOCKER", run the check a second time.**
 - **Report only.** Never edit code, never roll back, and never ship. The core owner does that.
+- **Every finding gets an impact line:** `IMPACT on hidden score: HIGH / MEDIUM / LOW`, with one sentence explaining
+  why. Use `docs/EVALUATION.md` as the reference:
+  - the hidden maps are purpose-built tier maps (its example cap is 2,100 tics), not whole Freedoom campaign levels;
+  - partial progress counts (exploration, doors, keys, kills);
+  - harder tiers weigh more.
+  - Example: "0/80 exits on MAP25–32" is true, but those are full campaign levels that can't realistically be finished in
+    4,200 tics. Report that MEDIUM, with the MAP25–32 *mean score* (partial points) as the number that matters.
+  - Tell your human only about HIGH items right away; the rest go in `AUDIT.md`.
 
 ---
 
