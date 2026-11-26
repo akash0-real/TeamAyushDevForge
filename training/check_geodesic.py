@@ -42,7 +42,8 @@ for ep in range(8):
         obs, r, term, trunc, info = env.step(a[0].numpy()); done = term or trunc
     st = info["episode_stats"]
     print(f"{env._cur_spec[1]}/{env._cur_spec[0][-8:]} ep{ep}: exit {st['exit_reached']:.0f} keys {st['keys']:.0f} geo {st['geo']:+.2f}")
-    if st["exit_reached"]:
+    print(f"   warped={env._warped} tier={st['tier']}")
+    if st["exit_reached"] and not env._warped:  # a warped start can sit closer to the exit line than the trigger point
         pos.append(st["geo"])
     if phi0 is not None:  # no farming: total progress can't exceed the start distance (teammate 3 review 23:40)
         assert st["geo"] <= bound + 0.5, (st["geo"], bound)
