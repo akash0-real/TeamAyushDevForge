@@ -32,7 +32,7 @@ if str(ROOT / "maps") not in sys.path:
 
 from doom_env import make_env
 from gen_maps import HOLDOUT_SEED_BASE, write_map
-from preprocess import NUM_ACTIONS, factored_to_multibinary, preprocess_obs
+from preprocess import MAP_CHANNELS, MAP_CROP, NUM_ACTIONS, EgoMap, factored_to_multibinary, preprocess_obs
 
 GEN_CACHE = ROOT / "training" / "gen_cache"
 GEN_CACHE.mkdir(parents=True, exist_ok=True)
@@ -47,6 +47,7 @@ class ShapedDoomEnv(gym.Env):
         swap_every: int = 4,
         cell_size: float = 64.0,
         seed: int = 0,
+        use_map: bool = False,
     ):
         """
         map_specs: list of (wad_path, map_name, episode_ticks).
@@ -63,6 +64,7 @@ class ShapedDoomEnv(gym.Env):
         self._ep_on_cur = 0
         self._ep_count = 0
 
+        self.ego_map = EgoMap() if use_map else None  # same code + call order as submission/agent.py
         self.observation_space = gym.spaces.Dict(
             {
                 "rays": gym.spaces.Box(0.0, 1.0, (7, 64), np.float32),
@@ -70,6 +72,7 @@ class ShapedDoomEnv(gym.Env):
                 "ent_type": gym.spaces.Box(0, 11, (32,), np.int64),
                 "ent_mask": gym.spaces.Box(0, 1, (32,), np.bool_),
                 "vitals": gym.spaces.Box(-10.0, 10.0, (30,), np.float32),
+                **({"map": gym.spaces.Box(0.0, 1.0, (2 * MAP_CHANNELS, MAP_CROP, MAP_CROP), np.float32)} if use_map else {}),
             }
         )
         self.action_space = gym.spaces.MultiDiscrete([3, 3, 3, 2, 2, 2])
@@ -133,7 +136,16 @@ class ShapedDoomEnv(gym.Env):
             "return": 0.0,
             "tier": float(self._tier),
         }
-        return preprocess_obs(raw_obs, self._prev_action), info
+        if self.ego_map is not None:
+            self.ego_map.reset()
+            self.ego_map.update(raw_obs, None)
+        return self._encode(raw_obs), info
+
+    def _encode(self, raw_obs: dict) -> dict:
+        enc = preprocess_obs(raw_obs, self._prev_action)
+        if self.ego_map is not None:
+            enc["map"] = self.ego_map.crops()
+        return enc
 
     def _damage_dealt(self) -> float:
         # Training-only: privileged_state() has no damage-dealt field, so read the engine counter directly.
@@ -221,7 +233,9 @@ class ShapedDoomEnv(gym.Env):
             info["episode_stats"] = dict(self._stats)
             info["map"] = f"{Path(self._cur_spec[0]).name}:{self._cur_spec[1]}"
 
-        return preprocess_obs(raw_obs, self._prev_action), float(reward), terminated, truncated, info
+        if self.ego_map is not None and not (terminated or truncated):
+            self.ego_map.update(raw_obs, mb_action)
+        return self._encode(raw_obs), float(reward), terminated, truncated, info
 
     def close(self):
         if self._env is not None:

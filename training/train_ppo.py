@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "submission"))
 sys.path.insert(0, str(ROOT / "training"))
 
-from model import DoomSpatialPolicy
+from model import DoomSpatialPolicy, warm_start_map_model
 from rewards import ShapedDoomEnv
 
 IWAD = os.path.join(os.path.dirname(vd.__file__), "freedoom2.wad")
@@ -53,9 +53,9 @@ def parse_map_specs(spec_list: list[str], episode_ticks: int) -> list[tuple[str,
     return out
 
 
-def make_thunk(map_specs: list[tuple[str, str, int]], swap_every: int, seed: int):
+def make_thunk(map_specs: list[tuple[str, str, int]], swap_every: int, seed: int, use_map: bool = False):
     def _init():
-        return ShapedDoomEnv(map_specs=map_specs, swap_every=swap_every, seed=seed)
+        return ShapedDoomEnv(map_specs=map_specs, swap_every=swap_every, seed=seed, use_map=use_map)
     return _init
 
 
@@ -66,6 +66,7 @@ def obs_to_torch(obs_dict: dict[str, np.ndarray], device: torch.device) -> dict[
         "ent_type": torch.as_tensor(obs_dict["ent_type"], dtype=torch.long, device=device),
         "ent_mask": torch.as_tensor(obs_dict["ent_mask"], dtype=torch.bool, device=device),
         "vitals": torch.as_tensor(obs_dict["vitals"], dtype=torch.float32, device=device),
+        **({"map": torch.as_tensor(obs_dict["map"], dtype=torch.float32, device=device)} if "map" in obs_dict else {}),
     }
 
 
@@ -88,6 +89,8 @@ def main() -> None:
     ap.add_argument("--num-minibatches", type=int, default=4)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--resume", type=str, default="", help="Path to checkpoint to resume from")
+    ap.add_argument("--use-map", action="store_true", help="EgoMap memory grid input (submission/preprocess.py)")
+    ap.add_argument("--init-from", type=str, default="", help="no-map checkpoint to warm-start a --use-map model")
     # Never write straight into submission/weights: the final checkpoint is picked by holdout eval.
     ap.add_argument("--save-path", type=str, default=str(ROOT / "training" / "checkpoints" / "main.pt"))
     args = ap.parse_args()
@@ -99,14 +102,18 @@ def main() -> None:
 
     map_specs = parse_map_specs(args.maps, args.episode_ticks)
     envs = gym.vector.AsyncVectorEnv(
-        [make_thunk(map_specs, args.swap_every, args.seed + i) for i in range(args.num_envs)],
+        [make_thunk(map_specs, args.swap_every, args.seed + i, args.use_map) for i in range(args.num_envs)],
         context="spawn",
         # SAME_STEP: the done step already returns the next episode's first obs (CleanRL-style buffers);
         # the default NEXT_STEP would insert one junk transition with an ignored action per episode.
         autoreset_mode=gym.vector.AutoresetMode.SAME_STEP,
     )
 
-    model = DoomSpatialPolicy().to(device)
+    model = DoomSpatialPolicy(use_map=args.use_map).to(device)
+    if args.init_from:
+        base = torch.load(args.init_from, map_location=device, weights_only=True)
+        warm_start_map_model(model, base["model"] if "model" in base else base)
+        print(f"Warm-started from {args.init_from}", flush=True)
     if args.resume and Path(args.resume).is_file():
         ckpt = torch.load(args.resume, map_location=device, weights_only=True)
         model.load_state_dict(ckpt["model"] if isinstance(ckpt, dict) and "model" in ckpt else ckpt)
@@ -128,6 +135,8 @@ def main() -> None:
     buf_ent_type = torch.zeros((T, B, 32), dtype=torch.long, device=device)
     buf_ent_mask = torch.zeros((T, B, 32), dtype=torch.bool, device=device)
     buf_vitals = torch.zeros((T, B, 30), dtype=torch.float32, device=device)
+    map_shape = envs.single_observation_space["map"].shape if args.use_map else None
+    buf_map = torch.zeros((T, B, *map_shape), dtype=torch.float32, device=device) if args.use_map else None
     buf_actions = torch.zeros((T, B, 6), dtype=torch.long, device=device)
     buf_logprobs = torch.zeros((T, B), dtype=torch.float32, device=device)
     buf_rewards = torch.zeros((T, B), dtype=torch.float32, device=device)
@@ -163,6 +172,8 @@ def main() -> None:
                     buf_ent_type[step] = next_obs["ent_type"]
                     buf_ent_mask[step] = next_obs["ent_mask"]
                     buf_vitals[step] = next_obs["vitals"]
+                    if buf_map is not None:
+                        buf_map[step] = next_obs["map"]
                     buf_dones[step] = next_done
 
                     # Reset hidden state where previous step ended an episode
@@ -222,6 +233,8 @@ def main() -> None:
                         "ent_mask": buf_ent_mask[:, mb],
                         "vitals": buf_vitals[:, mb],
                     }
+                    if buf_map is not None:
+                        mb_obs["map"] = buf_map[:, mb]
                     logits, new_values, _ = model.forward_sequence(mb_obs, init_h[:, mb], buf_dones[:, mb])
                     _, new_logprob, entropy = model.sample_and_logprob(logits, buf_actions[:, mb])
 

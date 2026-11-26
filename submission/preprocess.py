@@ -95,3 +95,107 @@ def preprocess_obs(obs: dict, prev_action: np.ndarray | None = None) -> dict[str
         "ent_mask": ent_mask,
         "vitals": vitals_vec,
     }
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# EgoMap: spawn-anchored memory grid built only from the observation + our own past actions (no engine coords).
+# It is an INPUT to the network (allowed: "preprocessing/encoding observations, learned memory"); it never picks
+# actions. Pose = dead reckoning: heading from our TURN presses, position from the observed player-frame velocity.
+# ---------------------------------------------------------------------------------------------------------------
+MAP_CELLS = 128          # 128 x 128 cells
+MAP_CELL_UNITS = 64.0    # 64 map units per cell -> 8192 x 8192 units around spawn
+MAP_CHANNELS = 6         # visited, free-seen, wall, door, locked door, key
+MAP_CROP = 15            # network sees two 15x15 ego-rotated crops: fine (1 cell) + coarse (8 cells)
+MAP_COARSE = 8
+# Doom turning, measured per tic: while any turn button is held a counter runs (switching left<->right keeps it,
+# releasing resets it); the first 5 held tics turn 320/65536 of a circle, later ones 640/65536. Input during the
+# first 7 tics of an episode is ignored but still advances the counter. Reproduces every measured step exactly.
+TURN_SLOW_DEG = 320 / 65536 * 360
+TURN_FAST_DEG = 640 / 65536 * 360
+TURN_SLOW_TICS = 5
+TURN_DEAD_TICS = 7
+TICS_PER_STEP = 4
+_RAY_ANG = np.arange(NUM_RAYS) * (2 * np.pi / NUM_RAYS)            # index 0 ahead, counter-clockwise
+_RAY_SAMPLES = np.arange(0.5, 32.0) / 32.0                         # free-space samples along each ray
+_CROP_OFF = np.arange(MAP_CROP) - MAP_CROP // 2
+
+
+class EgoMap:
+    def __init__(self) -> None:
+        self.reset()
+
+    def reset(self) -> None:
+        self.grid = np.zeros((MAP_CHANNELS, MAP_CELLS, MAP_CELLS), dtype=np.float32)
+        self.x = self.y = self.theta = 0.0
+        self.turn_held = 0          # consecutive tics with a turn button down
+        self.tic = 0                # game tics since reset
+        self.prev_vel = np.zeros(2, dtype=np.float32)
+
+    def _cells(self, wx: np.ndarray, wy: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        cx = np.floor(wx / MAP_CELL_UNITS).astype(np.int64) + MAP_CELLS // 2
+        cy = np.floor(wy / MAP_CELL_UNITS).astype(np.int64) + MAP_CELLS // 2
+        return np.clip(cx, 0, MAP_CELLS - 1), np.clip(cy, 0, MAP_CELLS - 1)
+
+    def update(self, obs: dict, action: np.ndarray | None) -> None:
+        """Advance the pose with the action just taken, then write this observation into the grid."""
+        if action is not None:
+            left, right = int(action[4]), int(action[5])
+            d = left - right
+            for _ in range(TICS_PER_STEP):
+                self.tic += 1
+                if d == 0:
+                    self.turn_held = 0
+                    continue
+                self.turn_held += 1
+                if self.tic > TURN_DEAD_TICS:
+                    deg = TURN_SLOW_DEG if self.turn_held <= TURN_SLOW_TICS else TURN_FAST_DEG
+                    self.theta += d * np.radians(deg)
+            vf, vr = float(obs["vitals"][14]), float(obs["vitals"][15])
+            c, s = np.cos(self.theta), np.sin(self.theta)
+            vel = np.array([vf * c + vr * s, vf * s - vr * c], dtype=np.float32)  # player frame -> spawn frame
+            step = TICS_PER_STEP * 0.5 * (vel + self.prev_vel)
+            self.x += float(step[0])
+            self.y += float(step[1])
+            self.prev_vel = vel
+
+        g = self.grid
+        px, py = self._cells(np.array([self.x]), np.array([self.y]))
+        g[0, py, px] = 1.0
+        dist = np.asarray(obs["rays"]["distance"], dtype=np.float32) * 1024.0
+        hit = np.asarray(obs["rays"]["hit_type"], dtype=np.int64)
+        ang = self.theta + _RAY_ANG
+        ca, sa = np.cos(ang), np.sin(ang)
+        r = dist[:, None] * _RAY_SAMPLES[None, :]                       # (64, 32) free-space points
+        fx, fy = self._cells(self.x + r * ca[:, None], self.y + r * sa[:, None])
+        g[1, fy, fx] = 1.0
+        hx, hy = self._cells(self.x + dist * ca, self.y + dist * sa)
+        for t, ch in ((1, 2), (2, 3), (3, 4)):                             # wall, door, locked door
+            m = (hit == t) & (dist < 1023.0)
+            g[ch, hy[m], hx[m]] = 1.0
+        ent = obs["visible_entities"]
+        keys = (np.asarray(ent["mask"]) > 0) & (np.asarray(ent["entity_type"]) == 9)
+        if keys.any():
+            f = np.asarray(ent["features"], dtype=np.float32)[keys]
+            ea = self.theta + np.arctan2(f[:, 1], f[:, 2])               # encoding only, never used to aim
+            kx, ky = self._cells(self.x + f[:, 0] * 1024.0 * np.cos(ea), self.y + f[:, 0] * 1024.0 * np.sin(ea))
+            g[5, ky, kx] = 1.0
+
+    def crops(self) -> np.ndarray:
+        """(2*C, 15, 15) ego-centric, heading-up crops: fine (1 cell/px) and coarse (8 cells/px, max-pooled)."""
+        c, s = np.cos(self.theta), np.sin(self.theta)
+        fwd, left = np.meshgrid(_CROP_OFF[::-1], _CROP_OFF[::-1], indexing="ij")  # row 0 = ahead, col 0 = left
+        out = []
+        for scale, grid in ((1, self.grid), (MAP_COARSE, self._coarse())):
+            u = MAP_CELL_UNITS * scale
+            wx = self.x + (fwd * c - left * s) * u
+            wy = self.y + (fwd * s + left * c) * u
+            cx = np.floor(wx / u).astype(np.int64) + grid.shape[2] // 2
+            cy = np.floor(wy / u).astype(np.int64) + grid.shape[1] // 2
+            inside = (cx >= 0) & (cx < grid.shape[2]) & (cy >= 0) & (cy < grid.shape[1])
+            crop = grid[:, np.clip(cy, 0, grid.shape[1] - 1), np.clip(cx, 0, grid.shape[2] - 1)]
+            out.append(crop * inside)
+        return np.concatenate(out, axis=0).astype(np.float32)
+
+    def _coarse(self) -> np.ndarray:
+        k = MAP_COARSE
+        return self.grid.reshape(MAP_CHANNELS, MAP_CELLS // k, k, MAP_CELLS // k, k).max(axis=(2, 4))

@@ -18,7 +18,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Categorical
 
-from preprocess import FACTORED_DIMS, NUM_ENTITY_TYPES, NUM_RAY_TYPES
+from preprocess import FACTORED_DIMS, MAP_CHANNELS, NUM_ENTITY_TYPES, NUM_RAY_TYPES
 
 
 def _ortho_init(module: nn.Module, gain: float = math.sqrt(2.0)) -> None:
@@ -98,12 +98,34 @@ class EntityAttentionEncoder(nn.Module):
         return out * has_any.unsqueeze(-1).to(out.dtype)
 
 
+class EgoMapEncoder(nn.Module):
+    """Tiny CNN over the EgoMap crops (2 x 6 channels, 15 x 15, heading-up) -> 64-dim."""
+
+    def __init__(self, out_dim: int = 64):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Conv2d(2 * MAP_CHANNELS, 32, kernel_size=3, padding=1),
+            nn.SiLU(),
+            nn.Conv2d(32, 32, kernel_size=3, stride=2),  # 15 -> 7
+            nn.SiLU(),
+            nn.Flatten(),
+            nn.Linear(32 * 7 * 7, out_dim),
+            nn.LayerNorm(out_dim),
+            nn.SiLU(),
+        )
+
+    def forward(self, crops: torch.Tensor) -> torch.Tensor:
+        return self.net(crops)
+
+
 class DoomSpatialPolicy(nn.Module):
     """Recurrent spatial-attention actor-critic for ViZDoom."""
 
-    def __init__(self, vitals_dim: int = 30, hidden_dim: int = 256):
+    def __init__(self, vitals_dim: int = 30, hidden_dim: int = 256, use_map: bool = False):
         super().__init__()
         self.hidden_dim = hidden_dim
+        self.use_map = use_map
+        self.map_enc = EgoMapEncoder(out_dim=64) if use_map else None
         self.ray_enc = CircularRayEncoder(out_dim=128)
         self.ent_enc = EntityAttentionEncoder(out_dim=128)
         self.vit_enc = nn.Sequential(
@@ -115,7 +137,7 @@ class DoomSpatialPolicy(nn.Module):
         )
         self.vit_enc.apply(_ortho_init)
 
-        self.gru = nn.GRU(128 + 128 + 64, hidden_dim, num_layers=1)
+        self.gru = nn.GRU(128 + 128 + 64 + (64 if use_map else 0), hidden_dim, num_layers=1)
         self.post_norm = nn.LayerNorm(hidden_dim)
 
         self.actor = nn.Linear(hidden_dim, sum(FACTORED_DIMS))
@@ -132,6 +154,8 @@ class DoomSpatialPolicy(nn.Module):
         r = self.ray_enc(obs_batch["rays"])
         e = self.ent_enc(obs_batch["ent_feat"], obs_batch["ent_type"], obs_batch["ent_mask"])
         v = self.vit_enc(obs_batch["vitals"])
+        if self.map_enc is not None:
+            return torch.cat([r, e, v, self.map_enc(obs_batch["map"])], dim=-1)
         return torch.cat([r, e, v], dim=-1)
 
     def forward_step(
@@ -183,3 +207,25 @@ class DoomSpatialPolicy(nn.Module):
         log_prob = sum(d.log_prob(actions[..., i]) for i, d in enumerate(dists))
         entropy = sum(d.entropy() for d in dists)
         return actions, log_prob, entropy
+
+
+def load_policy(path, device) -> "DoomSpatialPolicy":
+    """Build the right model for a checkpoint (with/without EgoMap) and load its weights."""
+    ckpt = torch.load(path, map_location=device, weights_only=True)
+    state = ckpt["model"] if isinstance(ckpt, dict) and "model" in ckpt else ckpt
+    model = DoomSpatialPolicy(use_map=any(k.startswith("map_enc.") for k in state)).to(device)
+    model.load_state_dict(state)
+    return model
+
+
+def warm_start_map_model(model: "DoomSpatialPolicy", base_state: dict) -> None:
+    """Load a no-map checkpoint into a map model: shared layers copied, the GRU's extra map inputs start at zero."""
+    own = model.state_dict()
+    for k, v in base_state.items():
+        if k == "gru.weight_ih_l0" and own[k].shape != v.shape:
+            w = torch.zeros_like(own[k])
+            w[:, : v.shape[1]] = v
+            own[k] = w
+        elif k in own and own[k].shape == v.shape:
+            own[k] = v
+    model.load_state_dict(own)
