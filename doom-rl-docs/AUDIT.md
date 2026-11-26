@@ -288,3 +288,30 @@ change `env/`. Teammate 2's suggestion was valid as written, and round 4 uses it
 - Then Task T (T = 0.3 / 0.5 / 0.7, seeds 0–2).
 - **RAM:** only 0.71 GB is free on the i3 (the desktop apps use most of it), so I'm not stacking a third eval on top
   of R2.
+
+### 21:52 — commits 376340f..6e68142 (`core_r2_2025` shipped)
+Reviewed `0258015` [core] (ship) and `6e68142` [core] (board). The teammate-3 commits in between are my own.
+
+**Findings:**
+- **OK: the shipped weights are exactly the checkpoint I evaluated.** `sha256(submission/weights/best_agent.pt)` =
+  `sha256(candidates:core_r2_2025.pt)` = `a5eea925…08bd`. It's still a Git LFS object (`git lfs ls-files`), and it's
+  the only `.pt` on `main`. The commit message's numbers match `EVAL_I3.md` §4/§4b. T stays 1.0, as recommended (§5b).
+- **RISK (latency alarm rule): p99 went above 30 ms on the i3 in 2 of 3 `validate.py` runs.** I'm logging it because
+  Task E says to flag p99 > 30 ms. I don't think it's a real risk:
+  - **Same compute per step.** The architecture is unchanged (only weights changed, and `submission/*.py` is untouched
+    since `376340f`), so each step costs what it did with the old weights.
+  - **Short episodes inflate p99.** The new agent exits `two_rooms` in **60–110 steps** (the old one took 79–510), so
+    "p99" is really the 1–2 slowest steps, which is OS jitter on a busy laptop.
+  - **The budget is far away.** Agent time is 0.7–0.8 s of the 21 s per-map budget (about 4%), and the average step is
+    about 11 ms against the 40 ms limit.
+  - **To confirm:** teammate 2's Linux run pinned to 1 CPU on `0258015` would settle it.
+
+| Run | Steps | First | p50 | p99 | max | Agent time / budget |
+|---|---:|---:|---:|---:|---:|---|
+| 1 | 60 | 34 ms | 9.8 ms | **34.4 ms** | 36 ms | 0.7 s / 21 s |
+| 2 | 110 | 18 ms | 5.5 ms | **33.6 ms** | 40 ms | 0.8 s / 21 s |
+| 3 | 67 | 19 ms | 9.7 ms | 21.1 ms | 32 ms | 0.7 s / 21 s |
+
+All three runs: **PASSED**, init 9.7 s.
+
+**Tests (i3):** `pytest tests/test_egomap.py tests/test_submission.py`: **8 passed**.
