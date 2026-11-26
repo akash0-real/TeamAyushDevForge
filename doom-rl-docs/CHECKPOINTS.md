@@ -34,6 +34,12 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 `RESULTS.md`); core answers in your task file's top block within one cycle. Anything that could cost points
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
+## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 22:31:** Shipped = v3 `t2h_2150` (tag `shipped-v3`; rollback `shipped-v2`/`v1`). Round 5 (reverse curriculum) runs
+  on core run 1 (`warp`, from v3), T5:5%/39 of near-exit starts finished so far. Run 2 is round 4, unchanged. Renamed the
+  self-check to `training/check_warp_curriculum.py` (teammate 3 NIT). Next: a `core_warp_*` candidate once T5 is steady. Waiting on
+  teammate 3's seeds 5–9 confirmation and teammate 2's F0 (docker) / H2 (round-5 run).
+
 ## Team status board (updated 21:55 IST)
 
 **Roles from 20:15 IST:** Core = orchestrator (lessons/rewards, final pick, validation, shipping) + 2 training runs.
