@@ -37,7 +37,9 @@ class DoomAgent:
         # Turn head only, sharper sampling (less left/right jitter). Seeded test on v6, 10 seeds x 17 holdout maps: exit_points
         # 98 vs 89 at 0.5 (T3 16 vs 13 exits), mean +0.7 ± 3.3 (training/results/tt*_v6_*.csv). Rollback: tag shipped-v6.
         self.turn_temperature = 0.5
-        self.head_temperature = [1.0] * 6  # extra per-head temperatures [move, strafe, turn, attack, use, weapon]; 1.0 = unchanged
+        # Extra per-head temperatures [move, strafe, turn, attack, use, weapon]. Strafe 0.5: seeded sweep vs v7, 20 seeds x 17 holdout,
+        # +2.0 ± 1.6 mean, exit_points 210 vs 199, unseen real +2.0 (training/sweep_check.py). Rollback: tag shipped-v7.
+        self.head_temperature = [1.0, 0.5, 1.0, 1.0, 1.0, 1.0]
         # Observation-based masking rules (docs/RULES.md §1), see _mask: "weapon" and/or "fist". Off: pooled over two
         # machines it was neutral (+1.8 ± 3.1) and "weapon" may hurt tier 4 (teammate 3 EVAL_I3 §6b).
         self.action_mask: frozenset[str] = frozenset()
