@@ -315,3 +315,116 @@ Reviewed `0258015` [core] (ship) and `6e68142` [core] (board). The teammate-3 co
 All three runs: **PASSED**, init 9.7 s.
 
 **Tests (i3):** `pytest tests/test_egomap.py tests/test_submission.py`: **8 passed**.
+
+## Strict review 22:10 (Task S)
+Independent of commit messages and `CHECKPOINTS.md`: every number below was recomputed from teammate-3 CSVs by script,
+or by a command whose output is quoted. Code at `e794b14`.
+
+**1. Rules sweep of `submission/`: PASS.** I read all three files line by line, checking every branch and loop.
+- **`agent.py:53-77`.** Action selection is only `model.forward_step` → `sample_and_logprob(logits / T)` →
+  `factored_to_multibinary`. The only `if` in the decision path is `None if self.first_step else self.prev_action`
+  (`:69`), which picks the EgoMap input, not a button. The `except` (`:59-62`) returns a no-op on error and never
+  chooses a button. The only I/O is `print` to stdout (`:60`): no file writes, no network.
+- **`preprocess.py`.** Every branch is encoding or EgoMap bookkeeping:
+  - `:70` prev-action default.
+  - `:146` grid scroll.
+  - `:158-168` heading dead-reckoning from our own turn bits.
+  - `:190` ray → wall/door/locked-door channels.
+  - `:195-197` key projection. `np.arctan2` here only computes a grid cell ("encoding only, never used to aim").
+  - `:206` crops.
+  - The front-cone summary (`:75-89`: nearest distance, door/locked door ahead, enemy visible) is a hand-built *input
+    feature*. That's allowed ("preprocessing and encoding observations", `docs/RULES.md` §1), but expect a judge to
+    ask about it. No planner, pathfinding or BFS anywhere: `grep -n "deque|heap|bfs|plan|path"` finds nothing in
+    `preprocess.py`.
+- **`model.py`.** Branches are init and plumbing only (`:25-27`, `:87` empty-entity mask, `:128,140,157` map
+  variant, `:188` GRU chunks, `:202-206` sample/argmax, `:213-230` loading). Weights load with
+  `weights_only=True` (`:215`).
+
+**2. Shipped and backup weights are the right files: PASS.**
+
+```text
+$ git show shipped-v2:submission/weights/best_agent.pt | grep oid      # tag -> 0258015
+oid sha256:a5eea925bf49dd35b7c569f92b3a853d7b253d653215742baee4594474b408bd
+$ git show origin/candidates:core_r2_2025.pt | grep oid
+oid sha256:a5eea925bf49dd35b7c569f92b3a853d7b253d653215742baee4594474b408bd
+$ git show shipped-v1:submission/weights/best_agent.pt | grep oid      # tag -> d37c9e4
+oid sha256:980f05c69b823dc694e365fb44c8edf5eb8a21f5449443a7671db37471963af0
+$ sha256sum submission/weights/best_agent.pt                           # after git lfs pull
+a5eea925bf49dd35b7c569f92b3a853d7b253d653215742baee4594474b408bd
+```
+
+`git lfs fetch origin shipped-v1` succeeds, and the v1 object (3,051,736 bytes) is in `.git/lfs/objects/98/0f/`, so
+a rollback would work.
+
+**3. Is shipping `core_r2_2025` justified? PASS: verdict `KEEP v2`.** Paired per-seed differences, v2 minus v1, at
+T = 1.0. CSVs: `i3_shipped`, `i3_core_r2_2025`, `i3_shipped_T0_s59`, `i3_core_r2_2025_T0_s59`.
+
+| Slice | n seeds | v1 | v2 | Δ ± SE | seeds worse | beyond 2 SE? |
+|---|---:|---:|---:|---:|---:|---|
+| overall (17 maps) | 5 | 31.16 | 34.85 | **+3.70 ± 1.08** | 0/5 | **better** |
+| T0 incl. `two_rooms` | 10 | 6.19 | 4.29 | −1.90 ± 1.98 | 6/10 | no |
+| **MAP25–32 only** | 10 | −4.60 | −7.77 | −3.17 ± 2.20 | 7/10 | no (1.4 SE) |
+| T1 | 5 | 102.03 | 102.29 | +0.26 ± 0.51 | 2/5 | no |
+| T2 | 5 | 57.96 | 98.60 | **+40.64 ± 16.09** | 0/5 | **better** |
+| T3 | 5 | 67.15 | 64.39 | −2.77 ± 16.38 | 2/5 | no |
+| T4 | 5 | 6.85 | 12.16 | +5.31 ± 5.90 | 1/5 | no |
+
+**No slice is significantly worse; overall and T2 are significantly better. `KEEP v2`.**
+- **Caveat:** on the truly unseen real maps (MAP25–32), v2 trends lower (−3.2 ± 2.2, worse on 7 of 10 seeds). It's
+  not significant, but it's the one slice to watch when picking the final checkpoint.
+- **Caveat:** T3 has only 2 maps, so its standard error (±16) is too wide to detect anything smaller than a collapse.
+
+**4. Leakage: RISK. `two_rooms` is in both the training set and the holdout.**
+- **Training:** `training/train_ppo.py:43`, `DEFAULT_TRAIN_MAPS = (["two_rooms"] + REAL_TRAIN_MAPS * 2 ...`.
+- **Holdout:** `training/eval_zeroshot.py:24` lists `"two_rooms"` first in `DEFAULT_HOLDOUT_MAPS`, and the docs say
+  it's never trained on.
+- **Clean:**
+  - MAP25–32 aren't in training: `REAL_TRAIN_MAPS = range(1, 25)` minus 11/12/15/23 (`train_ppo.py:42`).
+  - Generated training seeds are `rng.randrange(HOLDOUT_SEED_BASE)`, so always below 1e9 (`training/rewards.py:104`,
+    `maps/gen_maps.py:28`).
+  - `maps/holdout/*` isn't referenced by the trainer.
+  - The gen_maps self-test generates holdout seeds (`maps/gen_maps.py:377`), but it doesn't train on them.
+- **Impact, measured over 10 seeds (`i3_*_T0_s59` + §2/§4 CSVs):**
+
+  | Checkpoint | MAP25–32 exits | `two_rooms` exits | "T0" exits as reported |
+  |---|---:|---:|---:|
+  | v1 | **0% (0/80)** | 80% (8/10) | 9% |
+  | v2 | **0% (0/80)** | 90% (9/10) | 10% |
+
+  **Every exit we report on "real Freedoom maps" is `two_rooms`, a training map.** On the truly unseen MAP25–32, the
+  agent has never reached an exit. The "T0" score is also inflated: `two_rooms` averages 92–101 points, while
+  MAP25–32 average −4.6 (v1) / −7.8 (v2).
+- **Not a rule violation.** `two_rooms` is the official test map, not an evaluation map, and training on it is
+  allowed. But these docs claim "about 11% exits on real maps" and "two_rooms … never trained on", which is wrong:
+  `BRIEF.md` §5/§7, `04_PROCEDURAL_MAPS.md` §3, `DEMO_SCRIPT.md`, and `REVIEW_CHEATSHEET.md`. A judge comparing the docs
+  with `train_ppo.py:43` would catch it.
+
+**5. Reward hacking, tutor round 4 (`training/rewards.py`): PASS.** Every term is either paid once or monotonic and
+bounded:
+- cells: a set capped at 600 (`:165`);
+- doors: once per sector via `_opened_doors` (`:177`);
+- first key sighting: once (`:188`);
+- keys: the delta of sticky flags (`:191`);
+- kills and items: monotonic counters (`:197`, `:202`);
+- damage dealt: a monotonic `DAMAGECOUNT` delta (`:208-209`), bounded by total enemy HP;
+- **healing can't be farmed:** taking damage costs 0.03/hp (`:219`) and healing it back earns 0.025/hp (`:215`), so a
+  hurt-then-heal cycle loses 0.005/hp;
+- exit: paid once on the terminal step (`:223-227`);
+- no per-step penalty, so dying early never pays (`:229-230`).
+- **Side effect, not a hack:** death now costs 5 plus up to 3 for the damage taken. Watch for an over-passive agent
+  (fewer kills, lower T1).
+
+**6. Train/eval consistency: PASS.** The same sequence on both sides:
+
+| Step | Training | Agent |
+|---|---|---|
+| Reset | `_prev_action = 0` (`rewards.py:120`); `ego_map.reset(); update(obs, None)` (`:141-142`) | `prev_action = 0` (`agent.py:48`); `update(obs, None)` on the first step (`:69`) |
+| Each step | `_prev_action = mb_action` (`:236`); `update(obs, mb_action)` (`:244`); `preprocess_obs(obs, _prev_action)` + `crops()` (`:146-148`) | `preprocess_obs(obs, prev_action)` (`:66`); `update(obs, prev_action)` + `crops()` (`:69-70`) |
+| Action conversion | `factored_to_multibinary` (`rewards.py:156`) | `factored_to_multibinary` (`agent.py:75`) |
+
+**Summary:** 5 PASS, 1 RISK (item 4), **no BLOCKER. Item-3 verdict: `KEEP v2`.**
+
+QUESTION(core): `two_rooms` is a training map (`train_ppo.py:43`) but counted in the T0 holdout
+(`eval_zeroshot.py:24`), and it accounts for all of our "real-map" exits (MAP25–32: 0/80 exits). Should I correct
+my docs (`BRIEF.md`, `04_PROCEDURAL_MAPS.md`, `DEMO_SCRIPT.md`) to report MAP25–32 separately? They're outside my
+scope lock, so I won't touch them until you say so.
