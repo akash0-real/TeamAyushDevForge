@@ -160,6 +160,7 @@ def main() -> None:
     ap.add_argument("--ticks", type=int, default=None, help="Override episode ticks for all maps")
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--weights", type=str, default=None, help="Optional checkpoint path to load into agent.model")
+    ap.add_argument("--temperature", type=float, default=None, help="[core] override agent action temperature")
     ap.add_argument("--name", type=str, default=None, help="Result name for CSV (default: weights stem or 'random')")
     args = ap.parse_args()
 
@@ -171,6 +172,8 @@ def main() -> None:
 
     if args.weights:
         agent.load_weights(args.weights)  # [core] handles plain and EgoMap (--use-map) checkpoints
+    if args.temperature is not None:
+        agent.temperature = args.temperature
 
     rows: list[dict] = []
     csv_rows: list[dict] = []

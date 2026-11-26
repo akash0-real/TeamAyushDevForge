@@ -249,7 +249,28 @@ the EgoMap grid scrolls on big maps instead of smearing at the edge (your 2.2). 
 Also re-check the long 1,050-step run: the pose should end inside the grid now (`a.ego_map.ox` is non-zero after
 scrolling). Append the results to `AUDIT.md` under `## Re-check after 3cfa239` and commit `[t3] audit re-check`.
 
-### Task R — Continuous reviewer (every 30 min until 03:30 IST)
+### Speed-up (20:30 IST): use your whole i3, review faster
+- **Review cycle every 10 min** (not 30). Skip work that can't have changed: run `pytest` only if a new commit touched
+  `submission/` or `training/`; run `validate.py` only if it touched `submission/`. Docs-only commits: read the diff, done.
+- **Run evaluations in parallel.** Your i3 has 8 threads and one eval uses about 1 core and ~600 MB, so run up to
+  **3 evals at once** in separate PowerShell windows (keep ≥ 1.5 GB RAM free; close the browser if needed).
+- Order of work: **Task T first**, then Task R2 for every file on the `candidates` branch, with Task R reviews in between.
+
+### Task T — Action-temperature test (PRIORITY, ~30 min with 3 parallel evals)
+Teammate 2's replays showed twitchy turns and avoidable deaths. The agent samples its buttons at temperature 1.0;
+lower temperatures make it pick its most likely action more often. Find the best value on the shipped weights:
+```powershell
+git pull --rebase ; git lfs pull
+# three windows at once:
+uv run python training/eval_zeroshot.py --weights submission/weights/best_agent.pt --temperature 0.3 --name i3_T03 --seeds 0 1 2 --device cpu
+uv run python training/eval_zeroshot.py --weights submission/weights/best_agent.pt --temperature 0.5 --name i3_T05 --seeds 0 1 2 --device cpu
+uv run python training/eval_zeroshot.py --weights submission/weights/best_agent.pt --temperature 0.7 --name i3_T07 --seeds 0 1 2 --device cpu
+```
+Compare with T = 1.0 using **the same seeds 0 1 2** from your `training/results/i3_shipped.csv` (average those rows
+per map). Post a table `T | MEAN | T0 | T1 | T2 | T3 | T4 | exit %` in `EVAL_I3.md`, commit `[t3] temperature test`, and
+tell your human which T wins. The core owner then sets it in `submission/agent.py`.
+
+### Task R — Continuous reviewer (until 03:30 IST)
 You are now the team's code reviewer, so the core owner can spend its time on training. Use the token budget freely.
 Each cycle:
 1. `git pull --rebase && git lfs pull`. Review **every new commit** since your last cycle (`git log --oneline <last>..HEAD`,

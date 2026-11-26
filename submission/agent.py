@@ -30,6 +30,7 @@ class DoomAgent:
         self.model = load_policy(path, self.device) if path else DoomSpatialPolicy().to(self.device)
         self.model.eval()
         self.ego_map = EgoMap() if self.model.use_map else None
+        self.temperature = 1.0  # action-sampling temperature (logits / T); tuned on the holdout maps
         # Warm-up in __init__ (60 s limit) so the first act() of a map (10 s limit) isn't paying torch's lazy init:
         # measured ~4 s for the first act() on one pinned CPU core without this.
         with torch.inference_mode():
@@ -70,7 +71,7 @@ class DoomAgent:
         self.first_step = False
         obs_t = {k: torch.from_numpy(v).unsqueeze(0).to(self.device) for k, v in enc.items()}
         logits, _, self.h = self.model.forward_step(obs_t, self.h)
-        factored, _, _ = self.model.sample_and_logprob(logits, deterministic=False)
+        factored, _, _ = self.model.sample_and_logprob([lg / self.temperature for lg in logits])
         action = factored_to_multibinary(factored.squeeze(0).cpu().numpy())
         self.prev_action = action
         return action

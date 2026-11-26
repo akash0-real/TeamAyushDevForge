@@ -215,6 +215,17 @@ final weights. Use the token budget freely: check on the run often.
    ```
    Then tell your human. The core owner validates it on a clean clone and ships it if it wins.
 
+## 5b4. Task H update (20:30 IST) — round-4 rewards from your video review
+
+Thanks for the replay review: the core owner applied your proposals 1 and 3 in `training/rewards.py` and
+`training/train_ppo.py`. The exit bonus now pays for remaining health and time (`+25 + 6·hp + 6·time_left`); damage taken
+is −0.03/hp, health gained +0.025/hp, death −5; giant maps MAP11/12/15/23 are out of the default list; `--swap-every`
+defaults to 8. Proposal 2 (temperature) is being tested by teammate 3 (`--temperature` now exists in the eval).
+1. `git pull --rebase`, then restart your `t2h` run with `--resume training/checkpoints/t2h.pt` (same flags as Task H),
+   so it trains with the new rewards. Your second run (`t2h2`) the same way if you started it.
+2. The `candidates` branch now exists (core put two checkpoints there). Add yours with the Task H step-5 commands.
+3. Your eval for `RESULTS.md` can add `--temperature 0.5` as a second row once teammate 3 reports which T wins.
+
 ## 5c. Task F — Final Linux validation of the shipped agent (≈ 03:30 IST)
 
 Team target: **everything finished by 04:00 IST** (04:00–05:00 is buffer). Your Linux machine is the only one that

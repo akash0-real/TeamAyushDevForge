@@ -25,12 +25,12 @@ uv pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cuXXX 
 
 Smoke test (~2 min, must print `upd ... | ret ...` lines without crashing):
 ```powershell
-uv run python training/train_ppo.py --maps two_rooms --num-envs 4 --total-steps 20000 --save-path training/checkpoints/smoke.pt
+uv run --no-sync python training/train_ppo.py --maps two_rooms --num-envs 4 --total-steps 20000 --save-path training/checkpoints/smoke.pt
 ```
 
 Main run (default maps = MAP01–24 + two_rooms, episode length random 2100–4200 ticks like evaluation):
 ```powershell
-uv run python training/train_ppo.py --num-envs 12 --total-steps 20000000 --seed 42 --save-path training/checkpoints/main.pt
+uv run --no-sync python training/train_ppo.py --num-envs 12 --total-steps 20000000 --seed 42 --save-path training/checkpoints/main.pt
 ```
 - `--num-envs`: physical cores minus 2, max ~12.
 - Writes `<save-path>` (latest, every 10 updates) and `<stem>.best.pt` (best training return). Pick the

@@ -212,20 +212,22 @@ class ShapedDoomEnv(gym.Env):
         # Health pickups while hurt (the scorer's exit bonus counts remaining health)
         hp_gain = float(ps["health"] - prev["health"])
         if hp_gain > 0.0 and prev["health"] < 100.0:
-            reward += 0.01 * hp_gain
+            reward += 0.025 * hp_gain  # tutor round 4: was 0.01
 
         dmg = max(0.0, float(ps["damage_taken"] - prev["damage_taken"]))
         if dmg > 0.0:
-            reward -= 0.015 * dmg
+            reward -= 0.03 * dmg  # tutor round 4: was 0.015 (a kill paid more than tanking its hits cost)
             self._stats["damage_taken"] += dmg
 
         # 5. Terminal outcomes (no negative step penalty -> prevents early suicide)
         if ps["exit_reached"]:
-            hp_bonus = 2.0 * max(0.0, min(1.0, ps["health"] / 100.0))
-            reward += 25.0 + hp_bonus  # exit is the largest score category: keep it above max exploration (+24)
+            # tutor round 4: the scorer's exit bonus counts remaining health and time, so reward fast, healthy exits
+            hp_frac = max(0.0, min(1.0, ps["health"] / 100.0))
+            time_left = max(0.0, 1.0 - ps["tic"] / ps["episode_ticks"])
+            reward += 25.0 + 6.0 * hp_frac + 6.0 * time_left
             self._stats["exit_reached"] = 1.0
         elif ps["dead"]:
-            reward -= 3.0
+            reward -= 5.0  # tutor round 4: was 3.0; still no per-step penalty, so dying early never pays
             self._stats["dead"] = 1.0
 
         self._stats["steps"] += 1.0

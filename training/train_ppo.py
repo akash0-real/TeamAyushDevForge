@@ -38,7 +38,9 @@ IWAD = os.path.join(os.path.dirname(vd.__file__), "freedoom2.wad")
 # real Freedoom maps step ~3.4x slower (12 envs: 358 vs 1231 env steps/s), so they get 1/3 of the time.
 # tutor round 3: real Freedoom maps doubled (~half of loads; holdout real-map score fell 7.9 -> 2.2 while generated
 # tiers improved), tier 1 cut (100% on holdout)
-DEFAULT_TRAIN_MAPS = (["two_rooms"] + [f"MAP{i:02d}" for i in range(1, 25)] * 2
+# round 4: skip the 4 giant maps (539-863 sectors: a load/step there stalls the whole batch); 20 real maps remain
+REAL_TRAIN_MAPS = [f"MAP{i:02d}" for i in range(1, 25) if i not in (11, 12, 15, 23)]
+DEFAULT_TRAIN_MAPS = (["two_rooms"] + REAL_TRAIN_MAPS * 2
                       + ["gen1"] * 3 + ["gen2"] * 12 + ["gen3"] * 18 + ["gen4"] * 12)
 
 
@@ -85,7 +87,7 @@ def main() -> None:
     ap.add_argument("--rollout-steps", type=int, default=128)
     ap.add_argument("--total-steps", type=int, default=500_000)
     ap.add_argument("--episode-ticks", type=int, default=0, help="0 = random 2100-4200 per map load, like evaluation")
-    ap.add_argument("--swap-every", type=int, default=4)
+    ap.add_argument("--swap-every", type=int, default=8)
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--gamma", type=float, default=0.995)
     ap.add_argument("--gae-lambda", type=float, default=0.95)
