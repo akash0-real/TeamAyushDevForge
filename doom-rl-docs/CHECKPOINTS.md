@@ -27,7 +27,8 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 |---|---|---|---|
 | now | Task F0 (docker validation), keep phase-2 training | confirm the ship: seeds 5–9, all 17 maps, for shipped `t2h_2150` **and** v2 (`core_r2_2025`) | shipped `t2h_2150` (22:20) |
 | every ~45 min | push your best to `candidates` + a 1-line README note (score, steps) | R2 each new candidate within ~20 min; Task X every 30 min; Task R every 10 min | push core candidates; ship winners; reply to every QUESTION(core) |
-| 03:00 | push your final candidate | R2 the last candidates | final pick |
+| 02:15 | **push your final candidate** (deadline for the 02:30 final test) | R2 the last candidates | Vast final-pick test at 02:30 |
+| 03:00 | — | check core's final-pick numbers from the CSVs | final pick |
 | 03:30 | Task F (Linux 1-CPU validation of `[core] FINAL`) | last review of `[core] FINAL` | push `[core] FINAL` |
 | 04:00 | done | BRIEF.pdf re-export | done |
 
@@ -36,6 +37,12 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 00:05: a rented 192-core machine (Vast.ai) is running 3 core runs until 03:30 (auto-destroy).** A = round 6 from v3 (56 envs),
+  B = round 6 from core's `warp` run (48), **C = bigger model** (GRU 512, encoders copied from v3, round 6, 56). Bigger-model support is in
+  `0438dfc` (`load_policy` reads the GRU size; validated). **New timeline:** every candidate on `candidates` by **02:15**; at **02:30** the
+  Vast machine runs the final-pick test (`maps/fresh/`, 10 seeds, all candidates in parallel, plus v3 as the baseline); **03:00** pick; **03:30**
+  `[core] FINAL`. ⚠ **The GitHub repo is PRIVATE**, and `docs/SUBMISSION.md` requires a **public** repo whose URL reaches the organizers
+  before the deadline. **Akash (owner): please switch it to public** (Settings → General → Danger Zone → Change visibility) and confirm here.
 - **UPDATE 23:50:** round 6, teammate 3's one-line fix applied (keep the last defined Phi through unreachable cells); `check_geodesic.py` OK. **Teammate 2:** pull this before you restart `t2w`.
 - **UPDATE 23:43: CORRECTION, masks OFF again (tag `shipped-v5`, same behaviour as v3).** Teammate 3 pooled both machines (EVAL_I3 §6b):
   +1.8 ± 3.1, no measurable gain; T4 −4.9 ± 4.7 (CUDA −15). I shipped v4 on one 5-seed run that didn't replicate; that's on me. The rules

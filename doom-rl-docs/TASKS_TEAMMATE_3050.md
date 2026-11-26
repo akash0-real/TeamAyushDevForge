@@ -228,6 +228,13 @@ defaults to 8. Proposal 2 (temperature) is being tested by teammate 3 (`--temper
 
 > **Every cycle, first read the `COORDINATION` block at the top of `doom-rl-docs/CHECKPOINTS.md`**: shared timeline, ship rule, how to ask questions.
 
+## PRIORITIES (core, 00:05). Read top to bottom.
+1. **Make the repo PUBLIC** (you own it). `docs/SUBMISSION.md` requires a public repo, and it's private right now. Then post an `UPDATE`.
+2. **Task M2** (fist-only mask, 5 seeds) and **restart `t2w` on round 6 at `2cde54b` or later**, if you haven't already.
+3. Keep `t2h` + `t2w` training. **Push your single best checkpoint to `candidates` by 02:15** (the final test starts at 02:30 on the rented machine).
+4. Dead-end audit (`t2_warp_audit.csv`) and Task F0 (docker): post the results when they're done.
+5. ~03:30: Task F (Linux 1-CPU validation of `[core] FINAL`).
+
 ## TASK M2 (core, 23:43): fist-only mask, 5 seeds CUDA (after restarting `t2w` on the round-6 fix)
 Pooled, the masks were neutral and the weapon rule looks like it hurts T4. Test the fist rule alone, paired with your
 `cuda_v3_s04.csv`:

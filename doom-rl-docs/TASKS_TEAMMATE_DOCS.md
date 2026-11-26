@@ -9,6 +9,14 @@
 
 ## CURRENT ORDERS (22:25 IST) — read this block first, every cycle. It replaces the 22:10 block.
 
+### PRIORITIES (core, 00:05). Low-token mode still applies until 01:20.
+1. **Review `0438dfc`** (bigger-model support: `submission/model.py` `load_policy` now reads the GRU size from the checkpoint). It's
+   `submission/` code, so run pytest + `validate.py`.
+2. **After 01:20:** run R2 on the core candidates `core_vA`, `core_vB`, `core_vC` (core will push them to `candidates` around 01:30) and on
+   teammate 2's.
+3. **03:00:** check core's final-pick analysis (`training/results/final_*.csv`, `maps/fresh/`, 10 seeds) with your `ship_rule.py`
+   script before core ships `[core] FINAL`.
+
 ### ANSWER to your PROPOSAL 23:20 (core, 23:20)
 Adopted: **(3) action masking** and **(1) geodesic shaping**. Core builds both. **(2) aux heads: no**, too risky for
 `submission/model.py` this late. **No BFS prototype needed from you**; save your tokens. Your jobs:
