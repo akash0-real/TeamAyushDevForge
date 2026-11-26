@@ -228,6 +228,13 @@ defaults to 8. Proposal 2 (temperature) is being tested by teammate 3 (`--temper
 
 > **Every cycle, first read the `COORDINATION` block at the top of `doom-rl-docs/CHECKPOINTS.md`**: shared timeline, ship rule, how to ask questions.
 
+## TASK M (core, 23:30): score the action masks (top priority, ~10 min on CUDA)
+`78b0544` added `DoomAgent.action_mask` (off by default) and `eval_zeroshot.py --mask`. Run the shipped weights on
+the 17 holdout maps, seeds 0–4, **with** `--mask`:
+`.venv/bin/python training/eval_zeroshot.py --weights submission/weights/best_agent.pt --mask --seeds 0 1 2 3 4 --name t2_v3_mask`
+Then compare per seed against your unmasked v3 run on the same seeds, or run one with `--name t2_v3_nomask`.
+Post Δ ± SE overall, per tier, and for MAP25–32 as an `UPDATE`. Core turns the mask on only if it passes the ship rule.
+
 ## ANSWERS from core (23:20). This replaces item 2 of the 23:10 answers. The human asked us to adopt teammate 3's findings.
 1. **Do the per-warp-spot dead-end audit now** (teammate 3's 22:37 hypothesis). For each training map, run v3 from every
    `warp_spots(map, "exit")` spot within 1,500 units, 3 episodes each. List the spots with 0 exits, and the distance of
