@@ -1,15 +1,13 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
-## Live Status for Core (Havish) & Reviewer (Ayush) — Updated `22:16 IST`
-- **Congrats on shipping `t2h_2150` (`shipped-v3`, i3 5-seed `40.53`, T3 `7/10`, MAP25–32 `-1.0`)!** Pulled `400a820` + LFS cleanly.
-- **Active training (`task-665`):** Phase 2 Round-4 `t2h.pt` running on `376340f` rewards (`--resume t2h_2150_score46_62.pt`, `--lr 1.5e-4`, 24 envs, `~935 fps`, currently `>700k` Round-4 steps, `T3: 28–32%` exits, `6.4 GiB` RAM free, `60°C`). Next 30-min holdout eval (`--seeds 0 1 2`) fires at **`~22:28 IST`**; will push to `origin/candidates` whenever a checkpoint beats the `40.53` bar + ship rule.
-- **Task F0 (`validate.py --docker`):** `docker build -t devforge-doom .` is actively building on our Linux host right now (`dockerd 29.10.0` running). Will paste full container validation output below as soon as the build completes.
-- **Demo videos pushed:** Side-by-side gameplay + live EgoMap recordings (including unseen Tier-2 exit in 123 steps & unseen Tier-3 key→lock→exit in 516 steps) are on the orphan **`origin/demos`** branch (`FULL_DEMO_SHOWCASE.mp4`, `03_tier3_keycard_backtrack.mp4`, `02_tier2_unseen_exit.mp4`) so `main` stays lean.
-- **Auto-sync armed:** Polling `origin/main` every 10 min (`COORDINATION` + `TASKS_TEAMMATE_3050.md`) and evaluating every ~30 min until `03:00 IST`, then Task F Linux final validation at `03:30 IST`.
+## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 22:37:** Pulled `33383b8` — awesome to see `shipped-v3` (`t2h_2150`) confirmed on 10 seeds (`42.30`, `+9.3 ± 2.5`, MAP25–32 `+7.8 ± 1.7`, T3 `14/20`). Round-4 1.2M-step eval done: `t2h_r4_2225` `44.58` (`T3 126.51 / 83%`, `MAP25–32 -3.79`) and `t2h_r4_best_2225` `39.68` (`MAP25–32 -1.06`, `T4 28.11`) — not pushed to `candidates` to save T3's low-token R2 budget. **Task H2 live:** dual-trainer running in shared PID namespace (`t2h` 24 envs `~619 fps` + `t2w` 12 envs `~387 fps` = **`~1,006` combined fps**, `3.7 GiB` RAM free, `60°C`); **`t2w` already getting real-map reverse-curriculum exits `T5: 6–8%` (`T3: 54%`, `T2: 57%`, `T0: 4–16%`)**, `t2h` `T5: 2–12%` (`T3: 37%`). **Task F0 (`docker build -t devforge-doom .`)** still downloading `docker/requirements.lock` (`stage 6/9`); will run `validate.py --docker` immediately on completion. Next: `t2w` + `t2h` 3-seed eval & `t2w_2300.pt` push to `candidates` at ~`23:00–23:10 IST`.
+- **UPDATE 22:16:** Pulled `400a820` (`shipped-v3`), started Task F0 `docker build`, pushed gameplay + live EgoMap demo videos to orphan branch `origin/demos` (`FULL_DEMO_SHOWCASE.mp4`, `03_tier3_keycard_backtrack.mp4`, `02_tier2_unseen_exit.mp4`), armed 10-min auto-sync + 30-min evals.
 
 **QUESTION(core):**
-1. Now that `t2h_2150` is shipped (`40.53`, T3 `7/10`, MAP25–32 `-1.0`), should our Phase-2 Round-4 `t2h` keep `20 Freedoom + two_rooms + 6×gen3 + 4×gen4`, or add `gen2` / boost `gen4` (e.g., `2×gen2 + 6×gen3 + 6×gen4`) to push Tier-4 two-lock exits without regressing T2?
-2. Our Linux host has Docker running cleanly (`29.10.0`) but does not have `nvidia-container-toolkit` installed yet. For Task F0, is `validate.py --docker --image devforge-doom --no-gpu` (exact official image, `--network none`, read-only FS, `--cap-drop ALL`, 1-CPU pin, RAM) + native Linux CUDA `validate.py --device cuda` (`130 MB` VRAM) sufficient, or do you want us to install `nvidia-container-toolkit` for GPU-inside-Docker too?
+1. Now that `t2h_2150` is confirmed (`42.30`, T3 `14/20`, MAP25–32 `-0.9`), should `t2h` keep `20 Freedoom + two_rooms + 6×gen3 + 4×gen4`, or add `gen2` / boost `gen4` (e.g., `2×gen2 + 6×gen3 + 6×gen4`) to push Tier-4 two-lock exits without regressing T2?
+2. Our Linux host has Docker `29.10.0` running cleanly, without `nvidia-container-toolkit`. For Task F0, is `validate.py --docker --image devforge-doom --no-gpu` (exact official image, `--network none`, read-only FS, `--cap-drop ALL`, 1-CPU pin, RAM) + native Linux CUDA `validate.py --device cuda` (`130 MB` VRAM) sufficient, or should we install `nvidia-container-toolkit` too?
+3. Note for Task H2: because `training/rewards.py` uses `f"{os.getpid()}.wad"`, launching `t2h` + `t2w` in one shared PID namespace avoids collisions; both now run Round-5 `rewards.py` (`t2h` real-map+`gen3`/`gen4` mix, `t2w` `DEFAULT_TRAIN_MAPS`). Both already show `T5 > 0%` exits! Confirm this setup looks good.
 
 ---
 
@@ -92,7 +90,8 @@ T4 mean score:  -17.73 (n=2, exit=   0%)
   - **Saved record backup:** `training/checkpoints/egomap_s77_1948_score31.pt` (3.0 MB).
 - **Task H Primary Run (`training/checkpoints/t2h.pt`, `--use-map`, scrolling EgoMap + torch-free workers):**
   - **Phase 1 (`20:19–21:50 IST`, round-3 rewards):** `5.25M` new steps (`~8.6M` total) at **`966–969 fps`** (`rollout 5.2–5.8s`, `update 0.9–1.0s`, `6.6 GiB` RAM free, `63.6°C`). Peaked at **`46.62` MEAN score** (`T0: 9.45`, `T1: 101.78`, `T2: 98.51`, **`T3: 124.42 / 83% exits!`**, **`T4: 29.05`**) — pushed to `origin/candidates` as `t2h_2150_score46_62.pt`!
-  - **Phase 2 (`21:57 IST` → running, round-4 rewards from `376340f`):** Resumed from `t2h_2150_score46_62.pt` (`--lr 1.5e-4`, `24` envs, `256` steps, `2` minibatches, `--seed 78`, 20 compact Freedoom + `two_rooms` + `6× gen3` + `4× gen4`).
+  - **Phase 2 (`21:57–22:24 IST`, round-4 rewards from `376340f`):** Resumed from `t2h_2150_score46_62.pt` (`--lr 1.5e-4`, `24` envs, `256` steps, `2` minibatches, `--seed 78`, 20 compact Freedoom + `two_rooms` + `6× gen3` + `4× gen4`), completed `~1.2M` Round-4 steps (`t2h_r4_2225`: `44.58` MEAN, `T3 83%`).
+  - **Dual-Trainer Round 5 (`22:28 IST` → running, `check_warp_curriculum.py` OK):** Running **`t2h` (`24` envs, seed 78, resumed from `t2h_r4_1200k_snap.pt`)** + **Task H2 `t2w` (`12` envs, seed 79, `DEFAULT_TRAIN_MAPS`, resumed from `t2h_2150_score46_62.pt`)** together in one shared PID namespace (`~1,006` combined fps, `3.7 GiB` RAM free, `60°C`). Both immediately hit real-map reverse-curriculum exits (`T5: 6–8%` on `t2w`, `T5: 2–12%` on `t2h`).
 
 ---
 
@@ -105,7 +104,11 @@ T4 mean score:  -17.73 (n=2, exit=   0%)
 | 19:48 | egomap_s77_1948 (EgoMap latest; T0:3.15 T1:101.20 T2:56.03 T3:52.89 T4:18.36) | ~1,610,000 | 28.55 | 24% | 0.1 | 1.0 | 1.1 | 9.44 | — |
 | 19:48 | egomap_s77_best_1948 (EgoMap best; T0:7.31 T1:101.47 T2:92.83 T3:20.32 T4:15.99) | ~1,580,000 | 31.00 | 25% | 0.1 | 1.1 | 1.1 | 8.13 | PASS (exit in 384 steps, 12.4 ms p50, 130 MB VRAM) |
 | 21:50 | t2h_2150 (Task H latest; T0:9.03 / MAP25-32:-3.79(0%) T1:100.90 T2:112.97(100%) T3:111.51(67%) T4:12.85) | ~8,650,000 | 44.57 | 37% | 0.1 | 1.2 | **1.7** | 5.46 | — |
-| 21:50 | **t2h_best_2150** *(pushed to `candidates`!)* (T0:**9.45** / MAP25-32:**-3.11(0%)** T1:**101.78** T2:98.51 T3:**124.42(83%)** T4:**29.05**) | ~8,300,000 | **46.62** | **37%** | **0.2** | **1.3** | 1.4 | **3.57** | **PASS (exit in 68 steps, 9.0 ms p50, 130 MB VRAM)** |
+| 21:50 | **t2h_best_2150** *(shipped as `shipped-v3`, i3 10-seed `42.30`!)* (T0:**9.45** / MAP25-32:**-3.11(0%)** T1:**101.78** T2:98.51 T3:**124.42(83%)** T4:**29.05**) | ~8,300,000 | **46.62** | **37%** | **0.2** | **1.3** | 1.4 | **3.57** | **PASS (exit in 68 steps, 9.0 ms p50, 130 MB VRAM)** |
+| 22:25 | t2h_r4_2225 (Round-4 latest; T0:8.98 / MAP25-32:-3.79(0%) T1:101.97(100%) T2:95.28(83%) T3:**126.51(83%)** T4:14.80) | ~9,500,000 | 44.58 | 37% | 0.2 | 1.0 | 1.0 | 10.29* | — |
+| 22:25 | t2h_r4_best_2225 (Round-4 best; T0:**11.25** / MAP25-32:**-1.06(0%)** T1:101.90(100%) T2:82.38(67%) T3:74.24(33%) T4:28.11) | ~9,500,000 | 39.68 | 29% | 0.1 | 1.1 | **1.8** | 12.41* | — |
+
+*\*`ms/step` inflated because 36 ViZDoom training workers + `docker build` ran simultaneously on the same CPU.*
 
 ---
 
