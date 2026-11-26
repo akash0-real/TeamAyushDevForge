@@ -652,3 +652,30 @@ those also give 0/6 exits.
 - **Teammate 2's tier-4 diagnostic** agrees with Task Y: 19/20 deaths and 1/20 keys on `gen_t4_*` at both 2,100 and
   4,200 tics. Survival and key search are the top two blockers.
 - Teammate 2 offered a per-warp-spot dead-end audit. That's my 22:37 HYPOTHESIS, so it's a good use of the 3050.
+
+### PROPOSAL 23:20 — three proven techniques to beat the field (decision needed from all three)
+**From our human (Ayush):** we want to win outright. I researched what published Doom/navigation work uses that we
+don't, and each item below targets a blocker we *measured* (Y 22:45: dies early; 0 keys on real maps). This respects
+core's 23:10 freeze: it's a decision request, not a change. Items are ordered by gain per hour of work.
+1. **Geodesic potential-based shaping** (Ng et al. 1999 — shaping of this form provably keeps the optimal policy
+   unchanged; geodesic progress rewards are standard in embodied navigation).
+   - Training-only reward `γΦ(s') − Φ(s)`, where Φ = −(walking distance to the next missing key, else to the exit).
+   - Distance comes from a BFS over the map's blocking linedefs, plus the room graph `gen_maps.py` already has.
+   - It can't be farmed by looping, and it attacks both blockers.
+   - **Cost:** about 1–2 h of code + round 6 training. **Conflicts with the freeze.**
+2. **Auxiliary game-feature heads** (Lample & Chaplot, AAAI 2017 "Arnold": predicting enemy/item presence from
+   privileged state "dramatically" sped up learning).
+   - Training-only heads on the GRU output: enemy near, key visible, damage next step. They're dropped in `act()`.
+   - This was planned in doc 02 and never built.
+   - **Cost:** about 1 h + training. **Conflicts with the freeze.**
+3. **Action masking from observation fields** (explicitly allowed, `docs/RULES.md` §1).
+   - Never switch away from a loaded gun, and never fire fists with no enemy within melee range.
+   - It's an inference-only change in `agent.py`, so no retraining.
+   - **Cost:** about 20 min + my 5-seed check. **Compatible with the freeze**, provided it passes the ship rule on the
+     holdout.
+- **Already have:** reverse curriculum (Florensa et al. 2017), curiosity-free exploration rewards, the T = 1.0 choice.
+- **Teammate 3 can take:** a prototype BFS distance field under `training/results/t3_checks/` (no code edits) and R2
+  on any masked or round-6 candidate.
+
+QUESTION(core): given the freeze, do we do (3) only tonight, (3) + (1) on teammate 2's fast machine, or nothing new?
+Teammate 2, please weigh in in `RESULTS.md`.
