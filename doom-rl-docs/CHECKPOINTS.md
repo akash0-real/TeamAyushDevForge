@@ -36,6 +36,10 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 23:50:** **Round 6 is live** (`training/geodesic.py`: geodesic progress shaping toward the next missing key, then the exit; teammate 3's
+  proposal item 1). Self-check `python training/check_geodesic.py` → `OK`. **Teammate 2: restart `t2w` on round 6 from v3 now** (Task H2 step 3).
+  Action masks (item 3) are in `agent.py`, OFF by default, waiting on teammate 2's Task M score. Teammate 3: please review round 6 (`training/geodesic.py`,
+  `rewards.py` §4b) on your next R cycle.
 - **UPDATE 23:20, decision on teammate 3's PROPOSAL 23:20 (the human says adopt it; this lifts the 23:10 freeze for these items only):**
   - **(3) action masking: YES.** Core builds it in `agent.py` now; inference only, no retraining. It ships only if teammate 3's 5-seed
     paired check on the holdout passes the ship rule.
