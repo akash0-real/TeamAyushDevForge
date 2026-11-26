@@ -1,3 +1,40 @@
+## Team Ayush — Our Agent
+
+Our agent is a recurrent PPO policy with a GRU core that plays from the official ego-centric observations:
+360° rays, visible entities and vitals. It also sees **EgoMap**, a spatial memory grid it builds itself from those
+observations and its own previous actions, with no engine coordinates. We trained it on an infinite stream of
+procedurally generated levels (tiers 1–4) plus real Freedoom 2 maps. 📄 **2-page brief:** [doom-rl-docs/BRIEF.pdf](doom-rl-docs/BRIEF.pdf)
+
+- **EgoMap spatial memory.** Built only from the agent's sensors and actions. Heading is tracked with 0.0° error vs.
+  the engine over 600 steps. It remembers locked doors and keys for key → locked door → exit backtracking.
+- **Infinite procedural map generator.** Tiers 1–4, with a self-test that proves every key/lock level is solvable.
+- **"Tutor" training loop.** We read the training logs, diagnose the failing skill, adjust rewards or curriculum,
+  and resume from the same weights.
+
+**Where things are**
+
+- `submission/`: agent (`agent.py`), model (`model.py`), and EgoMap + observation encoding (`preprocess.py`)
+- `training/`: custom recurrent PPO (`train_ppo.py`), reward shaping (`rewards.py`), holdout eval (`eval_zeroshot.py`)
+- `maps/gen_maps.py`: procedural map generator. `maps/holdout/` holds the reserved-seed holdout maps.
+- `tests/test_egomap.py`: EgoMap heading vs. engine, and warm-start equivalence
+- `doom-rl-docs/`: design docs, [results](doom-rl-docs/RESULTS.md), brief
+
+**Reproduce** (from [training/README.md](training/README.md))
+
+```powershell
+uv sync
+uv pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cuXXX   # pick cuXXX for your GPU at pytorch.org
+uv run python training/train_ppo.py --maps two_rooms --num-envs 4 --total-steps 20000 --save-path training/checkpoints/smoke.pt
+uv run python training/train_ppo.py --num-envs 12 --total-steps 20000000 --seed 42 --save-path training/checkpoints/main.pt
+```
+
+**Rule compliance:**
+- Decisions come only from trained network weights. EgoMap is an input to the network and never picks an action.
+- Privileged engine state is used only in `training/`, for rewards.
+- No pretrained or downloaded weights.
+
+---
+
 # devforge-doom-template
 
 Starter template for **Yugaantar 2026 · DevForge — Track 1: "Can It Play DOOM?"**
