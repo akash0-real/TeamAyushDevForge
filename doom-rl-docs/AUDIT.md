@@ -902,3 +902,8 @@ run, compared on weighted exits and doors opened. Ship only if both machines agr
 ### UPDATE 01:55
 - **v7 confirmed on a second machine:** +6.3 ± 2.9 overall, T3 exits 9/10 vs 5/10, weighted exits 51 vs 37
   (`EVAL_I3.md` §9). Keep v7.
+
+### UPDATE 02:22
+- **v9 confirmed on the i3:** it passes the ship rule vs v8. T3 exits 10/10, T4 score +13.2 ± 3.1 (significant), weighted
+  exits 54 vs 53 (`EVAL_I3.md` §10).
+- The v9 weights are byte-identical to `candidates:core_soupA_0200.pt` (sha256 `7b2f37c9…`).

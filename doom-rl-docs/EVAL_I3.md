@@ -403,3 +403,16 @@ Also: **v6 `validate.py --device cpu` on the i3:**  ✓ Step latency 'two_rooms.
 
 The ship rule passes, and both machines agree with core's 10-seed run (98 vs 89). **Keep v7.**
 v7 `validate.py --device cpu` (i3):  ✓ Step latency 'two_rooms.wad:MAP01': first 11 ms, p50 6.2 ms, p99 12.6 ms, max 14 ms PASSED with 2 warning(s). 
+
+### 10. v9 (weight average) confirmed on the i3; `t2h_0122` not better than v7
+**v9 vs v8** (`i3_soupA.csv` vs `i3_v8.csv`, seeded, 5 seeds, paired; the v8 baseline loaded its weights before the
+v9 swap): **SHIP RULE PASS.**
+- overall +1.7 ± 2.1 (no measurable difference);
+- **T3 exits 10/10** vs 9/10;
+- **T4 score +13.2 ± 3.1, significant** (better on 5/5 seeds; T4 exits 0 for both);
+- weighted exits 54 vs 53;
+- MAP25–32 +1.6 ± 2.3.
+
+**Keep v9.**
+
+**`t2h_0122` vs v7** (`i3_t2h_0122.csv`, turn 0.5, seeded): **ship rule FAIL** (weighted exits 47 vs 51; T4 −11.9 ± 3.7).
