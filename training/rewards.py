@@ -45,27 +45,38 @@ GEN_CACHE.mkdir(parents=True, exist_ok=True)
 # start further back as it succeeds, so the agent experiences finishing big maps it can't yet cross from the start.
 WARP_PROB = 0.5
 EXIT_SPECIALS = (11, 51, 52, 124, 197, 198)  # Doom-format exit line specials (switch / walk-over / shoot)
-_EXIT_SPOTS: dict[str, tuple[list, list]] = {}
+KEY_WARP_PROB = 0.4  # of warped episodes on maps with keys: start near a key instead (teammate 3 Task Y: 0 keys on real maps)
+KEY_THINGS = (5, 6, 13, 38, 39, 40)  # blue/yellow/red keycards and skull keys
+_WARP_SPOTS: dict[tuple[str, str], tuple[list, list]] = {}
+
+
+def warp_spots(map_name: str, kind: str = "exit") -> tuple[list, list]:
+    """(targets, spawn spots sorted by distance to the nearest target) for an IWAD map; targets are exit line
+    midpoints (kind "exit") or key positions (kind "key"). Spawn spots are item and player-start positions: always on
+    a reachable floor, never inside a monster."""
+    if (map_name, kind) not in _WARP_SPOTS:
+        L = map_lumps(read_wad(IWAD), map_name)
+        things = [struct.unpack_from("<hhhhh", L["THINGS"], i) for i in range(0, len(L["THINGS"]), 10)]
+        targets = []
+        if kind == "key":
+            targets = [(x, y) for x, y, _a, t, _f in things if t in KEY_THINGS]
+        else:
+            vx = [struct.unpack_from("<hh", L["VERTEXES"], i) for i in range(0, len(L["VERTEXES"]), 4)]
+            for i in range(0, len(L["LINEDEFS"]), 14):
+                v1, v2, _fl, sp, _tag, _f, _b = struct.unpack_from("<HHHHhHH", L["LINEDEFS"], i)
+                if sp in EXIT_SPECIALS:
+                    targets.append(((vx[v1][0] + vx[v2][0]) / 2, (vx[v1][1] + vx[v2][1]) / 2))
+        spots = sorted(
+            (min(math.hypot(x - tx, y - ty) for tx, ty in targets), x, y)
+            for x, y, _a, t, _f in things
+            if targets and (2000 <= t <= 2049 or t in (1, 8, 11))
+        )
+        _WARP_SPOTS[(map_name, kind)] = (targets, spots)
+    return _WARP_SPOTS[(map_name, kind)]
 
 
 def exit_spots(map_name: str) -> tuple[list, list]:
-    """(exit line midpoints, spawn spots sorted by distance to the nearest exit) for an IWAD map.
-    Spawn spots are item and player-start positions: always on a reachable floor, never inside a monster."""
-    if map_name not in _EXIT_SPOTS:
-        L = map_lumps(read_wad(IWAD), map_name)
-        vx = [struct.unpack_from("<hh", L["VERTEXES"], i) for i in range(0, len(L["VERTEXES"]), 4)]
-        exits = []
-        for i in range(0, len(L["LINEDEFS"]), 14):
-            v1, v2, _fl, sp, _tag, _f, _b = struct.unpack_from("<HHHHhHH", L["LINEDEFS"], i)
-            if sp in EXIT_SPECIALS:
-                exits.append(((vx[v1][0] + vx[v2][0]) / 2, (vx[v1][1] + vx[v2][1]) / 2))
-        spots = []
-        for i in range(0, len(L["THINGS"]), 10):
-            x, y, _a, t, _f = struct.unpack_from("<hhhhh", L["THINGS"], i)
-            if exits and (2000 <= t <= 2049 or t in (1, 8, 11)):
-                spots.append((min(math.hypot(x - ex, y - ey) for ex, ey in exits), x, y))
-        _EXIT_SPOTS[map_name] = (exits, sorted(spots))
-    return _EXIT_SPOTS[map_name]
+    return warp_spots(map_name, "exit")
 
 
 class ShapedDoomEnv(gym.Env):
@@ -147,12 +158,13 @@ class ShapedDoomEnv(gym.Env):
         self._ep_count += 1
         ep_seed = self.rng.randint(0, 2**30 - 1)
         raw_obs, info = self._env.reset(seed=ep_seed)
-        self._warped = False
+        self._warped = False  # False, "exit" or "key"
         wad, map_name, _ = self._cur_spec
         if wad == IWAD and self.rng.random() < WARP_PROB:
-            _exits, spots = exit_spots(map_name)
+            kind = "key" if warp_spots(map_name, "key")[1] and self.rng.random() < KEY_WARP_PROB else "exit"
+            _targets, spots = warp_spots(map_name, kind)
             if spots:
-                radius = self._warp_radius.setdefault(map_name, 768.0)
+                radius = self._warp_radius.setdefault(f"{map_name}:{kind}", 768.0)
                 near = [sp for sp in spots if sp[0] <= radius] or spots[:3]
                 _d, x, y = self.rng.choice(near)
                 g = self._env._game
@@ -163,7 +175,7 @@ class ShapedDoomEnv(gym.Env):
                 if term or trunc:  # shouldn't happen; fall back to a normal start
                     raw_obs, info = self._env.reset(seed=ep_seed)
                 else:
-                    self._warped = True
+                    self._warped = kind
                     self._warp_tics = int(info["tic"]) - tic0
         ps = self._env.privileged_state()
 
@@ -185,7 +197,8 @@ class ShapedDoomEnv(gym.Env):
             "damage_taken": 0.0,
             "steps": 0.0,
             "return": 0.0,
-            "tier": 5.0 if self._warped else float(self._tier),  # T5 in the log = real map, started near the exit
+            # T5 / T6 in the log = real map started near the exit / near a key
+            "tier": {"exit": 5.0, "key": 6.0}.get(self._warped, float(self._tier)),
         }
         if self.ego_map is not None:
             self.ego_map.reset()
@@ -289,9 +302,10 @@ class ShapedDoomEnv(gym.Env):
 
         if terminated or truncated:
             if self._warped:  # move the start further back after a success, closer after a failure
-                m = self._cur_spec[1]
+                m = f"{self._cur_spec[1]}:{self._warped}"
+                won = ps["exit_reached"] if self._warped == "exit" else self._stats["keys"] > 0
                 r = self._warp_radius[m]
-                self._warp_radius[m] = min(r * 1.25, 12000.0) if ps["exit_reached"] else max(r * 0.95, 512.0)
+                self._warp_radius[m] = min(r * 1.25, 12000.0) if won else max(r * 0.95, 512.0)
             info = dict(info)
             info["episode_stats"] = dict(self._stats)
             info["map"] = f"{Path(self._cur_spec[0]).name}:{self._cur_spec[1]}"
