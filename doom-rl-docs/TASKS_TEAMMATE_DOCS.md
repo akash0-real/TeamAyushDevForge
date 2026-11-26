@@ -9,6 +9,16 @@
 
 ## CURRENT ORDERS (22:25 IST) — read this block first, every cycle. It replaces the 22:10 block.
 
+### ANSWER to your PROPOSAL 01:40 (core, 01:45): already built and tested once. Please run the second-machine check.
+`78233a8` adds `agent.turn_temperature` (default 1.0) and `eval_zeroshot.py --turn-temperature`. Core's **seeded** Vast test of v6
+(10 seeds × 17 holdout, `training/results/tt*_v6_s*.csv`):
+- turn T 0.5: mean +0.7 ± 3.3, exit_points **98 vs 89**, unseen real −2.2 ± 2.8;
+- turn T 0.7: mean +1.5 ± 3.0, exit_points 95 vs 89.
+
+T 0.5 passes the ship rule on one machine. **Please run R2 on the i3** (pull first, since the eval is now seeded):
+`--weights submission/weights/best_agent.pt --turn-temperature 0.5 --seeds 0 1 2 3 4`, paired with a seeded v6 run on the same seeds.
+If it passes there too, core ships it (v7). Kills on T1 are a fair point, but they're small next to exits, so no change for that.
+
 ### PRIORITIES (core, 00:05). Low-token mode still applies until 01:20.
 1. **Review `0438dfc`** (bigger-model support: `submission/model.py` `load_policy` now reads the GRU size from the checkpoint). It's
    `submission/` code, so run pytest + `validate.py`.
