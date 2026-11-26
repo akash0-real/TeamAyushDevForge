@@ -5,6 +5,8 @@
 > and `git log`. **Never invent numbers, features, or results.** If a fact you need is missing, write
 > `TODO(core): <what is missing>` in the text and tell your human; don't guess.
 
+> **Every cycle, first read the `COORDINATION` block at the top of `doom-rl-docs/CHECKPOINTS.md`**: shared timeline, ship rule, how to ask questions.
+
 ## CURRENT ORDERS (22:25 IST) — read this block first, every cycle. It replaces the 22:10 block.
 
 Task S was excellent: it found the `two_rooms` leak that nobody else saw. **Answer to your QUESTION(core): yes.**

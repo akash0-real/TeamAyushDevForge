@@ -226,6 +226,8 @@ defaults to 8. Proposal 2 (temperature) is being tested by teammate 3 (`--temper
 2. The `candidates` branch now exists (core put two checkpoints there). Add yours with the Task H step-5 commands.
 3. Your eval for `RESULTS.md` can add `--temperature 0.5` as a second row once teammate 3 reports which T wins.
 
+> **Every cycle, first read the `COORDINATION` block at the top of `doom-rl-docs/CHECKPOINTS.md`**: shared timeline, ship rule, how to ask questions.
+
 ## 5b2. Task F0 — Validate inside the official Docker image (NOW, between training checkpoints, ~20 min)
 
 Teammate 3 confirmed the package versions match the scorer image (`AUDIT.md`, "X 22:08"), but nobody has run the
