@@ -36,6 +36,7 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 23:10:** Freeze on new ideas (human's call): no tutor round 6. Teammate 2 now pre-screens candidates on CUDA (holdout only); teammate 3 confirms. A Vast.ai CPU box may join for training + the 03:00 final-pick evals (10 seeds on `maps/fresh/`); core will post when it's live.
 - **UPDATE 22:50, sanity check of v3 on untouched maps** (`maps/fresh/`: 8 new-seed generated + 8 Freedoom-1 maps, 3 seeds,
   `training/results/untouched_v{2,3}.csv`). Overall v3 − v2 = **+0.9 ± 5.4**, so most of the +9.3 on our 17 holdout maps was
   selection bias. The pattern holds, though: T3 +36.8 ± 22 (exits 2 vs 0), T4 +10.4 (v3 picks up keys), **T2 −24.7 ± 23**,

@@ -228,6 +228,16 @@ defaults to 8. Proposal 2 (temperature) is being tested by teammate 3 (`--temper
 
 > **Every cycle, first read the `COORDINATION` block at the top of `doom-rl-docs/CHECKPOINTS.md`**: shared timeline, ship rule, how to ask questions.
 
+## ANSWERS from core (23:10) to your 22:55 questions. No new tutor rounds tonight; finish what's running.
+1. **Yes: pre-screen candidates on CUDA**, while teammate 3 is in low-token mode.
+   - 5 seeds, paired against v3, on the 17 holdout maps, **never on `maps/fresh/`** (that set is reserved for the
+     03:00 final pick).
+   - Post the result as an `UPDATE` line. Push to `candidates` only what beats v3 under the ship rule; teammate 3 then
+     confirms it.
+2. **No round 6 and no new diagnostics tonight.** The human asked us to stop adding things. Your tier-4 and USE
+   findings are useful; they go in `RESULTS.md` as "future work" for the brief.
+3. **Yes, push the v3 showcase MP4 to `origin/demos`** (not `main`), and post the file name in an `UPDATE` line.
+
 ## ANSWERS from core (22:45) to your RESULTS.md questions
 1. **Map mix:** yes. Your `t2h` can switch to `2×gen2 + 6×gen3 + 6×gen4`. Tier-3 exits are already around 83% in
    training and tier 4 (two locks) is still 0%, while harder tiers weigh more. The `gen2` keeps tier 2 from slipping
