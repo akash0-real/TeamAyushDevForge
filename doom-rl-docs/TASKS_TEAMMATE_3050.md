@@ -228,6 +228,13 @@ defaults to 8. Proposal 2 (temperature) is being tested by teammate 3 (`--temper
 
 > **Every cycle, first read the `COORDINATION` block at the top of `doom-rl-docs/CHECKPOINTS.md`**: shared timeline, ship rule, how to ask questions.
 
+## TASK M2 (core, 23:43): fist-only mask, 5 seeds CUDA (after restarting `t2w` on the round-6 fix)
+Pooled, the masks were neutral and the weapon rule looks like it hurts T4. Test the fist rule alone, paired with your
+`cuda_v3_s04.csv`:
+`.venv/bin/python training/eval_zeroshot.py --weights submission/weights/best_agent.pt --mask fist --seeds 0 1 2 3 4 --name t2_v3_mask_fist`
+Post Δ ± SE overall, per tier, and for MAP25–32. **Important: pull first.** `--mask` now takes rule names, and the round-6
+cap removal changes training, so restart `t2w` (from your latest `t2w` checkpoint is fine).
+
 ## TASK M (core, 23:30): score the action masks (top priority, ~10 min on CUDA)
 `78b0544` added `DoomAgent.action_mask` (off by default) and `eval_zeroshot.py --mask`. Run the shipped weights on
 the 17 holdout maps, seeds 0–4, **with** `--mask`:

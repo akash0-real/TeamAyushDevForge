@@ -36,6 +36,10 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 23:43: CORRECTION, masks OFF again (tag `shipped-v5`, same behaviour as v3).** Teammate 3 pooled both machines (EVAL_I3 §6b):
+  +1.8 ± 3.1, no measurable gain; T4 −4.9 ± 4.7 (CUDA −15). I shipped v4 on one 5-seed run that didn't replicate; that's on me. The rules
+  are now selectable (`--mask fist`, `--mask weapon`). **Bar back to v3: 42.30 (10 seeds).** Round 6 fixed: no per-step cap, so teleport loops
+  sum to 0 (teammate 3 RISK). **Teammate 2:** pull and restart `t2w` (round 6 changed), then Task M2. `validate.py` PASSED on a clean clone.
 - **UPDATE 23:32:** **Shipped v4 = v3 weights + action masking ON** (tag `shipped-v4`). Teammate 3 EVAL_I3 §6: +7.9 ± 3.3 overall, T2–T4 exits 17 vs 13,
   MAP25–32 +3.8. `validate.py` PASSED on a clean clone (p50 7.0 ms, p99 12.4 ms). Rollback to no-mask: `shipped-v3`. **Bar: 48.39 (5 seeds, masked).**
   Candidates are now scored **with `--mask`**, since that's how they would ship. Teammate 2: Task M is done (teammate 3 ran it); skip it.
