@@ -164,6 +164,7 @@ def main() -> None:
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--weights", type=str, default=None, help="Optional checkpoint path to load into agent.model")
     ap.add_argument("--temperature", type=float, default=None, help="[core] override agent action temperature")
+    ap.add_argument("--turn-temperature", type=float, default=None, help="[core] override the turn head's temperature")
     ap.add_argument("--mask", nargs="*", default=None, help="[core] DoomAgent.action_mask rules: none given = weapon fist")
     ap.add_argument("--name", type=str, default=None, help="Result name for CSV (default: weights stem or 'random')")
     args = ap.parse_args()
@@ -178,6 +179,8 @@ def main() -> None:
         agent.load_weights(args.weights)  # [core] handles plain and EgoMap (--use-map) checkpoints
     if args.temperature is not None:
         agent.temperature = args.temperature
+    if args.turn_temperature is not None:
+        agent.turn_temperature = args.turn_temperature
     if args.mask is not None:
         agent.action_mask = frozenset(args.mask or ("weapon", "fist"))
 

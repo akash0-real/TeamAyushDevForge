@@ -121,3 +121,16 @@ def test_action_mask_removes_only_the_masked_options():
     close["vitals"][2] = 1.0
     close["visible_entities"]["features"][0, 0] = 50.0 / 1024.0  # enemy within reach: attack allowed again
     assert any(agent.act(close)[6] for _ in range(200))
+
+
+def test_turn_temperature_only_sharpens_the_turn_head():
+    torch = pytest.importorskip("torch")
+    from agent import DoomAgent
+
+    agent = DoomAgent(S.observation_space(), S.action_space(), "cpu")
+    agent.turn_temperature = 1e-3  # near-greedy turning
+    obs = _make_dummy_obs(num_entities=2)
+    torch.manual_seed(0)
+    turns = {tuple(agent.act(obs)[4:6]) for _ in range(50)}
+    agent.reset()
+    assert len(turns) <= 2  # at most the greedy choice (+ the first step before the GRU state settles)
