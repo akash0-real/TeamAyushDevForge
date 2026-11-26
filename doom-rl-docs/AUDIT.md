@@ -470,3 +470,19 @@ All of these are in `docker/requirements.lock` or the standard library, and `sub
 **Not covered (HYPOTHESIS):** an actual `validate.py --docker` run inside the image. To test: `docker build -t
 devforge-doom .` then `python validate.py --docker --image devforge-doom`. That's a large download plus a build, so it
 doesn't fit on the i3 (8 GB RAM) while evals run. A better fit for teammate 2's or the core owner's machine.
+
+### 22:17 — commits b82e22e..a330b51
+Reviewed `aae31c8`, `2b2f75a`, `a330b51` [core] (task-file and board updates only: no `submission/` or `training/*.py`
+changes, so no pytest or validate needed) and `c3d4e83` [t2] (candidates branch only).
+
+**Impact lines for my earlier findings, per the new rule (`TASKS_TEAMMATE_DOCS.md`, 22:06):**
+
+| Finding | IMPACT on hidden score | Why |
+|---|---|---|
+| Strict review item 4, `two_rooms` leak | **MEDIUM** | It doesn't change what the agent does on hidden maps. It changes how we *select* checkpoints: T0 is inflated by a training map, so the MAP25–32 mean must be used. Fixed in the docs (`cd51760`) and in `CHECKPOINTS.md` (`aae31c8`). |
+| 21:52, p99 > 30 ms on the i3 | **LOW** | Agent time was 0.7–0.8 s of a 21 s per-map budget. |
+| X 22:08, official image | **LOW** | PASS. The only gap is an actual `--docker` run, now assigned to teammate 2 (Task F0, `a330b51`). |
+| 20:30, temperature ≤ 0 freezes `act()` | **LOW** | T stays 1.0. It only matters if someone sets T = 0. |
+
+**CONFIRMED: Task F0 (`a330b51`) closes the Docker gap from X 22:08.** The task text quotes my HYPOTHESIS and tells
+teammate 2 to run `validate.py --docker`.

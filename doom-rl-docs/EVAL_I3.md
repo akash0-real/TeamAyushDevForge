@@ -266,3 +266,36 @@ Seeds split across 3 parallel processes, then merged into `training/results/i3_c
 - Tier 3 jumps to **60% exits** (+37.9 ± 21.2, 1.8 SE), which is close to significant.
 - Real maps: no exits on MAP25–32 (0/40), and the score difference there is noise.
 - **Recommendation:** don't ship it over v2 on this evidence alone. Teammate 2's `t2h_2150` candidate is being scored next with the same protocol.
+
+### 4d. Candidate `t2h_2150_score46_62` (teammate 2), 5 seeds (22:03–22:11 IST)
+
+Seeds split across 3 parallel processes, then merged into `training/results/i3_t2h_2150.csv` (85 rows). Baseline = **shipped v2** (`i3_core_r2_2025.csv`), paired per seed.
+
+| Slice | `t2h_2150` | exits | Δ vs shipped v2 ± SE | seeds worse | beyond 2 SE? |
+|---|---:|---:|---:|---:|---|
+| overall | 40.53 | 33% | +5.68 ± 3.46 | 2/5 | noise |
+| T0 incl two_rooms | 11.48 | 11% | +7.29 ± 4.59 | 1/5 | noise |
+| MAP25-32 | -1.03 | 0% | +5.69 ± 3.12 | 1/5 | noise |
+| T1 | 101.03 | 100% | -1.26 ± 0.38 | 5/5 | SIG WORSE |
+| T2 | 69.78 | 60% | -28.81 ± 22.86 | 4/5 | noise |
+| T3 | 105.66 | 70% | +41.27 ± 24.23 | 2/5 | noise |
+| T4 | 16.43 | 0% | +4.26 ± 7.06 | 2/5 | noise |
+
+**Reproducibility of the 46.62 claim.**
+- On the same seeds 0–2, the i3 gets **40.38** vs teammate 2's 46.62 (`RESULTS.md`, `t2h_best_2150.csv`).
+- My per-seed means are 33.5 / 49.1 / 38.6 / 40.3 / 41.2.
+- A 6-point gap sits inside the ~9-point rerun noise of unseeded sampling (§2 finding). It's **not evidence of a
+  reporting error**; it's why single 3-seed runs can't rank checkpoints.
+
+**Verdict: no measurable difference from shipped v2 overall** (+5.7 ± 3.5, 1.6 SE). It's also level with
+`core_r2_2155`: +1.0 ± 6.7.
+- **Strongest real-map trend of any candidate:** MAP25–32 −1.0 vs −7.8 for v2, Δ +5.7 ± 3.1 (1.8 SE, better on 4/5
+  seeds). Not significant yet.
+- **T3: 70% exits** (+41 ± 24, not significant). **T2 trends lower** (−29 ± 23, not significant).
+- **T1 is significantly lower (−1.26 ± 0.38, 5/5 seeds).** Both checkpoints exit 100% of T1 maps; the difference is
+  only the HP/time bonus.
+  - IMPACT on hidden score: **LOW**. About 1 point on the easiest tier, with the same exit rate.
+- **Recommendation:** don't ship on this alone. It and `core_r2_2155` both trend above v2 without clearing 2 SE.
+  - If the core owner wants to decide between the three, the cheapest decisive test is 5 more seeds (5–9) of all 17
+    maps for `t2h_2150` and v2. That doubles n and halves the noise.
+  - IMPACT of the decision: **MEDIUM**. The possible gain is about 5 points of mean score, mostly on T3/real maps.
