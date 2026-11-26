@@ -51,9 +51,13 @@ python maps/gen_maps.py --selftest                         # solvability + loads
 ## 3. Strictly Held-Out Zero-Shot Validation Suite
 None of these maps is ever trained on:
 - **Freedoom 2 MAP25–32**: real maps. Training uses MAP01–24.
-- **`two_rooms`**: the official test map.
 - **8 generated maps** in `maps/holdout/` (`gen_t{1..4}_{1,2}.wad`), from **reserved seeds ≥ 1e9**. Training only
   ever uses seeds below 1e9.
+
+**`two_rooms` is not held out.** The official test map is in the training mix (`training/train_ppo.py`,
+`DEFAULT_TRAIN_MAPS`), but `eval_zeroshot.py` also plays it, and its T0 tier mixes it with MAP25–32. On MAP25–32
+alone, both shipped checkpoints have 0% exits over 10 seeds, so every T0 exit comes from `two_rooms`. Always report
+MAP25–32 separately as the truly unseen real maps (`AUDIT.md`, Strict review item 4).
 
 `training/eval_zeroshot.py` runs the real `DoomAgent` from `submission/agent.py` on these maps, with no training
 rewards or hints. It reports a **proxy score** per map:
@@ -73,7 +77,7 @@ shape. Results are in `doom-rl-docs/RESULTS.md` and the brief.
 - **Separate `gen_udmf.py` + `verify_wads.py` scripts.** Both jobs are in `maps/gen_maps.py`: generation, plus a
   self-test that checks solvability and that maps load.
 - **The planned 12-map holdout of our own maps** (3 per tier, in `maps/eval_holdout/`). We replaced it with Freedoom
-  MAP25–32 + `two_rooms` + 8 generated maps, because real maps are a better stand-in for the hidden ones.
+  MAP25–32 + 8 generated maps (plus `two_rooms`, which is a training map), because real maps are a better stand-in for the hidden ones.
 - **A tier-weighted local score** (`1.0·T1 + 1.5·T2 + 2.5·T3 + 3.0·T4`). `eval_zeroshot.py` reports the unweighted
   mean plus per-tier means.
 - **Skull keys** (locks 129–131) in generated maps.

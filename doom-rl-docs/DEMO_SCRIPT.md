@@ -29,7 +29,7 @@ Point at the screen as you talk:
 - **The yellow key.** "Now it finds the key in another branch."
 - **Coming back.** "With the key in hand, it heads back to the door it remembered, unlocks it, and reaches the exit.
   That's Tier 3, key → locked door → exit, on a level it never trained on."
-- From the cheat-sheet, if the video shows them: the official test map is exited in 246 steps, the unseen Tier 3
+- From the cheat-sheet, if the video shows them: the official test map (a training map) is exited in 246 steps, the unseen Tier 3
   map is solved in 364 steps, and on a real Freedoom map it explores and gets 6 kills. All three were first attempts.
 
 ### 1:30–2:30 — Three things we built (one number each)
@@ -50,8 +50,8 @@ Backup numbers if asked:
 
 ### 2:30–3:00 — Limitations and next steps
 
-> "What doesn't work yet: Tier 4, with two locks, is still at 0% exits. Big real Freedoom maps are hard, about 11%
-> exits, though it still explores and fights there. Tier 3 works but is slow, so short time caps can run out. Its
+> "What doesn't work yet: Tier 4, with two locks, is still at 0% exits. On real Freedoom levels it has never seen, it
+> doesn't reach the exit yet, though it explores and fights there for partial points. Tier 3 works but is slow, so short time caps can run out. Its
 > position estimate drifts 1–2 grid cells over a long level; its heading stays exact. With more time: many more
 > training steps than our ~0.7M, Prioritized Level Replay, and curiosity rewards."
 

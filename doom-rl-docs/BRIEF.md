@@ -106,7 +106,8 @@ pickups.
 - **Solvability:** the self-test proves every key is reachable, and that the exit is reachable only after unlocking.
 - **Loads cleanly:** generated maps load in the official `doom_env` with exactly the doors and locks the generator
   placed.
-- **Holdout, never trained on:** Freedoom MAP25–32, `two_rooms`, and 8 generated maps from reserved seeds (≥ 1e9).
+- **Holdout, never trained on:** Freedoom MAP25–32 and 8 generated maps from reserved seeds (≥ 1e9). The eval also
+  plays `two_rooms`, but that's a training map, so we report MAP25–32 separately as the truly unseen real maps.
 
 ## 6. Results (holdout; proxy score from `training/eval_zeroshot.py`, higher is better)
 
@@ -116,12 +117,12 @@ pickups.
 | Random weights | −13.2 | 0% | Freedoom + `two_rooms` holdout |
 | Plain model (184k steps) | 9.9 | 18% | holdout v1 |
 | **EgoMap model, shipped (184k plain + 460k EgoMap)** | **34.1** | **29%** | holdout v1 |
-| Shipped, current eval (generated maps at 2,100 tics, 2 seeds) | 27.7 | — | real Freedoom 7.9 (11% exits), T1 101 (100%), T2 59 (50%), T3 30, T4 9.8 |
+| Shipped, current eval (generated maps at 2,100 tics, 2 seeds) | 27.7 | — | T0 = MAP25–32 + `two_rooms` 7.9 (11% exits, all on `two_rooms`), T1 101 (100%), T2 59 (50%), T3 30, T4 9.8 |
 <!-- RESULTS:END -->
 
 **Tier 3 works.** The shipped agent solves key → locked door → exit on generated tier-3 holdout maps: 100% and 50%
-exits in a frozen-set eval at 4,200 tics, with keys picked up. It also reaches the exit of the official test map on
-its own in 137 steps.
+exits in a frozen-set eval at 4,200 tics, with keys picked up. It also reaches the exit of the official test map (a
+training map) on its own in 137 steps.
 
 **Footprint** (official `validate.py`, PASSED):
 
@@ -138,7 +139,8 @@ its own in 137 steps.
 **Limitations:**
 
 - Tier 4 (two locks) is still at 0% exits.
-- Real Freedoom maps are big and hard: about 11% exits.
+- On real Freedoom levels it has never seen (MAP25–32), it hasn't reached an exit yet: 0 of 80 episodes for both
+  shipped checkpoints. It explores and fights there for partial points.
 - At the shortest time cap (2,100 tics), tier-3 maps often time out. Backtracking works, but it is slow.
 - Position dead reckoning drifts 1–2 cells over long episodes. Heading stays exact.
 - Only about 0.7M training steps so far, at roughly 250–300 env steps/s on one laptop (RTX 4050, i7-13620H).
