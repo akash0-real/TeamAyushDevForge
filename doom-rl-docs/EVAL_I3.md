@@ -393,3 +393,13 @@ real maps. Let `maps/fresh/` (10 seeds) decide between it and v5.
 - MAP25–32 −2.5 ± 1.5 (within 2 SE).
 **Don't ship.** Core's +3.3 for vA was measured on a different map/seed set, so it doesn't transfer to this holdout.
 Also: **v6 `validate.py --device cpu` on the i3:**  ✓ Step latency 'two_rooms.wad:MAP01': first 81 ms, p50 10.1 ms, p99 41.7 ms, max 81 ms PASSED with 2 warning(s). 
+
+### 9. v7 (turn temperature 0.5) CONFIRMED on the i3: second machine, seeded, 5 seeds
+`i3_v6s_t05.csv` vs `i3_v6s_base.csv` (same v6 weights, turn T 0.5 vs 1.0, seeded eval, paired):
+- **overall +6.3 ± 2.9, significant** (45.11 vs 38.81, worse on 1/5 seeds).
+- **T3 +45.3 ± 13.5, significant: exits 9/10 vs 5/10.**
+- weighted exits **51 vs 37**.
+- MAP25–32 −1.2 ± 4.8 (no measurable difference); T1 kills 0 for both.
+
+The ship rule passes, and both machines agree with core's 10-seed run (98 vs 89). **Keep v7.**
+v7 `validate.py --device cpu` (i3):  ✓ Step latency 'two_rooms.wad:MAP01': first 11 ms, p50 6.2 ms, p99 12.6 ms, max 14 ms PASSED with 2 warning(s). 

@@ -898,3 +898,7 @@ run, compared on weighted exits and doors opened. Ship only if both machines agr
   2-line change in `agent._act`: `logits[2] / T_turn`.
 - **Test (R2, both machines):** the ship rule plus weighted exits plus kills vs v6, seeded eval.
   Ship only if the exits don't drop.
+
+### UPDATE 01:55
+- **v7 confirmed on a second machine:** +6.3 ± 2.9 overall, T3 exits 9/10 vs 5/10, weighted exits 51 vs 37
+  (`EVAL_I3.md` §9). Keep v7.
