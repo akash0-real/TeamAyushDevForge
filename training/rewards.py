@@ -292,7 +292,10 @@ class ShapedDoomEnv(gym.Env):
             reward += 25.0 + 6.0 * hp_frac + 6.0 * time_left
             self._stats["exit_reached"] = 1.0
         elif ps["dead"]:
-            reward -= 5.0  # tutor round 4: was 3.0; still no per-step penalty, so dying early never pays
+            # tutor round 5c (teammate 3 Task Y: 18/20 real-map runs die, median tic 920): the scorer penalises dying
+            # *early*, so an early death costs up to -15, a late one -5. No per-step penalty, so dying never pays.
+            time_left = max(0.0, 1.0 - ps["tic"] / ps["episode_ticks"])
+            reward -= 5.0 + 10.0 * time_left
             self._stats["dead"] = 1.0
 
         self._stats["steps"] += 1.0
