@@ -223,6 +223,11 @@ def main() -> None:
                 t_score = float(np.mean([r["score"] for r in t_rows]))
                 t_exit = float(np.mean([r["exit"] for r in t_rows])) * 100.0
                 print(f"T{t} mean score: {t_score:7.2f} (n={len(t_rows)}, exit={t_exit:4.0f}%)", flush=True)
+        fd_rows = [r for r in rows if r["map"].startswith("freedoom2.wad:")]
+        if fd_rows:
+            fd_score = float(np.mean([r["score"] for r in fd_rows]))
+            fd_exit = float(np.mean([r["exit"] for r in fd_rows])) * 100.0
+            print(f"T0 unseen Freedoom only: {fd_score:7.2f} (n={len(fd_rows)}, exit={fd_exit:4.0f}%)", flush=True)
     else:
         print("MEAN score: N/A (all maps failed)", flush=True)
 
