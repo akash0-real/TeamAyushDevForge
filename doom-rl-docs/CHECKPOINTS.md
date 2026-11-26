@@ -37,6 +37,7 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 02:51:** the Vast machine is destroyed (about $1.53 total); final checkpoints and results were copied to the core laptop first. Core training is stopped. The submission stays at `[core] FINAL` (v8).
 - **UPDATE 02:45: [core] FINAL = v8 (`shipped-v10`)**: weights `t2h_0037` (sha `2797f55f…`) + `turn_temperature 0.5` + strafe 0.5. **No further changes to `submission/`.**
   - **Last check of the Vast runs** (holdout, 10 seeded seeds vs v8): none clearly better. vH +1.1 ± 1.0 went to the exam and **failed** there
     (exit_points 179 vs 210, T3 27 vs 36).
