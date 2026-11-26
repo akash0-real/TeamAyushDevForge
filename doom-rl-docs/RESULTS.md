@@ -1,6 +1,14 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 00:54 (TASK F0 DOCKER PASS + NEW CANDIDATE `t2h_0037_score44_22.pt` PUSHED TO `candidates`!):**
+  - **Task F0 Official Docker Validation (`validate.py --docker --image devforge-doom --no-gpu`):** **PASSED (0 warnings)!** Exact scorer sandbox (`--network none`, `--read-only`, `--cap-drop ALL`, 1-CPU pin): `init 6.0s`, `two_rooms` exit in `190` steps (`1.1s / 21.0s`), **`first 13 ms`, `p50 5.9 ms`, `p99 6.4 ms`, `797 MB` RAM**. Full output pasted below under `## validate.py --docker (official image)`.
+  - **NEW CANDIDATE `t2h_0037_score44_22.pt` pushed to `origin/candidates` (Round 6 Geodesic + `256/192` warp, `~11.7M` steps):** **5-seed CUDA `SHIP RULE: PASS`** vs `cuda_v3_s04.csv` (`t2h_0037_s04.csv`, unmasked):
+    - **Overall:** **`44.22` vs `43.11`** (`+1.11 ± 4.32`, worse 2/5) — **PASS**
+    - **Exits per tier (per T3 `MESSAGE 00:55`):** **`T1 10/10 (100%)`**, **`T2 9/10 (90%, 99.21, +17.13 ± 12.00)`**, **`T3 8/10 (80%, 120.35, +9.82 ± 22.06)`**, `T4 0/10 (14.44)` → **`T2+T3+T4` exits `17/30` vs `14/30`**, **`exit_points = 52 vs 45 (+7)`** — **PASS**
+    - **`MAP25–32`:** `-3.49` vs `-2.10` (`-1.38 ± 2.31`, limit `-4.62`) — **PASS**
+    - **Throwaway Linux 1-CPU CUDA `validate.py`:** **PASSED** (`two_rooms` exit in **60 steps**, `p50 9.0 ms`, `p99 13.1 ms`, `130 MB` VRAM).
+    - **Training live (`t2h`):** `T4: 2%/42` (first Tier-4 training exit!), `T5: 19%/42`, `539 fps`; continuing training toward `02:15 IST`.
 - **UPDATE 00:50 (Round-6 `t2h` surging — `43.35` holdout + FIRST Tier-4 exit `T4: 2%/42` + `T5: 19%`!):**
   - **`00:37` Round-6 + `256/192` warp 3-seed evals (unmasked, CUDA):**
     - **`t2h_0037`:** **`43.35` MEAN** (`37.3%` exits; `T1 101.00 (100%)`, `T2 88.82 (83%)`, **`T3 123.80 (83%)`**, `T4 7.27`, `MAP25–32 -1.78`) — up **+5.75** from `00:06` (`37.60`)! Even better: at `00:49` (`upd 125`, `768k` post-fix steps, `539 fps`), **`t2h` just logged our first Tier-4 two-lock exit (`T4: 2%/42`)** alongside `T5: 19%/42`, `T2: 100%`, `T3: 46%`!
@@ -83,6 +91,28 @@ PASSED
 
 ---
 
+## validate.py --docker (official image)
+
+Command: `.venv/bin/python validate.py --docker --image devforge-doom --no-gpu` (Linux host, official `Dockerfile` + `docker/requirements.lock`, `shipped-v5` weights, `2026-11-27 00:53 IST`)
+
+```text
+ ✓ Repository size (tracked files): 4.1 MB of 1.0 GB
+$ docker run --rm --user 1000:1000 --network none --read-only --memory 10240m --memory-swap 10240m --pids-limit 512 --cap-drop ALL --security-opt no-new-privileges --tmpfs /tmp:exec,size=2g --shm-size 2g -e HOME=/tmp -e PYTHONPATH=/deps -w /tmp -v /home/akash/TeamAyushDevForge:/submission:ro -v /tmp/doom-validate-docker-e_577wh0/deps:/deps:ro -v /home/akash/TeamAyushDevForge/validate.py:/validator/validate.py:ro -v /home/akash/TeamAyushDevForge/maps/two_rooms.wad:/validator/maps/0_two_rooms.wad:ro devforge-doom python /validator/validate.py --repo /submission --in-docker --device cpu --ticks 2100 --map /validator/maps/0_two_rooms.wad
+Validating /submission  (contract 1.0.0-draft)
+
+ ✓ requirements.txt: no extra packages
+ ✓ DoomAgent interface: __init__, reset, act
+ ✓ CPU limit: agent pinned to 1 CPU (core 11), like the evaluation sandbox
+ ✓ Initialization: 6.0s (limit 60s) on device 'cpu'
+ ✓ Episode on '0_two_rooms.wad:MAP01': 190 steps, exit reached, agent time 1.1s of 21.0s budget, 1.4s wall-clock
+ ✓ Step latency '0_two_rooms.wad:MAP01': first 13 ms, p50 5.9 ms, p99 6.4 ms, max 13 ms
+ ✓ Peak RAM: 797 MB resident (limit 8192 MB, including files written to /tmp)
+
+PASSED
+```
+
+---
+
 ## Random-weights holdout baseline
 
 Command: `.venv/bin/python training/eval_zeroshot.py --name random --seeds 0 --device cuda`
@@ -152,7 +182,7 @@ T4 mean score:  -17.73 (n=2, exit=   0%)
 | 23:05 | t2h_2305 (Round-5b `2×gen2+6×gen3+6×gen4`; T0:**11.49** / MAP25-32:**-0.76(0%)** T1:101.53(100%) T2:96.82(83%) T3:74.22(50%) T4:27.82) | ~10,350,000 | 41.42 | 33% | 0.1 | **1.4** | 1.3 | 12.31* | — |
 | 00:06 | t2w_0006 (Round-6 early; T0:5.39 / MAP25-32:-7.74(0%) T1:100.73(100%) T2:94.21(83%) T3:43.50(17%) T4:17.78) | ~8,870,000 | 33.00 | 29% | 0.1 | 1.2 | 0.9 | 15.41* | — |
 | 00:06 | t2h_0006 (Round-6 early; T0:8.76 / MAP25-32:-3.86(0%) T1:100.73(100%) T2:78.58(67%) T3:83.06(50%) T4:17.77) | ~11,240,000 | 37.60 | 31% | 0.1 | 1.2 | 1.0 | 15.12* | — |
-| 00:37 | **t2h_0037** (Round-6 + `256/192` warp; T0:10.57 / MAP25-32:-1.78(0%) T1:101.00(100%) T2:88.82(83%) T3:**123.80(83%)** T4:7.27) | ~11,700,000 | **43.35** | **37%** | 0.1 | 1.1 | 1.1 | 13.0* | — |
+| 00:37 | **t2h_0037** *(5-seed CUDA `SHIP RULE: PASS`, pushed to `candidates`!)* (T0:9.06 / MAP25-32:-3.49(0%) T1:101.13(100%) T2:**99.21(90%)** T3:**120.35(80%)** T4:14.44; `exit_pts 52 vs 45`) | ~11,700,000 | **44.22** (5s) | **38%** | 0.1 | 1.1 | 1.1 | 11.0* | **PASS (exit in 60 steps, 9.0 ms p50, 130 MB VRAM)** |
 | 00:37 | t2w_0037 (Round-6 + `256/192` warp; T0:-1.18 / MAP25-32:-6.50(0%) T1:100.67(100%) T2:60.18(50%) T3:25.07(0%) T4:16.43) | ~9,300,000 | 23.18 | 20% | 0.1 | 1.1 | 1.0 | 13.5* | — |
 
 *\*`ms/step` inflated because 36 ViZDoom training workers + `docker build` ran simultaneously on the same CPU.*
