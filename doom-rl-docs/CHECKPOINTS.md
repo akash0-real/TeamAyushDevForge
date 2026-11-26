@@ -37,6 +37,9 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 02:09: shipped v9 = `core_soupA_0200` weights (average of v6 + Vast run A) + v8 settings** (tag `shipped-v9`, sha `7b2f37c9…`; rollback `shipped-v8`).
+  Seeded, **20 seeds** × 17 holdout vs v7: **+3.9 ± 1.0**, exit_points **215 vs 199**, unseen-real **+4.4 ± 1.6**; consistent on seeds 0–9 (+4.3) and 10–19 (+3.5). `validate.py` PASSED
+  on a clean clone. **Teammate 3: your second-machine check now compares `core_soupA_0200` (= v9) vs v8.** If the i3 shows a loss, core rolls back to v8.
 - **UPDATE 02:07: shipped v8 = v7 + strafe temperature 0.5** (tag `shipped-v8`; rollback `shipped-v7`). Held up on fresh seeds: pooled 20 seeds × 17 holdout,
   +2.0 ± 1.6, exit_points 210 vs 199, unseen-real +2.0. `validate.py` PASSED on a clean clone. **Strongest result so far: `core_soupA_0200.pt` on `candidates`**
   (weight average v6 + Vast run A) with v8's settings. On seeds 10–19 (not used to pick it): **+3.5 ± 1.4 (significant)**, exit_points 106 vs 101, unseen-real **+5.9 ± 2.5**.
