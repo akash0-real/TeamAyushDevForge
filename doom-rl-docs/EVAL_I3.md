@@ -149,3 +149,37 @@ seed-to-seed noise:
   - If the core owner wants more certainty on T0, a 10-seed run of T0 maps only would settle it. I can run that.
 - **`core_r1_2025`: don't ship.** No real overall gain (+0.1 ± 4.4), and it's **genuinely worse on real maps**
   (−7.1 ± 2.9, lower on all 5 seeds).
+
+## 5. Action-temperature test (Task T)
+
+**Setup:** shipped weights, 17 holdout maps × seeds 0–2, CPU, i3. The three runs ran in parallel at 20:44–21:00 IST,
+on code `376340f` (`agent.temperature`, `eval --temperature`). The T = 1.0 row is the same seeds 0–2 from
+`i3_shipped.csv`. Δ = paired per-seed difference vs T = 1.0.
+
+**CSVs:** `training/results/i3_T03.csv`, `i3_T05.csv`, `i3_T07.csv`.
+
+| T | MEAN | T0 real | T1 | T2 | T3 | T4 | exit % | Δ per seed (0, 1, 2) | Δ mean |
+|---|---:|---:|---:|---:|---:|---:|---:|---|---:|
+| 1.0 | 30.88 | 6.4 (11%) | 102.2 (100%) | 55.7 (33%) | 69.5 (33%) | 6.3 (0%) | 25% | — | — |
+| 0.3 | 30.71 | 2.4 (4%) | 101.6 (100%) | 78.6 (67%) | 47.7 (17%) | 22.3 (0%) | 24% | −4.3, −3.1, +6.9 | −0.2 |
+| **0.5** | 33.37 | 5.2 (11%) | 102.4 (100%) | 79.6 (67%) | **73.2 (33%)** | 5.1 (0%) | **29%** | −4.8, +2.2, +10.1 | +2.5 |
+| 0.7 | **34.32** | **11.8 (11%)** | 101.6 (100%) | **101.6 (83%)** | 18.4 (**0%**) | 17.2 (0%) | 27% | +1.5, −5.6, +14.4 | +3.4 |
+
+**Reading it:**
+- **No temperature is a clear winner on 3 seeds.** The per-seed Δ ranges from −5.6 to +14.4, so a mean gain of +2.5 or
+  +3.4 is inside the noise.
+- **T = 0.3 is too greedy:** no gain, and worse on real maps and tier 3.
+- **T = 0.7** has the best mean, real maps and tier 2, but **tier 3 collapses: 0% exits** vs 33% at T = 1.0. Key → locked
+  door → exit is our headline skill and a heavy evaluation tier, so this is a real trade-off, not a free win.
+- **T = 0.5** is the safest improvement. It's equal or better than T = 1.0 on T1, T2, T3 and overall exits, and only T0
+  and T4 dip, both within noise.
+
+**Recommendation:**
+- If a value must be set now, use **T = 0.5**. Not 0.7, because of the tier-3 collapse.
+- To make it a real decision, I'm extending T = 0.5 and T = 0.7 to seeds 3–4. That gives a paired 5-seed comparison with
+  `i3_shipped.csv`, and the result goes in §5b.
+- The best checkpoint (`core_r2_2025`, §4) should also be re-checked at the chosen T before shipping.
+
+**`validate.py --device cpu` on `376340f` (round-4 `submission/`), i3, 20:44: PASSED.** Init 9.5 s, first step
+35 ms, p50 11.9 ms, p99 20.2 ms, test map exited in 510 steps. It ran while 2 evals were finishing, so latency is
+slightly inflated.
