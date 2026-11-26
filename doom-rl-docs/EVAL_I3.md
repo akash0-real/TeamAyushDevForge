@@ -385,3 +385,11 @@ MAP25–32 not worse), but there's no evidence it helps, and T4 trends worse, wh
 **Both machines agree on more T2 exits** (i3 +4 weighted, CUDA 52 vs 45) and on a slight real-map dip. The ship rule
 passes on both. **Verdict:** a real candidate for the 03:00 fresh-map pick. The gain is exits on T2, and the risk is
 real maps. Let `maps/fresh/` (10 seeds) decide between it and v5.
+
+### 8. Candidate `core_vA_0035` (core Vast run A, round 6): SHIP RULE FAIL (i3, 5 seeds, vs v6)
+`i3_core_vA_0035.csv` vs `i3_t2h_0037.csv` (v6):
+- mean 32.83 vs 41.12;
+- **weighted exits 37 vs 47** (T2 6/10 vs 8/10, T3 5/10 vs 7/10, T1 10/10 each, T4 0 each);
+- MAP25–32 −2.5 ± 1.5 (within 2 SE).
+**Don't ship.** Core's +3.3 for vA was measured on a different map/seed set, so it doesn't transfer to this holdout.
+Also: **v6 `validate.py --device cpu` on the i3:**  ✓ Step latency 'two_rooms.wad:MAP01': first 81 ms, p50 10.1 ms, p99 41.7 ms, max 81 ms PASSED with 2 warning(s). 
