@@ -10,7 +10,6 @@ import time
 from pathlib import Path
 
 import numpy as np
-import torch
 import vizdoom as vd
 from doom_env import make_env
 
@@ -153,9 +152,7 @@ def main() -> None:
     dummy_env.close()
 
     if args.weights:
-        ckpt = torch.load(args.weights, map_location=agent.device, weights_only=True)
-        agent.model.load_state_dict(ckpt["model"] if isinstance(ckpt, dict) and "model" in ckpt else ckpt)
-        agent.model.eval()
+        agent.load_weights(args.weights)  # [core] handles plain and EgoMap (--use-map) checkpoints
 
     rows: list[dict] = []
     csv_rows: list[dict] = []

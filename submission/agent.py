@@ -23,12 +23,23 @@ class DoomAgent:
         self.action_space = action_space
         self.device = torch.device(device if (device == "cuda" and torch.cuda.is_available()) else "cpu")
 
-        if WEIGHTS_PATH.is_file():
-            self.model = load_policy(WEIGHTS_PATH, self.device)  # picks the EgoMap variant from the checkpoint
-        else:
-            self.model = DoomSpatialPolicy().to(self.device)
+        self.load_weights(WEIGHTS_PATH if WEIGHTS_PATH.is_file() else None)
+
+    def load_weights(self, path) -> None:
+        """(Re)build the model for a checkpoint (EgoMap variant picked from its keys) and warm it up."""
+        self.model = load_policy(path, self.device) if path else DoomSpatialPolicy().to(self.device)
         self.model.eval()
         self.ego_map = EgoMap() if self.model.use_map else None
+        # Warm-up in __init__ (60 s limit) so the first act() of a map (10 s limit) isn't paying torch's lazy init:
+        # measured ~4 s for the first act() on one pinned CPU core without this.
+        with torch.inference_mode():
+            zeros = {
+                "rays": torch.zeros(1, 7, 64), "ent_feat": torch.zeros(1, 32, 5),
+                "ent_type": torch.zeros(1, 32, dtype=torch.long), "ent_mask": torch.zeros(1, 32, dtype=torch.bool),
+                "vitals": torch.zeros(1, 30), "map": torch.zeros(1, 12, 15, 15),
+            }
+            for _ in range(3):
+                self.model.forward_step({k: v.to(self.device) for k, v in zeros.items()}, self.model.initial_state(1, self.device))
         self.reset()
 
     def reset(self) -> None:
