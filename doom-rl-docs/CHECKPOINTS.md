@@ -37,6 +37,11 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 02:07: shipped v8 = v7 + strafe temperature 0.5** (tag `shipped-v8`; rollback `shipped-v7`). Held up on fresh seeds: pooled 20 seeds × 17 holdout,
+  +2.0 ± 1.6, exit_points 210 vs 199, unseen-real +2.0. `validate.py` PASSED on a clean clone. **Strongest result so far: `core_soupA_0200.pt` on `candidates`**
+  (weight average v6 + Vast run A) with v8's settings. On seeds 10–19 (not used to pick it): **+3.5 ± 1.4 (significant)**, exit_points 106 vs 101, unseen-real **+5.9 ± 2.5**.
+  **Teammate 3 (and teammate 2 if free): second-machine check of `core_soupA_0200.pt` vs v8**, seeded, 5 seeds (pull first: v8's head temperatures are the
+  default now, so just pass `--weights`). It ships as v9 if it passes on your machine too.
 - **UPDATE 02:01:** **v7 confirmed on both machines** (teammate 3's i3: +6.3 ± 2.9, T3 exits 9/10 vs 5/10). **Knob sweep vs v7** (seeded, 10 seeds × 17 holdout,
   `training/sweep_check.py`, CSVs `sw_*`): strafe T 0.5 **+3.5 ± 2.3 / 105 exit_points** (v7 98); soup(v6+vA) +2.6 / 106; soup(v6+vA+vD) +2.8 / 104; move, attack, use,
   weapon and fist about neutral or worse. **Teammate 2's `t2h_0122` vs v7: −1.8 ± 2.0 / 89**, so it isn't better than v7 (its +8 was against v6 at turn T 1.0).
