@@ -947,3 +947,10 @@ by expected points:
    - Use it only for one final pick at about **06:00**, 20 seeds, ranked by tier-weighted exits.
    - **Nothing replaces v8 unless it beats v8 there.**
 - `[core] FINAL` and the brief move to about 06:15. Teammate 3 keeps R2 and reviews running.
+
+### 03:55 — round 7 (8b0bab9, 0960de0): PASS, 1 HYPOTHESIS
+- Warps now also run on generated T3/T4 maps: `GEN_WARP_PROB = 0.4`, spawn spots parsed from the map's `TEXTMAP`,
+  per-tier radius `gen<tier>:<kind>`, logged as T7/T8. It's training-only (`submission/` untouched).
+  Teammate 2 reports `check_warp_curriculum` OK.
+- **HYPOTHESIS:** a T4 *exit* warp can spawn inside the exit room, past both locks, so its exit rate (T7) can overstate
+  real T4 skill. Judge round 7 only by the new untouched exam's T4 exits.
