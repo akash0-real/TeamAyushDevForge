@@ -1,0 +1,142 @@
+# Independent Audit (teammate 3, read-only)
+
+**Scope:** `docs/RULES.md`, `docs/CONTRACT.md`, `docs/EVALUATION.md`, `docs/SUBMISSION.md`, every file in
+`submission/` and `training/`, and `maps/gen_maps.py`. Audited at commit `6cfa81c` (19:20 IST).
+
+**Method:**
+- A static read of every file.
+- A dynamic edge-case run of the real `DoomAgent` on synthetic extreme observations (§2; script in the appendix).
+
+**Severity:**
+- **BLOCKER**: could disqualify us or crash the agent.
+- **RISK**: could cost points.
+- **NIT**: cosmetic.
+
+## Summary
+**No BLOCKERs found.** RISK items: **2** (§2.1, §2.2). NITs: **3**.
+
+---
+
+## 1. Rule risks (`docs/RULES.md` §1, §4)
+
+| # | Finding | Evidence | Severity |
+|---|---|---|---|
+| 1.1 | **Actions come only from the network.** `act()` builds the observation encoding, runs the model, samples the 6 factored heads and maps them to 9 buttons. No rule trees, pathfinding, aiming or scripted button sequences anywhere in `submission/`. | `submission/agent.py:53-65` | OK |
+| 1.2 | **The `atan2` in EgoMap is encoding, not aiming.** I agree with the core owner. `np.arctan2` converts a visible key's `sin/cos` into an angle, and the result is only used to set a cell in the key channel of the memory grid. It never touches an action. | `submission/preprocess.py:176-181` | OK |
+| 1.3 | **Imports are only `numpy` and `torch`,** plus our own `model`/`preprocess`. Both are pinned in the official image (`numpy==2.5.5`, `torch==2.15.0`). `submission/requirements.txt` is empty. | `submission/agent.py:9-14`, `submission/model.py:15-21`, `docker/requirements.lock:154,333` | OK |
+| 1.4 | **No network access, no file writes, no engine access** in `submission/`. The only file read is the weights, through a path relative to `__file__`. Privileged engine state (`privileged_state()`, `DAMAGECOUNT`) is used only in `training/rewards.py`, which `submission/` never imports. | `submission/agent.py:16-17`, `training/rewards.py:118,152` | OK |
+| 1.5 | **Weights load with `weights_only=True`**, so a tampered checkpoint can't run code. | `submission/model.py:214` | OK |
+
+## 2. Crash risks at evaluation
+
+| # | Case | Result | Evidence | Severity |
+|---|---|---|---|---|
+| 2.1 | **Any exception inside `act()`.** There is no `try/except`, so an unexpected observation or a bug makes the player **stand still for the rest of that map** (`docs/EVALUATION.md` §"When your agent stops"). No test case below triggered one. A fallback that returns a no-op `np.zeros(9, np.int8)` on exception would only cap the damage, and would need the core owner's call. | see §4 | `submission/agent.py:53-65` | RISK |
+| 2.2 | **Maps larger than the memory grid.** The grid covers ±4,096 units around spawn. Further out, `_cells()` clips positions to the edge, so the map smears along the border, and the crops show only what's still inside. **No crash** (see the long-run test), but memory degrades on very large real maps. | see §4 | `submission/preprocess.py:105-106,134-137,194-196` | RISK |
+| 2.3 | 0 visible entities | handled: slot 0 is unmasked to avoid a NaN softmax, then the output is zeroed | `submission/model.py:84-98` | OK |
+| 2.4 | A key that's never seen | the key channel just stays empty | `submission/preprocess.py:176-177` | OK |
+| 2.5 | A 4,200-tic map (1,050 steps) | fixed-size grid, constant cost per step | see §4 | OK |
+| 2.6 | `device="cuda"` without CUDA | falls back to CPU | `submission/agent.py:24` | OK |
+| 2.7 | Missing weights file | silently uses an **untrained** plain model: no crash, but it would play randomly. Weights are in Git LFS, and the scorer fetches LFS objects (`docs/SUBMISSION.md:28`). | `submission/agent.py:26,30` | NIT |
+| 2.8 | Observation at the limits (distance 1.0 / 0.0, health 0) | inputs are clipped; no-hit rays (`dist ≥ 1023` units) aren't drawn as walls | `submission/preprocess.py:46,63,172-173` | OK |
+
+## 3. Contract checks (`docs/CONTRACT.md`)
+
+| # | Check | Evidence | Severity |
+|---|---|---|---|
+| 3.1 | `act()` returns an `np.ndarray` of shape `(9,)`, `int8`, values in `{0,1}`, and contradictory buttons are impossible by construction | `submission/preprocess.py:23-36`, `submission/agent.py:63-65` | OK |
+| 3.2 | `reset()` clears the GRU state, the previous action, the first-step flag and the EgoMap (grid + pose + turn counter) | `submission/agent.py:45-50`, `submission/preprocess.py:127-132` | OK |
+| 3.3 | The weights path is relative to `submission/` (`Path(__file__).resolve().parent`) | `submission/agent.py:16-17` | OK |
+| 3.4 | Warm-up runs in `__init__` (60 s limit), not on the first `act()` (10 s limit) | `submission/agent.py:33-42` | OK |
+| 3.5 | Training and evaluation call EgoMap in the same order (update with no action on the first step, then with the previous action), so there's no train/eval mismatch | `training/rewards.py:140-148,241-242`, `submission/agent.py:55-59` | OK |
+
+## Other NITs
+- **`--seq-len` does nothing.** `train_ppo.py` parses it, but BPTT always spans the full rollout. Either remove it or
+  note it in `--help` (docs 03 already says so). `training/train_ppo.py:81`
+- **Thread count is left to the environment.** `submission/` doesn't call `torch.set_num_threads(1)`. That's fine at
+  evaluation, because the scorer sets `OMP_NUM_THREADS=1` etc. (`docs/EVALUATION.md:15-16`). It only matters for
+  local timing runs.
+
+## 4. Dynamic edge-case results
+Run on the teammate-3 laptop (i3-1215U, 8 GB, CPU only) with the shipped `best_agent.pt`, at 19:27 IST. **All
+8 cases pass.** Every returned action is an `int8` array of shape `(9,)` with values in `{0,1}`.
+
+```text
+PASS  device='cuda' without CUDA -> cpu, use_map=True
+PASS  0 visible entities, all rays no-hit (distance 1.0): shape=(9,) dtype=int8
+PASS  all rays distance 0.0 + locked_door type: shape=(9,) dtype=int8
+PASS  health 0: shape=(9,) dtype=int8
+PASS  32 visible keys: shape=(9,) dtype=int8
+PASS  1,050 steps (4,200 tics) moving fast, never sees a key: shape=(9,) dtype=int8
+      avg 11.1 ms/step; agent pose drifted to x=6506
+PASS  reset(): h zero=True, ego grid zero=True, pose=(0.0,0.0,0.0)
+PASS  missing weights file (falls back to random plain model): shape=(9,) dtype=int8
+```
+
+- The long run ends at x = 6,506 units, **past the ±4,096-unit grid edge**. That confirms §2.2 degrades the memory
+  but doesn't crash.
+- The 11.1 ms/step was measured while the 5-seed eval was running on the same CPU. Use `validate.py` for latency
+  (`EVAL_I3.md`).
+
+## Appendix: how to rerun
+The edge-case script builds synthetic observations from `doom_env.spaces.observation_space`, calls the real
+`DoomAgent`, and checks every returned action against the contract.
+Save it anywhere, then run it from the repo root: `uv run python edge_test.py .`
+
+```python
+"""Task D edge cases: run the real DoomAgent on synthetic extreme observations. Usage: python edge_test.py <repo>"""
+import sys, time, shutil, tempfile
+from pathlib import Path
+import numpy as np
+
+repo = Path(sys.argv[1]).resolve()
+sys.path[:0] = [str(repo / "submission"), str(repo / "env")]
+import agent as A  # noqa: E402
+from doom_env.spaces import observation_space as _obs_fn, action_space as _act_fn  # noqa: E402
+observation_space, action_space = _obs_fn(), _act_fn()
+
+
+def obs(dist=1.0, hit=0, n_ent=0, ent_type=9, health=100.0, vel=0.0):
+    o = observation_space.sample()
+    o["rays"]["distance"][:] = dist
+    o["rays"]["hit_type"][:] = hit
+    m = np.zeros(32, np.int8); m[:n_ent] = 1
+    o["visible_entities"]["mask"][:] = m
+    o["visible_entities"]["entity_type"][:] = np.where(m, ent_type, 0)
+    o["visible_entities"]["features"][:] = 0
+    o["visible_entities"]["features"][:n_ent] = [0.5, 0.0, 1.0, 0.0, 0.0]
+    o["vitals"][:] = 0; o["vitals"][0] = health; o["vitals"][14] = vel
+    return o
+
+
+def check(a, name, o, steps=1):
+    for _ in range(steps):
+        act = a.act(o)
+    ok = isinstance(act, np.ndarray) and act.shape == (9,) and set(np.unique(act)) <= {0, 1}
+    print(f"{'PASS' if ok else 'FAIL'}  {name}: shape={getattr(act, 'shape', None)} dtype={getattr(act, 'dtype', None)}")
+
+
+a = A.DoomAgent(observation_space, action_space, "cuda")  # no CUDA on this laptop -> must fall back to CPU
+print(f"PASS  device='cuda' without CUDA -> {a.device}, use_map={a.model.use_map}")
+check(a, "0 visible entities, all rays no-hit (distance 1.0)", obs())
+check(a, "all rays distance 0.0 + locked_door type", obs(dist=0.0, hit=3))
+check(a, "health 0", obs(health=0.0))
+check(a, "32 visible keys", obs(n_ent=32, ent_type=9))
+a.reset()
+t = time.perf_counter()
+check(a, "1,050 steps (4,200 tics) moving fast, never sees a key", obs(vel=30.0, dist=0.3, hit=1), steps=1050)
+print(f"      avg {(time.perf_counter() - t) / 1050 * 1000:.1f} ms/step; agent pose drifted to x={a.ego_map.x:.0f}")
+a.reset()
+print(f"PASS  reset(): h zero={bool((a.h == 0).all())}, ego grid zero={not a.ego_map.grid.any()}, pose=({a.ego_map.x},{a.ego_map.y},{a.ego_map.theta})")
+
+# missing weights file: copy submission/ without weights, import the copy
+tmp = Path(tempfile.mkdtemp())
+shutil.copytree(repo / "submission", tmp / "submission", ignore=shutil.ignore_patterns("*.pt"))
+for m in ("agent", "model", "preprocess"):
+    sys.modules.pop(m, None)
+sys.path[0] = str(tmp / "submission")
+import agent as B  # noqa: E402
+b = B.DoomAgent(observation_space, action_space, "cpu")
+check(b, "missing weights file (falls back to random plain model)", obs())
+shutil.rmtree(tmp, ignore_errors=True)
+```
