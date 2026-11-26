@@ -1,6 +1,11 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 23:16:** Acknowledged `007f365` (freeze on new ideas; no Round 6; CUDA 5-seed holdout-only pre-screen gatekeeper active).
+  - **Showcase pushed to `origin/demos` (`de4bf89`):** `SHOWCASE_V3_SHIPPED.mp4` (`33 MB`, 6 clips: `two_rooms` 67 steps, unseen `gen_t2_1` 158 steps, unseen `gen_t3_1` 292 steps, unseen `gen_t3_2` 496 steps — all 4 exits — plus `gen_t4_1` & `MAP30`).
+  - **23:05 Round-5b 3-seed holdout evals:** `t2h_2305` **`41.42`** (new best unseen **`MAP25–32: -0.76`**, `T2 96.82 / 83%`, `T3_1 100%`, `T4 27.82`) and `t2w_2305` `33.98` (`MAP25–32: -4.46`, `T2 67%`, `T3 33%`). Neither beats `v3` under the ship rule yet → **not pushed to `candidates`** (saving T3's low-token budget).
+  - **Gatekeeper setup:** Running 5-seed CUDA `shipped-v3` baseline (`cuda_v3_s04.csv`, seeds `0..4`, 17 holdout maps ONLY — never `maps/fresh/`) right now so all future pre-screens are strictly paired on CUDA.
+  - **Training + F0:** `t2h` (`~553 fps`, `T3 83%`, `T5 2–6%`, `T6 3–8%`) + `t2w` (`~354 fps`, `T2 78%`, `T3 46%`, `T5 4–9%`, `T6 8%`) healthy (`4.3 GiB` RAM free); `docker build` still on `stage 6/9`. Added Tier-4 & USE-press findings under `## Future Work (Diagnostic Findings for Brief)` below.
 - **UPDATE 22:55:** Pulled `0c69543` (**Round 5b `T6` key warps** + answers `0fb3782`). Restarted dual-trainer onto Round 5b (`t2h` 24 envs now on core-approved `2×gen2+6×gen3+6×gen4` + `t2w` 12 envs on `DEFAULT_TRAIN_MAPS`, both resumed with ~0 lost steps, `~1,075` combined fps, `3.3 GiB` RAM free). **Ran two proactive diagnostics on `shipped-v3` (CUDA, seeds 0–4):**
   - **Tier-4 bottleneck (`gen_t4_1` & `gen_t4_2` @ 2,100 & 4,200 tics, n=20):** `0/20` exits, **`19/20` deaths** (median tic `~1,150–1,350`; doubling to 4,200 tics gave `10/10` deaths, `0/10` exits), **`1/20` picked even 1 key (`0/20` locked doors)** despite `3–5.4` kills, `2–3` normal doors, and `90–108` cells. Bottleneck is **combat survival + key search depth**, NOT the 2,100-tic cap.
   - **Task Y open test (`MAP29` & `MAP02` USE-press audit, n=10):** `overall_use` is already **`32–48%`** of all steps (`MAP29` reached `87u`/`116u` with `6/12` & `1/4` USE presses; `MAP02` closest was `176–384u`, all deaths). So near-misses are wall/lock/survival barriers, not missing USE presses.
@@ -112,6 +117,8 @@ T4 mean score:  -17.73 (n=2, exit=   0%)
 | 21:50 | **t2h_best_2150** *(shipped as `shipped-v3`, i3 10-seed `42.30`!)* (T0:**9.45** / MAP25-32:**-3.11(0%)** T1:**101.78** T2:98.51 T3:**124.42(83%)** T4:**29.05**) | ~8,300,000 | **46.62** | **37%** | **0.2** | **1.3** | 1.4 | **3.57** | **PASS (exit in 68 steps, 9.0 ms p50, 130 MB VRAM)** |
 | 22:25 | t2h_r4_2225 (Round-4 latest; T0:8.98 / MAP25-32:-3.79(0%) T1:101.97(100%) T2:95.28(83%) T3:**126.51(83%)** T4:14.80) | ~9,500,000 | 44.58 | 37% | 0.2 | 1.0 | 1.0 | 10.29* | — |
 | 22:25 | t2h_r4_best_2225 (Round-4 best; T0:**11.25** / MAP25-32:**-1.06(0%)** T1:101.90(100%) T2:82.38(67%) T3:74.24(33%) T4:28.11) | ~9,500,000 | 39.68 | 29% | 0.1 | 1.1 | **1.8** | 12.41* | — |
+| 23:05 | t2w_2305 (Round-5b `DEFAULT_TRAIN_MAPS`; T0:8.51 / MAP25-32:-4.46(0%) T1:101.37(100%) T2:71.91(67%) T3:69.03(33%) T4:8.25) | ~8,820,000 | 33.98 | 29% | 0.1 | 1.1 | 1.4 | 13.05* | — |
+| 23:05 | t2h_2305 (Round-5b `2×gen2+6×gen3+6×gen4`; T0:**11.49** / MAP25-32:**-0.76(0%)** T1:101.53(100%) T2:96.82(83%) T3:74.22(50%) T4:27.82) | ~10,350,000 | 41.42 | 33% | 0.1 | **1.4** | 1.3 | 12.31* | — |
 
 *\*`ms/step` inflated because 36 ViZDoom training workers + `docker build` ran simultaneously on the same CPU.*
 
@@ -142,3 +149,15 @@ From watching replays (`02_tier2_unseen_exit.mp4` 123 steps, `03_tier3_keycard_b
 ### 4. Doc / README Polish Notes for Docs (Ayush)
 - **`README.md` (lines 25–28) & `training/README.md`:** `uv pip install torch==2.15.0` followed by `uv run python ...` can cause `uv run` to re-sync `uv.lock` and uninstall `torch`. Suggest changing `uv run python` → `uv run --no-sync python` (or `.venv/bin/python`).
 - **`BRIEF.md` §6–§7:** Before final lock (`03:30 IST`), replace the mixed Windows/Linux footprint table with one consistent Linux 1-CPU CUDA `validate.py` run (`p50 12.4 ms`, `first 164 ms`, `1671 MB RAM`, `130 MB VRAM`), and update the step count / speed & `31.00+` holdout numbers.
+
+---
+
+## Future Work (Diagnostic Findings for Brief — `shipped-v3`, CUDA)
+
+1. **Tier-4 Two-Lock Bottleneck (`gen_t4_1` & `gen_t4_2`, seeds `0–4`, `@ 2,100` and `@ 4,200` tics, `n=20`):**
+   - Outcome: `0/20` exits, **`19/20` deaths**, `1/20` timeout (doubling the time cap to `4,200` tics still produced `10/10` deaths and `0/10` exits; median death tic `~1,150–1,350`).
+   - Progression: `3.0–5.4` kills, `2.0–3.0` normal doors opened, `90–108` cells explored, yet only **`1/20` picked up Key 1 (`0/20` locked doors opened)**.
+   - Takeaway: Tier-4 is gated by **combat survival and deep key search**, not episode length. Future iterations could add training-only geodesic BFS potential shaping (`γΦ(s') - Φ(s)` over `(tile, keys_held)`) and/or visual exit-switch perception.
+2. **Real-Map Near-Miss `USE`-Press Audit (`MAP29` & `MAP02`, seeds `0–4`, `4,200` tics, `n=10`):**
+   - Overall `USE` press rate is already `32–48%` of all steps; on `MAP29` (`walk` exit), the agent reached `87u` (`6/12` `USE` presses) and `116u` (`1/4` `USE` presses); on `MAP02` (`switch` exit), closest approach was `176–384u` before death (`5/5` deaths).
+   - Takeaway: Real-map near-misses are caused by walls, locked doors, and combat deaths rather than failure to press `USE` (folding Task Y blocker #3 into survival and key acquisition).
