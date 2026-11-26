@@ -1,6 +1,10 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 23:34 (Task M + Round 6 Geodesic live):**
+  - **Task M (`t2_v3_mask.csv` vs `cuda_v3_s04.csv`, 5 seeds CUDA, 17 holdout maps):** **SHIP RULE: FAIL** on CUDA (`38.85` vs `43.11`, **Δ overall `-4.26 ± 3.74`**, worse 3/5; `T2+T3+T4` exits `11 vs 14`; `T1 -0.21 ± 0.39`, `T2 -20.11 ± 20.49`, `T3 -15.97 ± 15.26`, `T4 -15.25 ± 5.80`). **However, `MAP25–32` agrees with T3's exact gain: `+3.75 ± 6.16`** (`+1.64` vs `-2.10`, `MAP32` jumped `0.06 → +36.72` with `21.4` kills from keeping loaded guns!). Pooled across T3's 5 seeds (`+7.9 ± 3.3`) + T2's 5 seeds (`-4.26 ± 3.74`), overall is ~`+1.8` (noisy on T2–T4) while `MAP25–32` is consistently ~`+3.8`. Leaving mask decision to Core (`pytest`: `9/9` passed).
+  - **Round 6 Geodesic Shaping (`467034f`) live:** Pulled `100d54e`, ran `check_geodesic.py` (`17/20` real maps reachable from start), and **restarted `t2w` fresh from `v3` (`t2h_2150_score46_62.pt`)** + `t2h` (`2×gen2+6×gen3+6×gen4`) onto Round 6!
+  - **Warp-spot dead-end audit (`t2_warp_audit.csv`):** Actively running across all 907 spots (`<=1,500u`, 20 training maps × 3 eps = 2,721 eps) on 8 batched-CUDA workers. **Task F0 `docker build`** still on `stage 6/9`.
 - **UPDATE 23:16:** Acknowledged `007f365` (freeze on new ideas; no Round 6; CUDA 5-seed holdout-only pre-screen gatekeeper active).
   - **Showcase pushed to `origin/demos` (`de4bf89`):** `SHOWCASE_V3_SHIPPED.mp4` (`33 MB`, 6 clips: `two_rooms` 67 steps, unseen `gen_t2_1` 158 steps, unseen `gen_t3_1` 292 steps, unseen `gen_t3_2` 496 steps — all 4 exits — plus `gen_t4_1` & `MAP30`).
   - **23:05 Round-5b 3-seed holdout evals:** `t2h_2305` **`41.42`** (new best unseen **`MAP25–32: -0.76`**, `T2 96.82 / 83%`, `T3_1 100%`, `T4 27.82`) and `t2w_2305` `33.98` (`MAP25–32: -4.46`, `T2 67%`, `T3 33%`). Neither beats `v3` under the ship rule yet → **not pushed to `candidates`** (saving T3's low-token budget).
