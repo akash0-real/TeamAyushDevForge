@@ -228,3 +228,21 @@ Paired per-seed differences:
 again, as in §5b. It's not significant here, but it points the same way. **Recommendation unchanged: ship
 `core_r2_2025` at T = 1.0** (§4: +3.7 ± 1.1 vs the shipped weights, better on 5/5 seeds).
 
+### 4b. `core_r2_2025` on real maps, 10 seeds (21:34 IST)
+
+The shipping rule is "not worse on T0", so I ran 5 more seeds (5–9) on the 9 T0 maps, `two_rooms` + MAP25–32, for both
+the shipped weights and `core_r2_2025`. CSVs: `i3_shipped_T0_s59.csv`, `i3_core_r2_2025_T0_s59.csv`. Combined with
+§2/§4, that gives seeds 0–9 at T = 1.0.
+
+| Checkpoint | T0 mean (10 seeds) | T0 exits |
+|---|---:|---:|
+| shipped | 6.19 | 9% |
+| `core_r2_2025` | 4.29 | 10% |
+
+**Paired per seed (0..9):** −3.4, +5.2, −15.2, −3.3, +3.3, +5.8, −2.2, +0.6, −3.3, −6.7. **Δ T0 = −1.9 ± 2.0**: within
+noise, and the exit rate is the same.
+
+**Final verdict for `core_r2_2025`:** it's better overall (+3.7 ± 1.1, 5/5 seeds) and **not measurably worse on real
+maps** (−1.9 ± 2.0 over 10 seeds). It passes the shipping rule. **Ship it at T = 1.0 if `validate.py` passes on a
+clean clone.**
+
