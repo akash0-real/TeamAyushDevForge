@@ -35,6 +35,9 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 22:36:** v3 ship **confirmed** by teammate 3 over 10 seeds (+9.3 ± 2.5 overall, MAP25–32 +7.8 ± 1.7, T3 exits
+  14/20 vs 4/20). **New bar = 42.30 (v3, 10 seeds)**; candidates are compared to v3 on the same seeds 0–9 (or 0–4: 40.53). Core runs:
+  `warp` T5:3%/38 near-exit starts finished; `map2` T3:35%/23.
 - **UPDATE 22:31:** Shipped = v3 `t2h_2150` (tag `shipped-v3`; rollback `shipped-v2`/`v1`). Round 5 (reverse curriculum) runs
   on core run 1 (`warp`, from v3), T5:5%/39 of near-exit starts finished so far. Run 2 is round 4, unchanged. Renamed the
   self-check to `training/check_warp_curriculum.py` (teammate 3 NIT). Next: a `core_warp_*` candidate once T5 is steady. Waiting on
@@ -64,7 +67,7 @@ timestep at a time in the PPO update (GPU idle), memory grid smearing on big map
 `validate.py` PASSED on a clean clone (init 10.9 s, p50 7.1 ms, p99 15.5 ms). **i3 5-seed (teammate 3, EVAL_I3 §4d):
 40.53** vs v2 34.85 (+5.7 ± 3.5, 1.6 SE). Passes the points-first rule: T2–T4 exits 13 vs 11 (T3 7/10 vs 3/10,
 T2 6/10 vs 8/10), MAP25–32 −1.0 vs −7.8. Not yet significant overall → teammate 3 confirms with seeds 5–9.
-**40.53 is the bar.** Rollback: `shipped-v2` (core_r2_2025, 34.85), `shipped-v1` (map_phase1, 31.2).
+**Bar: 42.30 over 10 seeds (40.53 over seeds 0–4); confirmed +9.3 ± 2.5 vs v2 (EVAL_I3 §4f).** Rollback: `shipped-v2` (core_r2_2025, 34.85), `shipped-v1` (map_phase1, 31.2).
 
 **Temperature (teammate 3, Task T):** T = 0.5 no real gain; T = 0.7 +5.3 on real maps but 0% tier-3 exits → keep 1.0.
 
