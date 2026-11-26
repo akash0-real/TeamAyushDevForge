@@ -1,6 +1,12 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 00:50 (Round-6 `t2h` surging — `43.35` holdout + FIRST Tier-4 exit `T4: 2%/42` + `T5: 19%`!):**
+  - **`00:37` Round-6 + `256/192` warp 3-seed evals (unmasked, CUDA):**
+    - **`t2h_0037`:** **`43.35` MEAN** (`37.3%` exits; `T1 101.00 (100%)`, `T2 88.82 (83%)`, **`T3 123.80 (83%)`**, `T4 7.27`, `MAP25–32 -1.78`) — up **+5.75** from `00:06` (`37.60`)! Even better: at `00:49` (`upd 125`, `768k` post-fix steps, `539 fps`), **`t2h` just logged our first Tier-4 two-lock exit (`T4: 2%/42`)** alongside `T5: 19%/42`, `T2: 100%`, `T3: 46%`!
+    - **`t2w_0037`:** `23.18` MEAN (`T2 50%`, `T3 0%`, `T4 16.43`, `MAP25–32 -6.50`; `T5 7–15%` in training). `t2h`'s `2×gen2+6×gen3+6×gen4` mix is clearly outperforming `t2w` so far.
+  - **Task F0 Docker (`devforge-doom:latest`, `6.78 GB`):** Build **COMPLETE**! Running `validate.py --docker --image devforge-doom --no-gpu` right now; will paste full container output as soon as it exits.
+  - **Next:** Ready to 5-seed CUDA pre-screen `core_vA..E` as soon as Core pushes them to `origin/candidates` (`~01:30 IST`), plus next `t2h`/`t2w` 5-seed eval at `01:17 IST` ahead of the `02:15 IST` hard candidate deadline.
 - **UPDATE 00:25 (Warp radius `256/192` live + Linux 1-CPU `MAP32` timing PASS):**
   - **Pulled `04e63fb` (`WARP_R0=256 / WARP_RMIN=192`)** and restarted **both `t2h` & `t2w`** from their latest Round-6 checkpoints (`t2h` ~`768k` R6 steps, `t2w` ~`491k` R6 steps).
   - **Closed T3 `X 00:25` `MAP32` 1-CPU timing risk (Linux agent-only 1-CPU pin, `validate.py --device cpu --map freedoom2.wad:MAP32 --ticks 4200`):** **PASSED** with **0 warnings** (`init 2.6s`, **`p50 8.3 ms`**, **`p99 28.0 ms`**, `first 64 ms`, `0.9s / 42.0s` agent budget, `690 MB` RAM) — `4.8×` under the `40 ms` average budget even while training! Will re-run on `[core] FINAL` at `03:30 IST`.
@@ -146,6 +152,8 @@ T4 mean score:  -17.73 (n=2, exit=   0%)
 | 23:05 | t2h_2305 (Round-5b `2×gen2+6×gen3+6×gen4`; T0:**11.49** / MAP25-32:**-0.76(0%)** T1:101.53(100%) T2:96.82(83%) T3:74.22(50%) T4:27.82) | ~10,350,000 | 41.42 | 33% | 0.1 | **1.4** | 1.3 | 12.31* | — |
 | 00:06 | t2w_0006 (Round-6 early; T0:5.39 / MAP25-32:-7.74(0%) T1:100.73(100%) T2:94.21(83%) T3:43.50(17%) T4:17.78) | ~8,870,000 | 33.00 | 29% | 0.1 | 1.2 | 0.9 | 15.41* | — |
 | 00:06 | t2h_0006 (Round-6 early; T0:8.76 / MAP25-32:-3.86(0%) T1:100.73(100%) T2:78.58(67%) T3:83.06(50%) T4:17.77) | ~11,240,000 | 37.60 | 31% | 0.1 | 1.2 | 1.0 | 15.12* | — |
+| 00:37 | **t2h_0037** (Round-6 + `256/192` warp; T0:10.57 / MAP25-32:-1.78(0%) T1:101.00(100%) T2:88.82(83%) T3:**123.80(83%)** T4:7.27) | ~11,700,000 | **43.35** | **37%** | 0.1 | 1.1 | 1.1 | 13.0* | — |
+| 00:37 | t2w_0037 (Round-6 + `256/192` warp; T0:-1.18 / MAP25-32:-6.50(0%) T1:100.67(100%) T2:60.18(50%) T3:25.07(0%) T4:16.43) | ~9,300,000 | 23.18 | 20% | 0.1 | 1.1 | 1.0 | 13.5* | — |
 
 *\*`ms/step` inflated because 36 ViZDoom training workers + `docker build` ran simultaneously on the same CPU.*
 
