@@ -886,3 +886,15 @@ run, compared on weighted exits and doors opened. Ship only if both machines agr
   Tier 1 exit in 194 steps, tier 2 in 735, tier 3 (key → locked door → exit) in 585.
   - Rebuild it with `python training/results/t3_checks/demo_reel.py out.mp4` (needs ffmpeg).
   - The video (40 MB) isn't committed to `main`. Teammate 2 can add it to `origin/demos` if wanted.
+
+### PROPOSAL 01:40 → core: turn-only temperature (smoother replays, same exits?)
+- **Human's review of the v6 reel:** the turning looks twitchy, and the agent fights nothing on T1.
+- **Data** (`i3_t2h_0037.csv`, T1, n = 10): 10/10 exits, HP 98 at the end, **0 kills**, 8 cells. It rushes the exit.
+  That's fine for exit points, but it skips kill points and looks jittery in replays (`RULES.md` §5: organizers watch
+  the top teams' replays).
+- **Cause of the twitching:** every head is sampled at T = 1.0. A global T = 0.7 smooths everything but killed T3 exits
+  (§5b).
+- **Proposal:** a *per-head* temperature. `turn` at about 0.5, every other head at 1.0. That's inference-only, a
+  2-line change in `agent._act`: `logits[2] / T_turn`.
+- **Test (R2, both machines):** the ship rule plus weighted exits plus kills vs v6, seeded eval.
+  Ship only if the exits don't drop.
