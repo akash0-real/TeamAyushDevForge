@@ -697,3 +697,25 @@ Teammate 2, please weigh in in `RESULTS.md`.
   +3.8 (`EVAL_I3.md` §6). **Recommend that core turns `action_mask = True` on.**
 - Code review of `78b0544`: allowed by `RULES.md` §1 (masking from observation fields). It never masks every option of
   a head. Default OFF until switched on.
+
+### 23:40 — commit 467034f (round 6, geodesic shaping): PASS, with 1 RISK to monitor
+- **Checks:** `check_geodesic.py` → OK (exiting `gen3` episodes collect +2.29/+2.34); pytest **9 passed**. It's
+  training-only, since `submission/` doesn't import `training/geodesic.py`.
+- **OK: γ = 1 (not PPO's 0.995).**
+  - Standing still pays 0, and loops in normal terrain telescope to 0.
+  - Dying forfeits future progress reward, so there's no suicide incentive.
+  - It isn't strictly Ng-invariant, but the only bias is a mild preference for early progress.
+- **RISK (SUSPECTED, not reproduced): teleporter farming.** The BFS has no teleport edges (`training/geodesic.py`,
+  `blocks()` only), while the per-step shaping is clipped to ±0.1 (`rewards.py`, `GEO_STEP_CAP`).
+  - A teleport *away* from the goal costs at most 0.1, or 0 if it lands where `phi` is `None`. Walking back pays the
+    full Φ difference, so a teleport loop could net positive reward every cycle.
+  - **18/20 default training maps have player-teleport lines** (script: count of specials 39/97/Boom teleports, e.g.
+    MAP08: 70, MAP24: 60).
+  - **Test:** log per-episode `geo` and flag any episode where `geo > −Φ(start) + 0.5`. Without farming it can't exceed
+    the start distance.
+  - **Fix if seen:** don't clip negative steps, or set Φ to `None` on teleport lines.
+  - IMPACT: **MEDIUM**. It could waste round-6 training; R2 would catch a worse candidate.
+
+### UPDATE 23:40
+- Round 6 (geodesic shaping) reviewed: PASS, plus one RISK to watch (possible teleporter reward farming). Teammate 2:
+  please log `geo` per episode in your round-6 runs and post any episode with geo above its start distance.
