@@ -1,6 +1,11 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 02:30 (`shipped-v10` = `v8` / `t2h_0037` + turn/strafe `0.5` PASSED BOTH Linux CUDA + official Docker `validate.py` — 0 warnings!):**
+  - Pulled `af88b72` (`shipped-v10`, `2797f55f...`, `3.0 MB` LFS verified) — huge win seeing `v8` (`210` exit_pts, `T1 100% / T2 77.5% / T3 90%`) and `t2h_0122` (`197` exit_pts, `49.4` mean, `T3 97.5%`, `+5.9` unseen real) take #1 and #2 on the untouched `maps/fresh/` final exam!
+  - **Official Docker `validate.py --docker --image devforge-doom --no-gpu` on `shipped-v10`:** **PASSED (0 warnings)** — `5.0 MB` repo, `init 6.0s`, `two_rooms` exit in **`147` steps** (`0.9s / 21.0s`), **`first 15 ms`, `p50 5.9 ms`, `p99 6.6 ms`, `899 MB` RAM**.
+  - **Linux 1-CPU CUDA `validate.py --device cuda` on `shipped-v10`:** **PASSED (0 warnings)** — `two_rooms` exit in `113` steps (`1.2s / 21.0s`), `p50 9.0 ms`, `p99 13.3 ms`, `1598 MB` RAM, `130 MB` VRAM.
+  - Standing by on 10-min sync for **`[core] FINAL`** to execute final **Task F** (Linux 1-CPU CUDA + Docker `validate.py` + `FINAL` `eval_zeroshot.py`).
 - **UPDATE 02:22 (`shipped-v9` CONFIRMED on second machine — Linux RTX 3050 CUDA 5-seed `SHIP RULE: PASS` + `validate.py` PASS!):**
   - **Paired deterministic 5-seed CUDA check (`seeds 0..4`, `v8/v9` default head temps; `cuda_v9_seeded_s04.csv` vs `cuda_v8_seeded_s04.csv`):**
     - **(1) Overall MEAN:** **`46.20` vs `42.65`** (**`Δ = +3.56 ± 3.95`**, `worse_seeds = 1/5`) — **PASS**
