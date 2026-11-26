@@ -98,7 +98,15 @@ def _tree_depths(n: int, edges: list[tuple[int, int]]) -> list[int]:
 def generate(tier: int, seed: int) -> MapSpec:
     rng = random.Random(seed * 10 + tier)
     n_rooms = {1: rng.randint(1, 2), 2: rng.randint(4, 7), 3: rng.randint(4, 7), 4: rng.randint(7, 11)}[tier]
-    slots, edges, rects = _rooms_layout(rng, n_rooms)
+    # Tier 3 needs 2 dead ends (exit + key), tier 4 needs 3 (exit + 2 keys); a chain layout has only 1, so re-roll.
+    need_leaves = {3: 2, 4: 3}.get(tier, 0)
+    while True:
+        slots, edges, rects = _rooms_layout(rng, n_rooms)
+        depth = _tree_depths(n_rooms, edges)
+        children = {i: [b for a, b in edges if a == i] for i in range(n_rooms)}
+        leaves = [i for i in range(1, n_rooms) if not children[i]]
+        if len(leaves) >= need_leaves:
+            break
     W = (max(s[0] for s in slots) + 1) * SLOT + 2
     H = (max(s[1] for s in slots) + 1) * SLOT + 2
     m = MapSpec()
@@ -116,10 +124,6 @@ def generate(tier: int, seed: int) -> MapSpec:
         for y in range(y0, y0 + h):
             for x in range(x0, x0 + w):
                 m.grid[y][x] = rid
-
-    depth = _tree_depths(n_rooms, edges)
-    children = {i: [b for a, b in edges if a == i] for i in range(n_rooms)}
-    leaves = [i for i in range(1, n_rooms) if not children[i]]
 
     # Locks: exit room = deepest leaf; lock 1 gates it, key 1 sits in another deep leaf (tier 4: also locked).
     exit_room = max(leaves, key=lambda i: depth[i]) if leaves else 0
@@ -369,9 +373,11 @@ def selftest() -> None:
 
     tmp = Path(tempfile.mkdtemp())
     for tier in (1, 2, 3, 4):
-        for seed in range(25):
+        for seed in list(range(25)) + [HOLDOUT_SEED_BASE + k for k in (1, 2)]:
             m = generate(tier, seed)
             check_solvable(m)
+            n_locks = sum(1 for lk in m.door_lock.values() if lk)
+            assert n_locks == {3: 1, 4: 2}.get(tier, 0), (tier, seed, n_locks)
         for seed in range(3):
             p = tmp / f"t{tier}_{seed}.wad"
             m = write_map(tier, seed, p)
