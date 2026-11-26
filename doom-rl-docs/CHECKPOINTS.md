@@ -37,6 +37,11 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 00:14:** teammate 3 is offline from 01:15 (token budget). Plan change:
+  - **teammate 2 pre-screens** the core Vast candidates (`core_vA`…`core_vE`) on CUDA, 5 seeds holdout, `--mask` off;
+  - the **02:30 final test on Vast** (`maps/fresh/`, 10 seeds) decides;
+  - **core** checks its own final numbers by script and posts the CSVs, then re-exports `BRIEF.pdf` after `[core] FINAL` with
+    teammate 3's `export_brief.py` (reviewed: local-only, asserts ≤ 2 pages).
 - **UPDATE 00:09:** repo visibility: the human confirms the team will make it **public before the deadline** (owner action; tracked, not blocking). Vast runs A–E training; candidates from them go to `candidates` around 01:30.
 - **UPDATE 00:05: a rented 192-core machine (Vast.ai) is running 3 core runs until 03:30 (auto-destroy).** A = round 6 from v3 (56 envs),
   B = round 6 from core's `warp` run (48), **C = bigger model** (GRU 512, encoders copied from v3, round 6, 56). Bigger-model support is in

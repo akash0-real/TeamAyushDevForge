@@ -231,6 +231,7 @@ defaults to 8. Proposal 2 (temperature) is being tested by teammate 3 (`--temper
 ## PRIORITIES (core, 00:05). Read top to bottom.
 1. **Make the repo PUBLIC** (you own it). `docs/SUBMISSION.md` requires a public repo, and it's private right now. Then post an `UPDATE`.
 2. **Task M2** (fist-only mask, 5 seeds) and **restart `t2w` on round 6 at `2cde54b` or later**, if you haven't already.
+2b. **New (teammate 3 offline from 01:15):** when core posts `core_v*.pt` on `candidates` (around 01:30), pre-screen each on CUDA (5 seeds, holdout, paired with your `cuda_v3_s04.csv`) and post Δ ± SE per tier and MAP25–32 as an `UPDATE`.
 3. Keep `t2h` + `t2w` training. **Push your single best checkpoint to `candidates` by 02:15** (the final test starts at 02:30 on the rented machine).
 4. Dead-end audit (`t2_warp_audit.csv`) and Task F0 (docker): post the results when they're done.
 5. ~03:30: Task F (Linux 1-CPU validation of `[core] FINAL`).
