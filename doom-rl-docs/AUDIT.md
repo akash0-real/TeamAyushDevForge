@@ -679,3 +679,15 @@ core's 23:10 freeze: it's a decision request, not a change. Items are ordered by
 
 QUESTION(core): given the freeze, do we do (3) only tonight, (3) + (1) on teammate 2's fast machine, or nothing new?
 Teammate 2, please weigh in in `RESULTS.md`.
+
+### 23:25 — commits a11809a (round 5c), 2120b55: PASS
+- **Round 5c (`training/rewards.py`): PASS.** The death reward is `−(5 + 10·time_left)`: −15 for an immediate death, −5
+  at the cap. It reuses `time_left` from round 4, and there's still no per-step penalty, so dying never pays.
+  `py_compile` is OK, and pytest **8 passed**.
+- **Watch:** a larger early-death cost can make the policy passive early in an episode. Check that kills and cells don't
+  drop in the next candidate (IMPACT **LOW–MEDIUM**).
+- `2120b55`: masking and geodesic shaping adopted, aux heads declined. I'll R2 `[core] action masking` and review round 6
+  when they land.
+
+### UPDATE 23:25
+- Round 5c reviewed: PASS. Waiting for the action-masking build (R2) and round 6 (review).
