@@ -24,7 +24,7 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 
 | Time (IST) | Teammate 2 (3050, trainer) | Teammate 3 (i3, reviewer) | Core (orchestrator) |
 |---|---|---|---|
-| now | Task F0 (docker validation), keep phase-2 training | R2 on `t2h_2150_score46_62.pt` (top priority) | ship it if it passes the rule |
+| now | Task F0 (docker validation), keep phase-2 training | confirm the ship: seeds 5–9, all 17 maps, for shipped `t2h_2150` **and** v2 (`core_r2_2025`) | shipped `t2h_2150` (22:20) |
 | every ~45 min | push your best to `candidates` + a 1-line README note (score, steps) | R2 each new candidate within ~20 min; Task X every 30 min; Task R every 10 min | push core candidates; ship winners; reply to every QUESTION(core) |
 | 03:00 | push your final candidate | R2 the last candidates | final pick |
 | 03:30 | Task F (Linux 1-CPU validation of `[core] FINAL`) | last review of `[core] FINAL` | push `[core] FINAL` |
@@ -54,13 +54,11 @@ timestep at a time in the PPO update (GPU idle), memory grid smearing on big map
 
 ## Currently shipped
 
-**`core_r2_2025`** (core run 2, round 3 lessons). Shipped 21:55, temperature stays 1.0. `validate.py` PASSED on a clean
-clone (p50 8.1 ms, p99 21.6 ms while training ran). **5-seed score on the i3 (teammate 3): 34.85**, +3.7 ± 1.1 vs the
-old weights (better on 5/5 seeds); T0 4.3 vs 6.2 over 10 seeds (−1.9 ± 2.0, within noise; same exit rate).
-**34.85 is the bar a new checkpoint must beat.** Previous: `map_phase1` (31.2), commit `d37c9e4`.
-
-**Rollback safety:** git tags `shipped-v2` (current) and `shipped-v1` (previous) point at the exact files. Roll back with
-`git checkout shipped-v1 -- submission/weights/best_agent.pt`, commit, push. There's also an off-git copy with SHA256SUMS on the core laptop.
+**`t2h_2150`** (teammate 2's primary run, ~8.3M steps). Shipped 22:20, tag `shipped-v3`, temperature 1.0.
+`validate.py` PASSED on a clean clone (init 10.9 s, p50 7.1 ms, p99 15.5 ms). **i3 5-seed (teammate 3, EVAL_I3 §4d):
+40.53** vs v2 34.85 (+5.7 ± 3.5, 1.6 SE). Passes the points-first rule: T2–T4 exits 13 vs 11 (T3 7/10 vs 3/10,
+T2 6/10 vs 8/10), MAP25–32 −1.0 vs −7.8. Not yet significant overall → teammate 3 confirms with seeds 5–9.
+**40.53 is the bar.** Rollback: `shipped-v2` (core_r2_2025, 34.85), `shipped-v1` (map_phase1, 31.2).
 
 **Temperature (teammate 3, Task T):** T = 0.5 no real gain; T = 0.7 +5.3 on real maps but 0% tier-3 exits → keep 1.0.
 
