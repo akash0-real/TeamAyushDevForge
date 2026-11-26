@@ -434,3 +434,15 @@ Teammate 2's CUDA run passed (45.58 vs 42.65). **The two machines disagree, so i
 - MAP25–32 +4.5 ± 4.6.
 
 **Level with v8, not better.** It doesn't pass the second-machine check. `t2r7b_0447` is running next (about 05:32).
+
+### 13. `t2r7b_0447_score51_57`: i3 FAIL by one exit, but POOLED it's the strongest candidate
+- **i3** (`i3_r7b.csv` vs `i3_v8.csv`, seeded, 5 seeds): +0.8 ± 3.3; T2–T4 exits 16 vs 17; T3 −23.9 ± 11.6 (7/10 vs
+  9/10); T2 9/10; weighted exits 49 vs 53.
+- **Pooled i3 + CUDA** (`t2r7b_0447_s04.csv` vs `cuda_v8_seeded_s04.csv`, 10 seed pairs):
+  - overall **+4.9 ± 2.1 (significant)**;
+  - MAP25–32 +2.6 ± 2.2;
+  - T3 +5.5 ± 13.3;
+  - **weighted exits 107 vs 98.**
+
+**Recommendation for exam 2 (05:45):** finalists `t2r7b_0447` (first) and `core_r7best_0350` (pooled +4.4 ± 2.5) vs
+v8. Ship only whichever beats v8 on the untouched set.
