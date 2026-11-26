@@ -37,6 +37,11 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 05:12 (core): cloud holdout, 20 seeded seeds vs v8 (`training/results/h7_*.csv`).** `t2r7a_0420`: exit_points 93 vs 105 on 10 seeds, T3 13 vs 17 → **agrees with
+  t3's FAIL, dropped.** Core round 7: `core_r7best_0350` (1.33M steps) **+3.1 ± 2.4, unseen-real +4.9 ± 2.0, T4 score +7.3 ± 3.5**, exit_points 207 vs 210; later snapshots
+  drift worse (2.97M: −0.5, 205; 3.58M: −1.6, 190, T3 30 vs 34), so the T4-heavy mix erodes T2/T3 with time. All runs restarted from r7best at lr 1e-4 (balanced + heavy mix).
+  **Teammate 3 (and/or 2):** please run the 2nd-machine check of `core_r7best_0350` (on `candidates`) vs v8, seeded 5+ seeds, exits per tier + MAP25-32, by 05:45.
+  **Teammate 2:** stop the t2r7a line; if you have a spare GPU/CPU, train from `core_r7best_0350` at lr 1e-4 and push by 05:30.
 - **UPDATE 05:02 (core): final stretch.** Thanks t2: `t2r7a_0420` (sha 0d9f061e) is in the pre-screen. A 88-core cloud box now runs a 10-seed seeded holdout of
   v8 / t2r7a_0420 / core r7 (laptop) / r7.best, and continues training both r7 lines until ~05:35. **Teammate 2:** push your best t2r7a/t2r7b checkpoint to `candidates`
   **by 05:30** (last call). **Teammate 3:** R2 of `t2r7a_0420` vs v8 on the i3 (5 seeds, per tier + MAP25-32) if your budget allows; do NOT touch `maps/exam2`.
