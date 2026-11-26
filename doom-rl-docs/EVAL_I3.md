@@ -246,3 +246,23 @@ noise, and the exit rate is the same.
 maps** (âˆ’1.9 Â± 2.0 over 10 seeds). It passes the shipping rule. **Ship it at T = 1.0 if `validate.py` passes on a
 clean clone.**
 
+
+### 4c. Candidate `core_r2_2155` (round 4), 5 seeds (21:53â€“22:02 IST)
+
+Seeds split across 3 parallel processes, then merged into `training/results/i3_core_r2_2155.csv` (85 rows = 17 maps Ã— 5 seeds). Baseline = **shipped v2** (`i3_core_r2_2025.csv`), paired per seed. "MAP25â€“32" = truly unseen real maps, excluding `two_rooms` (see Strict review item 4 in `AUDIT.md`).
+
+| Slice | `core_r2_2155` | exits | Î” vs shipped v2 Â± SE | seeds worse | beyond 2 SE? |
+|---|---:|---:|---:|---:|---|
+| overall | 39.55 | 34% | +4.69 ± 7.07 | 2/5 | noise |
+| T0 incl two_rooms | 3.46 | 11% | -0.73 ± 5.20 | 3/5 | noise |
+| MAP25-32 | -10.16 | 0% | -3.44 ± 3.84 | 3/5 | noise |
+| T1 | 102.67 | 100% | +0.39 ± 0.46 | 2/5 | noise |
+| T2 | 98.56 | 80% | -0.04 ± 29.90 | 2/5 | noise |
+| T3 | 102.27 | 60% | +37.88 ± 21.20 | 1/5 | noise |
+| T4 | 17.11 | 0% | +4.95 ± 7.08 | 2/5 | noise |
+
+**Verdict:** **promising, but not yet proven better than shipped v2.**
+- Overall it scores 39.55 vs 34.85 (+4.7), but that gain is noise (Â±7.1, worse on 2 of 5 seeds).
+- Tier 3 jumps to **60% exits** (+37.9 Â± 21.2, 1.8 SE), which is close to significant.
+- Real maps: no exits on MAP25â€“32 (0/40), and the score difference there is noise.
+- **Recommendation:** don't ship it over v2 on this evidence alone. Teammate 2's `t2h_2150` candidate is being scored next with the same protocol.
