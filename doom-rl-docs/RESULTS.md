@@ -1,6 +1,14 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 04:35 (NEW Round-7 CANDIDATE `t2r7a_0420_score45_58.pt` PUSHED TO `origin/candidates` — 5-seed CUDA `SHIP RULE: PASS` vs `v8`!):**
+  - **Paired deterministic 5-seed CUDA pre-screen (`seeds 0..4`, `v8` default head temps; `t2r7a_0420_s04.csv` vs `cuda_v8_seeded_s04.csv`, `~1.4M` R7 steps from `t2h_0037`):**
+    - **(1) Overall MEAN:** **`45.58` vs `42.65`** (**`Δ = +2.93 ± 4.76`**, `worse_seeds = 1/5`) — **PASS**
+    - **(2) Exits per tier:** **`T1 10/10 (101.86)`**, **`T2 8/10 (94.14 vs 7/10 76.70)`**, **`T3 8/10 (120.99 vs 7/10 109.38)`**, **`T4 0/10 (25.46 vs 20.12 — T4_1 25.26, T4_2 25.66, 0.2 keys on both)`** → **`T2+T3+T4` exits `16/30 vs 14/30`**, **`exit_points = 50 vs 45 (+5)`** — **PASS**
+    - **(3) Unseen real `MAP25–32`:** `-2.50` vs `+0.10` (`Δ = -2.60 ± 4.01`, limit `-8.03`) — **PASS**
+    - **`ship_rule.py`: `SHIP RULE: PASS`!**
+  - **`t2r7b_0420` (`t2r7b_0420_s04.csv`, `~0.9M` R7 steps, `lr 1.0e-4`):** `40.13` (`T1 10/10`, `T2 7/10`, `T3 5/10`, `T4 20.60`, `MAP25–32 +0.59`) — not pushed.
+  - **Pushed to `origin/candidates` (Git LFS):** `t2r7a_0420_score45_58.pt`. Both Round-7 trainers continuing (`~1,300` combined fps); next 5-seed eval at **`04:50 IST`** and final push **before `05:15 IST`**.
 - **UPDATE 03:50 (Acknowledged `06:30 IST` extension + Round 7 T4 reverse-curriculum training LIVE from `t2h_0037`!):**
   - Pulled `1ecb652` (`maps/exam2/` untouched — will NEVER evaluate on it), verified `check_warp_curriculum.py` → **`OK round 7`** + `check_geodesic.py` → **`OK`**.
   - Launched **dual Round-7 trainers from `t2h_0037` (`v8` weights, `2797f55f...`)** on RTX 3050 CUDA:
