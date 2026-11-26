@@ -13,7 +13,10 @@
 - **An infinite procedural map generator** (`maps/gen_maps.py`) for tiers 1–4, every map load a brand-new level, with
   a **solvability proof** for key/lock levels in its self-test.
 - **A "tutor" training loop:** we read the training logs, diagnose the failing skill, adjust rewards or curriculum,
-  and resume from the same weights (three rounds so far, §4).
+  and resume from the same weights (six rounds, §4). Highlights:
+  - an adaptive **reverse curriculum** that starts episodes near the exit or a key on real maps and moves the start back
+    after each success;
+  - **geodesic progress shaping** toward the next key, then the exit, which pays exactly zero for loops (training only).
 
 ## 2. Architecture (`submission/model.py`, 759,056 parameters as shipped)
 
@@ -57,7 +60,7 @@
 
 **Custom recurrent PPO** (Schulman et al., 2017) in PyTorch, not Stable-Baselines3:
 
-- 12 parallel envs, 128-step rollouts.
+- 12–56 parallel envs (our laptops plus one rented 192-core machine), 128–256-step rollouts.
 - BPTT over each full rollout, with the hidden state reset at episode boundaries.
 - 4 epochs × 4 per-env minibatches.
 - γ 0.995, GAE λ 0.95, clip 0.2, entropy 0.015, value coefficient 0.5.
@@ -68,28 +71,30 @@
 
 | Event | Reward | Event | Reward |
 |---|---:|---|---:|
-| Exit | +25 (+2 × health fraction) | Kill | +1 |
+| Exit | +25 + 6 × health + 6 × time left | Kill | +1 |
 | Key picked up | +8 | Damage dealt | +0.01 / hp |
 | First sighting of a key | +0.5 | Item picked up | +0.15 |
-| Locked door opened | +4 | Health gained while hurt | +0.01 / hp |
-| Door opened | +0.8 | Damage taken | −0.015 / hp |
-| New 64-unit cell | +0.04 (cap 600 / episode) | Death | −3 |
+| Locked door opened | +4 | Health gained while hurt | +0.025 / hp |
+| Door opened | +0.8 | Damage taken | −0.03 / hp |
+| New 64-unit cell | +0.04 (cap 600 / episode) | Death | −5 − 10 × time left |
+| Geodesic progress (round 6) | Φ(s′) − Φ(s), Φ = −walking distance / 1000 | | |
 
 There is no per-step penalty, so the agent can't learn that dying early pays.
 
 **Map mix per map load:**
 
-- **25 real slots:** Freedoom 2 MAP01–24 + `two_rooms`.
-- **48 generated slots:** tier 1: 6, tier 2: 12, tier 3: 18, tier 4: 12.
+- **41 real slots:** Freedoom 2 MAP01–24 ×2 (without the 4 giant maps) + `two_rooms`. Half of the real-map episodes start
+  near an exit or a key (reverse curriculum).
+- **45 generated slots:** tier 1: 3, tier 2: 12, tier 3: 18, tier 4: 12.
 
-**Tutor rounds:**
+**Tutor rounds** (each one diagnosed from the logs or from teammate review):
 
-1. At 460k steps: tier 1 exits 83–92%, tier 2 30–55%, tier 3 stuck at about 0.1 keys/episode. We raised the key
-   reward from 3 to 8, added +0.5 for the first key sighting, and gave tier 3 a bigger share.
-2. Tier 3 was still at 0% exits. We made 35% of tier-3 maps small (3 rooms), and fixed a generator bug where chain
-   layouts produced tier-3 maps with no lock.
-3. We trained the plain model first (184k steps), then warm-started the EgoMap model from it with the new map inputs
-   initialised to zero. Behaviour is identical at the switch, and a test proves it.
+1. Tier 3 stuck at 0.1 keys per episode: key reward 3 → 8, plus a first-sighting bonus.
+2. Tier 3 at 0% exits: small 3-room tier-3 maps, and a generator fix for lockless layouts.
+3. Plain model → EgoMap model warm start; behaviour is identical at the switch, and a test proves it.
+4. Replays showed slow, damaged exits: exit bonus for health and time left, plus a stronger damage penalty.
+5. Real maps had 0 exits: a reverse curriculum (start near an exit or a key) and an early-death penalty.
+6. Geodesic progress shaping toward the next key, then the exit; loops (teleporters included) sum to 0.
 
 ## 5. Procedural map factory (`maps/gen_maps.py`)
 
@@ -112,23 +117,22 @@ pickups.
 ## 6. Results (holdout; proxy score from `training/eval_zeroshot.py`, higher is better)
 
 <!-- RESULTS:START -->
-| Agent | Mean proxy score | Exit % | Notes |
-|---|---:|---:|---|
-| Random weights | −13.2 | 0% | Freedoom + `two_rooms` holdout |
-| Plain model (184k steps) | 9.9 | 18% | holdout v1 |
-| **EgoMap model, shipped (184k plain + 460k EgoMap)** | **34.1** | **29%** | holdout v1 |
-| Shipped, current eval (generated maps at 2,100 tics, 2 seeds) | 27.7 | — | T0 = MAP25–32 + `two_rooms` 7.9 (11% exits, all on `two_rooms`), T1 101 (100%), T2 59 (50%), T3 30, T4 9.8 |
-<!-- RESULTS:END -->
+**Final submission: v8** (`shipped-v10`): weights `t2h_0037`, turn/strafe temperature 0.5. Seeded eval, 20 seeds; exits / attempts.
 
-**Tier 3 works.** The shipped agent solves key → locked door → exit on generated tier-3 holdout maps: 100% and 50%
-exits in a frozen-set eval at 4,200 tics, with keys picked up. It also reaches the exit of the official test map (a
-training map) on its own in 137 steps.
+| Test set | T1 | T2 | T3 | T4 | Unseen big real maps | Mean |
+|---|---|---|---|---|---|---:|
+| Final exam: 16 untouched maps | 40/40 | 31/40 | 36/40 | 0/40 | 0/160 | 48.9 |
+| Holdout: 17 maps | 40/40 | 34/40 | 34/40 | 0/40 | 0/160 | 45.2 |
+
+- **Holdout mean over time:** random −13.2 → first EgoMap model 31.2 → v3 40.5 → v8 45.2.
+<!-- RESULTS:END -->
 
 **Footprint** (official `validate.py`, PASSED):
 
 | Measure | Value |
 |---|---|
-| Step latency | p50 4.3 ms, p99 8.1 ms |
+| Step latency | p50 5.6 ms (v8, clean clone); MAP32 agent-only p50 5.1 ms on 1 core |
+| Official Docker image (`validate.py --docker`) | PASSED, 0 warnings (v8, Linux) |
 | First step | 23 ms (warm-up in `__init__`) |
 | Compute used on the test map | 0.6 s of the 21 s per-map budget |
 | RAM, Linux pinned to 1 CPU | 355 MB of 8,192 MB (random weights) |
@@ -138,12 +142,12 @@ training map) on its own in 137 steps.
 
 **Limitations:**
 
-- Tier 4 (two locks) is still at 0% exits.
-- On real Freedoom levels it has never seen (MAP25–32), it hasn't reached an exit yet: 0 of 80 episodes for both
-  shipped checkpoints. It explores and fights there for partial points.
-- At the shortest time cap (2,100 tics), tier-3 maps often time out. Backtracking works, but it is slow.
+- Tier 4 (two locks) is still at 0% exits: the agent usually dies about halfway through, after finding keys.
+- On big real levels it has never seen (Freedoom 2 MAP25–32, Freedoom 1), it hasn't reached an exit: 0 of 320 episodes.
+  It explores and fights there for partial points.
+- Selection bias: our 17-map holdout over-rated one candidate (v9), so the final pick used an untouched 16-map set.
 - Position dead reckoning drifts 1–2 cells over long episodes. Heading stays exact.
-- Only about 0.7M training steps so far, at roughly 250–300 env steps/s on one laptop (RTX 4050, i7-13620H).
+- One night of training: about 12M steps behind the shipped weights (RTX 3050 laptop), plus experiment runs.
 
 **With more time:**
 
