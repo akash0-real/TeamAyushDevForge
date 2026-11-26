@@ -529,3 +529,39 @@ $ sha256sum submission/weights/best_agent.pt
 QUESTION(core): `DEMO_SCRIPT.md` still has a `TODO(core)` for `demo/agent_demo.mp4` (cheat-sheet numbers: 246 / 364
 steps). The real videos are on `origin/demos` (teammate 2: Tier 2 exit in 123 steps, Tier 3 in 516 steps). May I point
 the script at `FULL_DEMO_SHOWCASE.mp4` and use those step counts?
+
+### 22:37 — commits fc5e0b5..621f17b (tutor round 5: reverse curriculum)
+Reviewed `936b9d1` [core] (`training/rewards.py`, new `training/test_warp_curriculum.py`) and `621f17b` [core]
+(task files). `submission/` is unchanged (`git show --stat 936b9d1` lists training files only), so no `validate.py` is
+needed.
+
+**`936b9d1`: PASS (CONFIRMED), with 1 NIT and 1 HYPOTHESIS.**
+- **Rules:** the warp uses `sv_cheats 1` + `warp x y` in `ShapedDoomEnv.reset()`. That's training only; `RULES.md` §2
+  allows any engine change in training. `submission/` doesn't import `rewards.py`.
+- **Train/eval consistency: OK.**
+  - The warp and its single no-op step happen *before* `ego_map.reset(); ego_map.update(raw_obs, None)`, so the EgoMap
+    starts at the warped spot exactly as the agent's EgoMap starts at spawn.
+  - `ego_map.tic = self._warp_tics` keeps the turn dead-time model aligned with the game tic.
+  - The GRU state is reset by the trainer at the episode boundary as before.
+- **Self-check passes:** `uv run --no-sync python training/test_warp_curriculum.py` → `all 32 maps have exits + spawn
+  spots` … `OK 2 of 12 warped` (20 s).
+- **Warp rate matches `WARP_PROB = 0.5`.** The self-check's 2/12 looked low (about a 2% chance at p = 0.5), so I
+  measured it with `training/results/t3_checks/warp_rate.py`:
+  `seed 7: 17/30 warped (57%)`, `seed 11: 17/30 warped (57%)`. That's 34/60, consistent with 0.5; the 2/12 was
+  seed-3 chance.
+- **NIT (CONFIRMED): plain `pytest` runs the script.** `training/test_warp_curriculum.py` matches pytest's `test_*.py`
+  pattern and runs at module level, so plain `pytest` executes the 20 s environment script during collection:
+  `pytest --collect-only -q -s training/test_warp_curriculum.py` → prints `OK 2 of 12 warped` … `no tests collected
+  in 22.46s`. CI only runs `tests/test_submission.py` (`.github/workflows/ci.yml:39`), so CI isn't affected.
+  - **Fix:** wrap the body in `if __name__ == "__main__":`, or rename it `check_warp_curriculum.py`.
+  - IMPACT: **LOW**.
+- **HYPOTHESIS (not tested): some warp spots may be dead ends.**
+  - Spawn spots are any item or player start within the radius of an exit line (`exit_spots()`), with no check that
+    the exit is reachable *from* that spot without a key the agent doesn't hold.
+  - On maps where the exit sits behind a locked door, a warped start beyond that door would be unwinnable, or one in
+    a closed secret area. The radius would shrink there (×0.95 per failure, floor 512).
+  - **Test:** log `exit_reached` per warp spot over about 100 warped episodes per map, and flag spots that never exit.
+  - IMPACT: **LOW–MEDIUM**. It wastes some training episodes but can't hurt evaluation.
+
+**`621f17b`:** a new Task Y for teammate 3 (exit-blocker research) and Task H2 for teammate 2. Task Y starts once
+the v3 confirmation evals (seeds 5–9) finish, under the 3-eval limit.
