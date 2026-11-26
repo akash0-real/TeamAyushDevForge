@@ -45,6 +45,7 @@ GEN_CACHE.mkdir(parents=True, exist_ok=True)
 # Reverse curriculum (training only): on real Freedoom maps, sometimes start the player near the exit and move the
 # start further back as it succeeds, so the agent experiences finishing big maps it can't yet cross from the start.
 WARP_PROB = 0.5
+WARP_R0, WARP_RMIN = 256.0, 192.0  # start radius / floor (was 768 / 512: the floor sat beyond where v3 can succeed)
 EXIT_SPECIALS = (11, 51, 52, 124, 197, 198)  # Doom-format exit line specials (switch / walk-over / shoot)
 KEY_WARP_PROB = 0.4  # of warped episodes on maps with keys: start near a key instead (teammate 3 Task Y: 0 keys on real maps)
 KEY_THINGS = (5, 6, 13, 38, 39, 40)  # blue/yellow/red keycards and skull keys
@@ -168,7 +169,8 @@ class ShapedDoomEnv(gym.Env):
             kind = "key" if warp_spots(map_name, "key")[1] and self.rng.random() < KEY_WARP_PROB else "exit"
             _targets, spots = warp_spots(map_name, kind)
             if spots:
-                radius = self._warp_radius.setdefault(f"{map_name}:{kind}", 768.0)
+                # start at 256 (teammate 2 audit: v3 exits from 25/64 spots within 250 units, 8/843 beyond)
+                radius = self._warp_radius.setdefault(f"{map_name}:{kind}", WARP_R0)
                 near = [sp for sp in spots if sp[0] <= radius] or spots[:3]
                 _d, x, y = self.rng.choice(near)
                 g = self._env._game
@@ -341,7 +343,7 @@ class ShapedDoomEnv(gym.Env):
                 m = f"{self._cur_spec[1]}:{self._warped}"
                 won = ps["exit_reached"] if self._warped == "exit" else self._stats["keys"] > 0
                 r = self._warp_radius[m]
-                self._warp_radius[m] = min(r * 1.25, 12000.0) if won else max(r * 0.95, 512.0)
+                self._warp_radius[m] = min(r * 1.25, 12000.0) if won else max(r * 0.95, WARP_RMIN)
             info = dict(info)
             info["episode_stats"] = dict(self._stats)
             info["map"] = f"{Path(self._cur_spec[0]).name}:{self._cur_spec[1]}"

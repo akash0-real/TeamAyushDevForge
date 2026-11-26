@@ -17,7 +17,7 @@ for ep in range(30):
     d = min(math.hypot(ps["x"] - a, ps["y"] - b) for a, b in ex)
     warped += bool(env._warped)
     assert set(obs) >= {"rays", "map"} and env.ego_map.tic == (4 if env._warped else 0)
-    if env._warped: assert d <= 768 + 200, d  # within the starting radius
+    if env._warped: assert d <= max(256, sp[min(2, len(sp) - 1)][0]) + 200, d  # within the radius, or the 3 nearest spots
     # run a short random episode to make sure stepping works after a warp
     for t in range(30):
         obs, r, term, trunc, info = env.step(env.action_space.sample())
