@@ -102,3 +102,22 @@ def test_model_and_agent_zero_and_nonzero_entities():
         act = agent.act(_make_dummy_obs(num_entities=n_ent))
         assert act.shape == (9,)
         assert set(np.unique(act)).issubset({0, 1})
+
+
+def test_action_mask_removes_only_the_masked_options():
+    torch = pytest.importorskip("torch")
+    from agent import DoomAgent
+
+    agent = DoomAgent(S.observation_space(), S.action_space(), "cpu")
+    agent.action_mask = True
+    loaded = _make_dummy_obs()
+    loaded["vitals"][2], loaded["vitals"][3] = 3.0, 20.0  # shotgun with ammo
+    fist = _make_dummy_obs()
+    fist["vitals"][2] = 1.0  # fists, no enemy in view
+    for _ in range(200):
+        assert agent.act(loaded)[8] == 0  # never SELECT_NEXT_WEAPON
+        assert agent.act(fist)[6] == 0  # never ATTACK
+    close = _make_dummy_obs(num_entities=1)
+    close["vitals"][2] = 1.0
+    close["visible_entities"]["features"][0, 0] = 50.0 / 1024.0  # enemy within reach: attack allowed again
+    assert any(agent.act(close)[6] for _ in range(200))

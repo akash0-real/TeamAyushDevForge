@@ -13,6 +13,9 @@ import torch
 from model import DoomSpatialPolicy, load_policy
 from preprocess import NUM_ACTIONS, EgoMap, factored_to_multibinary, preprocess_obs
 
+ENEMY_TYPES = (1, 2, 3)  # doom_env.spaces.ENTITY_TYPES: enemy_melee, enemy_hitscan, enemy_projectile
+FIST_REACH = 100.0 / 1024.0  # entity features[0] is distance / 1024; melee range 64 + monster radius
+
 SUBMISSION_DIR = Path(__file__).resolve().parent
 WEIGHTS_PATH = SUBMISSION_DIR / "weights" / "best_agent.pt"
 
@@ -31,6 +34,7 @@ class DoomAgent:
         self.model.eval()
         self.ego_map = EgoMap() if self.model.use_map else None
         self.temperature = 1.0  # action-sampling temperature (logits / T); tuned on the holdout maps
+        self.action_mask = False  # observation-based action masking (docs/RULES.md §1 "action masking"); see _mask
         # Warm-up in __init__ (60 s limit) so the first act() of a map (10 s limit) isn't paying torch's lazy init:
         # measured ~4 s for the first act() on one pinned CPU core without this.
         with torch.inference_mode():
@@ -61,6 +65,24 @@ class DoomAgent:
             self.prev_action = np.zeros(NUM_ACTIONS, dtype=np.int8)
             return self.prev_action
 
+    @staticmethod
+    def _mask(observation: dict, logits: list) -> list:
+        """Remove two never-useful options, read from observation fields only; the network still picks every action.
+        Heads: [move, strafe, turn, attack, use, weapon]; option 1 of attack/weapon = press."""
+        vit = np.asarray(observation["vitals"], dtype=np.float32)
+        slot, ammo = float(vit[2]), float(vit[3])
+        ent = observation["visible_entities"]
+        enemy = (np.asarray(ent["mask"]) > 0) & np.isin(np.asarray(ent["entity_type"]), ENEMY_TYPES)
+        near = enemy & (np.asarray(ent["features"], dtype=np.float32)[:, 0] <= FIST_REACH)
+        logits = list(logits)
+        if slot >= 3 and ammo > 0:  # shotgun or better, loaded: don't cycle away from it
+            logits[5] = logits[5].clone()
+            logits[5][..., 1] = float("-inf")
+        if slot <= 1 and not near.any():  # fist/chainsaw with nothing in reach: don't swing at air
+            logits[3] = logits[3].clone()
+            logits[3][..., 1] = float("-inf")
+        return logits
+
     @torch.inference_mode()
     def _act(self, observation: dict) -> np.ndarray:
         enc = preprocess_obs(observation, self.prev_action)
@@ -71,7 +93,10 @@ class DoomAgent:
         self.first_step = False
         obs_t = {k: torch.from_numpy(v).unsqueeze(0).to(self.device) for k, v in enc.items()}
         logits, _, self.h = self.model.forward_step(obs_t, self.h)
-        factored, _, _ = self.model.sample_and_logprob([lg / self.temperature for lg in logits])
+        logits = [lg / self.temperature for lg in logits]
+        if self.action_mask:
+            logits = self._mask(observation, logits)
+        factored, _, _ = self.model.sample_and_logprob(logits)
         action = factored_to_multibinary(factored.squeeze(0).cpu().numpy())
         self.prev_action = action
         return action
