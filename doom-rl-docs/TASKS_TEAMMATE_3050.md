@@ -235,6 +235,8 @@ defaults to 8. Proposal 2 (temperature) is being tested by teammate 3 (`--temper
 3. Keep `t2h` + `t2w` training. **Push your single best checkpoint to `candidates` by 02:15** (the final test starts at 02:30 on the rented machine).
 4. Dead-end audit (`t2_warp_audit.csv`) and Task F0 (docker): post the results when they're done.
 5. ~03:30: Task F (Linux 1-CPU validation of `[core] FINAL`).
+   **Also time the biggest real map** (teammate 3 X 00:25: MAP32 p50 27 ms pinned on Windows):
+   `.venv/bin/python validate.py --device cpu --map <path to freedoom2.wad>:MAP32 --ticks 4200`, with the agent pinned to 1 CPU. Post p50/p99 and agent time vs budget.
 
 ## TASK M2 (core, 23:43): fist-only mask, 5 seeds CUDA (after restarting `t2w` on the round-6 fix)
 Pooled, the masks were neutral and the weapon rule looks like it hurts T4. Test the fist rule alone, paired with your
