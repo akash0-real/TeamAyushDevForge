@@ -161,6 +161,26 @@ If your human asks you to run the map model instead, the core owner will give th
 
 ---
 
+## 5b2. Task G — Switch your laptop to the memory-grid model at full speed (do this NOW, ~15 min)
+
+Commit `3cfa239` fixed two bugs that wasted your machine too:
+- every env worker loaded PyTorch for nothing (~490 MB each; that RAM can now run more envs);
+- the PPO update fed the GRU one timestep at a time (GPU mostly idle).
+
+Your plain seed-7 run scores 9.7 vs 27.7 for the shipped memory-grid model, so continue from the shipped weights instead:
+1. Stop your seed-7 run (Ctrl+C). Keep `training/checkpoints/seed7.pt`; add one final leaderboard row for it.
+2. `git pull --rebase` then `git lfs pull` (check `submission/weights/best_agent.pt` is ~3 MB).
+3. Copy the shipped weights so your run never touches `submission/`: `cp submission/weights/best_agent.pt training/checkpoints/t2_start.pt`
+4. Start (use `nproc` minus 2 for `--num-envs`, max 16; watch `free -h`, and keep ≥ 1.5 GB available):
+   ```bash
+   .venv/bin/python -u training/train_ppo.py --use-map --resume training/checkpoints/t2_start.pt --lr 1.5e-4 \
+     --num-envs 10 --seed 48 --total-steps 8000000 --save-path training/checkpoints/t2map.pt 2>&1 | tee training/checkpoints/t2map.log
+   ```
+5. After 10 minutes, record `fps` and the `exit-by-tier` line in `RESULTS.md`. In Task D evaluations, evaluate
+   `training/checkpoints/t2map.pt` instead of `seed7.pt`.
+6. If a `t2map` checkpoint beats the shipped score in `doom-rl-docs/CHECKPOINTS.md` (mean **and** T0), tell your human
+   and send the `.pt` file to the core owner (not via git `main`). The core owner validates and ships it.
+
 ## 5c. Task F — Final Linux validation of the shipped agent (≈ 03:30 IST)
 
 Team target: **everything finished by 04:00 IST** (04:00–05:00 is buffer). Your Linux machine is the only one that

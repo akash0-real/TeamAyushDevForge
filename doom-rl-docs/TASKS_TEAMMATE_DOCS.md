@@ -242,6 +242,13 @@ Commit `[t3] audit` and **tell your human right away about any BLOCKER**. The co
 4. Commit `[t3] i3 validation + 5-seed eval` (include `training/results/i3_shipped.csv`).
    **Tell your human immediately if validate.py fails** or p99 latency is above 30 ms.
 
+### Task D2 — Re-run your edge-case audit on the fixed code (~15 min, after Task E)
+Commit `3cfa239` acted on your audit: `act()` now returns a no-op instead of freezing on an exception (your 2.1), and
+the EgoMap grid scrolls on big maps instead of smearing at the edge (your 2.2). `git pull --rebase`, re-run your
+`edge_test.py`, and add one case: monkeypatch `agent._act` to raise, then check `act()` returns zeros of shape `(9,)`.
+Also re-check the long 1,050-step run: the pose should end inside the grid now (`a.ego_map.ox` is non-zero after
+scrolling). Append the results to `AUDIT.md` under `## Re-check after 3cfa239` and commit `[t3] audit re-check`.
+
 ### Task F — 3-minute live-demo script, `doom-rl-docs/DEMO_SCRIPT.md` (~30 min)
 For the review (judges may ask for a live demo). Use only facts from section 4 and `doom-rl-docs/REVIEW_CHEATSHEET.md`.
 - 0:00–0:30 pitch; 0:30–1:30 what's on screen (the demo video: left game view, right the agent's memory map;

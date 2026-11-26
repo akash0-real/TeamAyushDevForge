@@ -7,6 +7,20 @@ Updated by the core owner after every evaluation. Teammate 2's own runs go in `R
 (`maps/holdout/gen_t{1-4}_{1,2}.wad`). **Score** = proxy score from `training/eval_zeroshot.py` (higher is better).
 Unless noted, scores use the current eval (`[t2]` version: generated maps at 2,100 tics) with seeds 0 1.
 
+## Team status board (updated 19:55 IST)
+
+| Who | Doing now | Next |
+|---|---|---|
+| Core (i7 + RTX 4050) | Memory-grid training, round 4: 20 envs, all speed fixes (379+ steps/s vs 273) | Score a new checkpoint every ~40 min; ship only if it beats the shipped one incl. real maps |
+| Teammate 2 (3050, Linux) | Seed-7 plain run (scores 9.7) | **Task G now:** switch to the memory-grid model from the shipped weights with the fixes |
+| Teammate 3 (i3) | Brief, README, docs, audit, demo script done | Task E (i3 validation + 5-seed score), then Task D2 (re-check audit) |
+
+**Plan check:** on schedule. A trained, validated agent is on `main`; final pick ~03:00, `[core] FINAL` ~03:30,
+Linux validation + brief PDF re-export by 04:00 IST.
+
+**Fixed in `3cfa239` (from the audit + profiling):** torch loaded in every env worker (~5 GB wasted RAM), GRU fed one
+timestep at a time in the PPO update (GPU idle), memory grid smearing on big maps, `act()` freezing on an exception.
+
 ## Currently shipped
 
 **`map_phase1`**: EgoMap model, 645k total training steps (184k plain + 460k EgoMap). Shipped 18:03, commit `d37c9e4`.
