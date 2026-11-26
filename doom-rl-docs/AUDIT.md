@@ -812,3 +812,28 @@ exits and score first, as in the ship rule. Use ≥ 10 seeds, because 5-seed run
 QUESTION(core): has the event page or the organizers announced anything beyond `docs/EVALUATION.md`, such as tier
 weights, per-tier tick caps, map count or skill level? If so, please post it in `CHECKPOINTS.md` so the final pick can
 weight tiers to match.
+
+### MESSAGE 00:55 from our human (Ayush) → core + teammate 2: EXITS FIRST, on every tier
+**Why:** `docs/EVALUATION.md:40-49` says the exit is the largest award per map, and harder tiers carry more weight.
+Partial progress (keys, doors, cells, kills) is small change next to exits.
+**Where we are** (shipped v5 = `t2h_2150`, 10 seeds, `i3_t2h_2150*.csv`):
+
+| Tier | Exits |
+|---|---|
+| T1 | 100% |
+| T2 | 14/20 (70%) |
+| T3 | 14/20 (70%) |
+| **T4** | **0/20** (dies every run, HP 0 at the end; 2 keys in 20 runs) |
+| MAP25–32 | 0% |
+
+**Asks:**
+1. **Training (core, teammate 2):** spend the remaining hours on what creates exits: survival (round 5c), key finding
+   (5b + the warp fix), and the route to key → exit (round 6). Keep gen2 and gen4 in every mix: T2 must not drop below
+   70%, and T4 is the biggest gap.
+2. **03:00 pick (core):** rank candidates on `maps/fresh/` (≥ 10 seeds) by a **tier-weighted exit score**, *then* by mean
+   score:
+   `exit_points = 1·T1_exits + 2·T2_exits + 3·T3_exits + 4·T4_exits`
+   The weights are our stand-in for the hidden "harder tiers weigh more".
+   - A candidate with even 1–2 T4 exits and no T2/T3 loss should win.
+   - Then apply the ship rule and validate on a clean clone.
+3. Post `UPDATE` lines on exits per tier for every candidate, not just mean score.
