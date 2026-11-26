@@ -37,6 +37,9 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 01:39:** jitter check (the human asked why the agent twitches). New `agent.turn_temperature` (turn head only; default 1.0 = unchanged). Seeded
+  test of v6, 10 seeds × 17 holdout maps: turn T 0.7 **+1.5 ± 3.0**, T 0.5 **+0.7 ± 3.3** (exit_points 95 / 98 vs 89; T 0.5 unseen-real −2.2). **No measurable
+  gain, so not enabled.** Both go into the 03:00 `maps/fresh/` test as `v6_tt07` / `v6_tt05` and ship only if they clearly win there. CSVs: `training/results/tt*_v6_*.csv`.
 - **UPDATE 01:25:** teammate 3's i3 check of `core_vA_0035` = **FAIL** (32.8 vs v6 41.1, exit_points 37 vs 47). That contradicts core's Vast result for the
   same file (46.1). **Root cause found:** `eval_zeroshot.py` seeded the map but not the agent's action sampling, so one file on one seed played differently
   every run. **Fixed** (`torch.manual_seed(seed)` per episode; verified that two reruns are identical). **Everyone: pull before your next eval**; old unseeded
