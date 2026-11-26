@@ -1,6 +1,10 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 00:14 (Warp-spot dead-end audit COMPLETE — `training/results/t2_warp_audit.csv`):**
+  - Audited all **`907` exit-warp spots `<= 1,500u`** across all 20 `REAL_TRAIN_MAPS` × 3 episodes = **`2,721` episodes** with `shipped-v3` (`2,100` tics).
+  - **Huge finding:** **`874 / 907` (`96.4%`) have `0/3` exits**; only **`33 / 907` (`3.6%`)** ever reached an exit! Nine entire maps (`MAP02, 04, 07, 08, 09, 10, 17, 20, 24`) had **0 working spots (`100%` dead)**, while `MAP05` (`10` working) and `MAP14` (`7` working, all `3/3`) carry over half the working spots. Full 20-map table + 33 working spots listed below; all 874 zero-exit `(map, x, y, dist)` rows are in `training/results/t2_warp_audit.csv`.
+  - **Acknowledged `62c186c` / `d14d890`:** `02:15 IST` hard candidate deadline armed; repo visibility flagged to Akash (will switch to public before deadline). `t2h` + `t2w` running fixed Round 6 now with all 8 audit workers freed; `00:06` 3-seed eval (`t2w_0006` + `t2h_0006`) finishing now; Task F0 `docker build` still on `stage 6/9`.
 - **UPDATE 00:03 (Task M2 `--mask fist` complete):**
   - **`t2_v3_mask_fist.csv` vs `cuda_v3_s04.csv` (5 seeds CUDA, 17 holdout maps):** **SHIP RULE: FAIL (purely neutral)** — overall `43.09` vs `43.11` (**Δ `-0.03 ± 4.53`**, worse 3/5); `T0_all -0.69 ± 2.67`; **`MAP25–32 -0.81 ± 3.08`** (`-2.91` vs `-2.10`); `T1 -0.30 ± 0.44` (`10 vs 10`); `T2 +11.13 ± 30.05` (`8 vs 7`); `T3 -2.40 ± 18.18` (`7 vs 7`); `T4 -5.59 ± 7.86` (`20.35` vs `25.94` — recovered ~10 pts vs full mask's `-15.25`, confirming the weapon-switch rule was what hurt T4); `T2+T3+T4` exits `15 vs 14`. Recommendation: **keep masks OFF (`shipped-v5`)**.
   - **Warp-spot dead-end audit (`task-996`):** `850/907` (`94%` done, final ~2 maps left!) — will push `t2_warp_audit.csv` immediately on completion. **Task F0 `docker build`** still on `stage 6/9` (`Downloaded triton`).
@@ -178,3 +182,46 @@ From watching replays (`02_tier2_unseen_exit.mp4` 123 steps, `03_tier3_keycard_b
 2. **Real-Map Near-Miss `USE`-Press Audit (`MAP29` & `MAP02`, seeds `0–4`, `4,200` tics, `n=10`):**
    - Overall `USE` press rate is already `32–48%` of all steps; on `MAP29` (`walk` exit), the agent reached `87u` (`6/12` `USE` presses) and `116u` (`1/4` `USE` presses); on `MAP02` (`switch` exit), closest approach was `176–384u` before death (`5/5` deaths).
    - Takeaway: Real-map near-misses are caused by walls, locked doors, and combat deaths rather than failure to press `USE` (folding Task Y blocker #3 into survival and key acquisition).
+
+---
+
+## Per-Warp-Spot Dead-End Audit (`training/results/t2_warp_audit.csv`)
+
+Audited every `warp_spots(map, "exit")` spot within `1,500` units across all 20 `REAL_TRAIN_MAPS` (`907` spots × `3` episodes = `2,721` episodes, `shipped-v3`, `2,100` tics).
+- **Summary:** `33 / 907` (**`3.6%`**) working (`>= 1/3` exits), **`874 / 907` (`96.4%`) zero-exit dead spots** (all 874 `(map, x, y, dist)` entries with `exits == 0` are in `training/results/t2_warp_audit.csv`).
+
+| Map | Spots <=1500u | Working (>=1/3 exits) | Zero-exit (0/3) | Dead % | Min working dist | Min dead dist |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| MAP01 | 76 | 2 | 74 | 97% | 544u | 348u |
+| MAP02 | 96 | 0 | 96 | 100% | — | 165u |
+| MAP03 | 30 | 2 | 28 | 93% | 60u | 320u |
+| MAP04 | 55 | 0 | 55 | 100% | — | 128u |
+| MAP05 | 76 | 10 | 66 | 87% | 36u | 79u |
+| MAP06 | 42 | 2 | 40 | 95% | 115u | 218u |
+| MAP07 | 13 | 0 | 13 | 100% | — | 305u |
+| MAP08 | 25 | 0 | 25 | 100% | — | 112u |
+| MAP09 | 49 | 0 | 49 | 100% | — | 283u |
+| MAP10 | 20 | 0 | 20 | 100% | — | 592u |
+| MAP13 | 19 | 3 | 16 | 84% | 81u | 316u |
+| MAP14 | 52 | 7 | 45 | 87% | 25u | 184u |
+| MAP16 | 44 | 1 | 43 | 98% | 373u | 82u |
+| MAP17 | 67 | 0 | 67 | 100% | — | 96u |
+| MAP18 | 67 | 2 | 65 | 97% | 91u | 130u |
+| MAP19 | 12 | 2 | 10 | 83% | 542u | 525u |
+| MAP20 | 15 | 0 | 15 | 100% | — | 1200u |
+| MAP21 | 50 | 1 | 49 | 98% | 1399u | 369u |
+| MAP22 | 49 | 1 | 48 | 98% | 112u | 304u |
+| MAP24 | 50 | 0 | 50 | 100% | — | 274u |
+
+**All 33 working exit-warp spots (`exits >= 1/3`; every other spot in `t2_warp_audit.csv` is `0/3`):**
+- `MAP01`: `(-192,-992)` `544.1u` (`1/3`), `(1240,-968)` `1077.7u` (`1/3`)
+- `MAP03`: `(2812,-1760)` `60.0u` (`1/3`), `(3488,-1760)` `736.0u` (`1/3`)
+- `MAP05`: `(-732,572)` `36.2u` (`2/3`), `(-744,504)` `75.9u` (`1/3`), `(-696,552)` `75.9u` (`3/3`), `(-720,496)` `93.3u` (`3/3`), `(-664,572)` `104.1u` (`2/3`), `(-628,552)` `142.0u` (`1/3`), `(-640,648)` `146.9u` (`3/3`), `(-600,608)` `171.0u` (`1/3`), `(-604,504)` `179.1u` (`2/3`), `(-352,656)` `423.6u` (`1/3`)
+- `MAP06`: `(608,1696)` `115.4u` (`1/3`), `(608,1400)` `150.3u` (`1/3`)
+- `MAP13`: `(-112,-232)` `81.2u` (`2/3`), `(-176,-96)` `97.7u` (`2/3`), `(-80,-184)` `114.3u` (`2/3`)
+- `MAP14`: `(-216,936)` `25.3u` (`3/3`), `(-104,936)` `25.3u` (`3/3`), `(-160,792)` `104.0u` (`3/3`), `(-208,792)` `114.5u` (`3/3`), `(-112,792)` `114.5u` (`3/3`), `(-336,848)` `164.7u` (`3/3`), `(16,848)` `164.7u` (`3/3`)
+- `MAP16`: `(-992,-608)` `373.4u` (`2/3`)
+- `MAP18`: `(712,1816)` `91.2u` (`1/3`), `(712,1960)` `91.2u` (`3/3`)
+- `MAP19`: `(1544,-2424)` `541.8u` (`1/3`), `(1744,-1776)` `1169.0u` (`1/3`)
+- `MAP21`: `(-168,4272)` `1399.2u` (`1/3`)
+- `MAP22`: `(480,352)` `112.0u` (`1/3`)
