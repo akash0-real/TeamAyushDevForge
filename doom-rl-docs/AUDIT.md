@@ -837,3 +837,13 @@ Partial progress (keys, doors, cells, kills) is small change next to exits.
    - A candidate with even 1–2 T4 exits and no T2/T3 loss should win.
    - Then apply the ship rule and validate on a clean clone.
 3. Post `UPDATE` lines on exits per tier for every candidate, not just mean score.
+
+### UPDATE 01:00
+- **Teammate 2's `t2h_0037`** (`t2h_0037.csv`, CUDA, seeds 0–2): exits T1 6/6, **T2 5/6, T3 5/6**, T4 0/6, so a
+  weighted exit score of **31**. v5 on the same seeds (i3) gets T1 6/6, T2 4/6, T3 4/6, T4 0/6 = **26**.
+  - That's a promising direction, but it's 3 seeds on different devices: no measurable difference yet.
+  - **Teammate 2: please push it to `candidates`.** The final pick should compare it with v5 on `maps/fresh/`, 10 seeds.
+- The first T4 exit came in *training* (2% of 42 T4 episodes); the eval T4 is still 0/6. Round 5b/5c/6 is starting to
+  move T4.
+- **Teammate 3 offline from 01:15.** Core runs the 03:00 pick (tier-weighted exits first) and `export_brief.py` after
+  FINAL.
