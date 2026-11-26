@@ -69,7 +69,11 @@ T4 mean score:  -17.73 (n=2, exit=   0%)
 ## Seed-7 training run (RTX 3050 CUDA)
 
 - **Smoke test (`two_rooms`, 4 envs, 20k steps):** PASSED (`19,968` steps, `142–146 fps` on CUDA, zero crashes).
-- **Main Seed-7 run:** pending launch (`--seed 7 --total-steps 20000000 --save-path training/checkpoints/seed7.pt`).
+- **Main Seed-7 run:**
+  - **Command:** `.venv/bin/python -u training/train_ppo.py --num-envs 8 --seed 7 --total-steps 20000000 --save-path training/checkpoints/seed7.pt`
+  - **Start time:** `2026-11-26 18:16 IST` (on commit `5a9bca3` map mix: `two_rooms` + Freedoom `MAP01–24` + infinite procedural `gen1–gen4`, no `--use-map`)
+  - **10-min log check (`18:27 IST`):** `upd 125/19531 | step 128000 | fps 207 | ret 3.68 (peak 8.00) | exit 12% | doors 1.1 | keys 0.1 | cells 48.2 | T0:6% T1:94% T2:17% T3:3% T4:0%`
+  - **Steady-state throughput:** **`207 fps`** on RTX 3050 CUDA (`8` envs)
 
 ---
 
@@ -78,3 +82,4 @@ T4 mean score:  -17.73 (n=2, exit=   0%)
 | time | run | steps (from the log) | MEAN score | exit % | keys | doors | kills | ms/step | validate.py |
 | :--- | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
 | baseline | random (17 maps, seed 0, cuda) | 0 | -1.58 | 12% | 0.0 | 0.5 | 1.0 | 7.16 | PASS (15.1 ms p50, 130 MB VRAM) |
+| 19:00 | seed7_1900 (17 maps, seeds 0-2, cuda; T0:-6.77 T1:100.52 T2:15.51 T3:6.62 T4:-9.75) | 563,200 | **9.70** | 12% | 0.0 | 0.4 | 1.1 | 8.53 | PASS (16.2 ms p50, 130 MB VRAM) |
