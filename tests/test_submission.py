@@ -109,7 +109,7 @@ def test_action_mask_removes_only_the_masked_options():
     from agent import DoomAgent
 
     agent = DoomAgent(S.observation_space(), S.action_space(), "cpu")
-    agent.action_mask = True
+    agent.action_mask = frozenset({"weapon", "fist"})
     loaded = _make_dummy_obs()
     loaded["vitals"][2], loaded["vitals"][3] = 3.0, 20.0  # shotgun with ammo
     fist = _make_dummy_obs()

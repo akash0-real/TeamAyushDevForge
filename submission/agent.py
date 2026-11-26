@@ -34,7 +34,9 @@ class DoomAgent:
         self.model.eval()
         self.ego_map = EgoMap() if self.model.use_map else None
         self.temperature = 1.0  # action-sampling temperature (logits / T); tuned on the holdout maps
-        self.action_mask = True  # observation-based masking (docs/RULES.md §1); on since teammate 3: +7.9 ± 3.3 holdout, EVAL_I3 §6
+        # Observation-based masking rules (docs/RULES.md §1), see _mask: "weapon" and/or "fist". Off: pooled over two
+        # machines it was neutral (+1.8 ± 3.1) and "weapon" may hurt tier 4 (teammate 3 EVAL_I3 §6b).
+        self.action_mask: frozenset[str] = frozenset()
         # Warm-up in __init__ (60 s limit) so the first act() of a map (10 s limit) isn't paying torch's lazy init:
         # measured ~4 s for the first act() on one pinned CPU core without this.
         with torch.inference_mode():
@@ -66,7 +68,7 @@ class DoomAgent:
             return self.prev_action
 
     @staticmethod
-    def _mask(observation: dict, logits: list) -> list:
+    def _mask(observation: dict, logits: list, rules: frozenset) -> list:
         """Remove two never-useful options, read from observation fields only; the network still picks every action.
         Heads: [move, strafe, turn, attack, use, weapon]; option 1 of attack/weapon = press."""
         vit = np.asarray(observation["vitals"], dtype=np.float32)
@@ -75,10 +77,10 @@ class DoomAgent:
         enemy = (np.asarray(ent["mask"]) > 0) & np.isin(np.asarray(ent["entity_type"]), ENEMY_TYPES)
         near = enemy & (np.asarray(ent["features"], dtype=np.float32)[:, 0] <= FIST_REACH)
         logits = list(logits)
-        if slot >= 3 and ammo > 0:  # shotgun or better, loaded: don't cycle away from it
+        if "weapon" in rules and slot >= 3 and ammo > 0:  # shotgun or better, loaded: don't cycle away from it
             logits[5] = logits[5].clone()
             logits[5][..., 1] = float("-inf")
-        if slot <= 1 and not near.any():  # fist/chainsaw with nothing in reach: don't swing at air
+        if "fist" in rules and slot <= 1 and not near.any():  # fist/chainsaw, nothing in reach: don't swing at air
             logits[3] = logits[3].clone()
             logits[3][..., 1] = float("-inf")
         return logits
@@ -95,7 +97,7 @@ class DoomAgent:
         logits, _, self.h = self.model.forward_step(obs_t, self.h)
         logits = [lg / self.temperature for lg in logits]
         if self.action_mask:
-            logits = self._mask(observation, logits)
+            logits = self._mask(observation, logits, self.action_mask)
         factored, _, _ = self.model.sample_and_logprob(logits)
         action = factored_to_multibinary(factored.squeeze(0).cpu().numpy())
         self.prev_action = action

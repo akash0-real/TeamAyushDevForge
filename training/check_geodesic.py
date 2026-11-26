@@ -26,18 +26,25 @@ assert reach >= 15, reach  # 17/20 measured; the rest need teleporters or switch
 
 # 2) the shipped agent with shaping: episodes that exit collect positive geodesic progress
 pol = load_policy("submission/weights/best_agent.pt", torch.device("cpu")).eval()
-env = ShapedDoomEnv([("gen3", "MAP01", 2100)], seed=1, use_map=True)
+env = ShapedDoomEnv([("gen3", "MAP01", 2100), (IWAD, "MAP08", 2100)], swap_every=1, seed=1, use_map=True)
 pos = []
-for ep in range(6):
+for ep in range(8):
     obs, _ = env.reset(); h = pol.initial_state(1, torch.device("cpu")); done = False
+    phi0 = env._phi if env._geo is not None else None
+    if phi0 is not None:  # upper bound: start -> first goal, plus key -> next goal for every key (goal switches)
+        g = env._geo
+        legs = [g.phi(x, y, tuple((a, b) for a, b, k2 in g.keys if k2 != k) or tuple(g.exits)) for x, y, k in g.keys]
+        bound = -phi0 + sum(-p for p in legs if p is not None)
     while not done:
         with torch.no_grad():
             lg, _, h = pol.forward_step({k: torch.from_numpy(v).unsqueeze(0) for k, v in obs.items()}, h)
             a, _, _ = pol.sample_and_logprob(lg)
         obs, r, term, trunc, info = env.step(a[0].numpy()); done = term or trunc
     st = info["episode_stats"]
-    print(f"gen3 ep{ep}: exit {st['exit_reached']:.0f} keys {st['keys']:.0f} geo {st['geo']:+.2f}")
+    print(f"{env._cur_spec[1]}/{env._cur_spec[0][-8:]} ep{ep}: exit {st['exit_reached']:.0f} keys {st['keys']:.0f} geo {st['geo']:+.2f}")
     if st["exit_reached"]:
         pos.append(st["geo"])
+    if phi0 is not None:  # no farming: total progress can't exceed the start distance (teammate 3 review 23:40)
+        assert st["geo"] <= bound + 0.5, (st["geo"], bound)
 assert all(g > 0 for g in pos), pos
 print("OK")

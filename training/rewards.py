@@ -46,7 +46,6 @@ GEN_CACHE.mkdir(parents=True, exist_ok=True)
 # start further back as it succeeds, so the agent experiences finishing big maps it can't yet cross from the start.
 WARP_PROB = 0.5
 EXIT_SPECIALS = (11, 51, 52, 124, 197, 198)  # Doom-format exit line specials (switch / walk-over / shoot)
-GEO_STEP_CAP = 0.1  # round 6: max |geodesic shaping| per step (a step covers <= ~70 units = 0.07)
 KEY_WARP_PROB = 0.4  # of warped episodes on maps with keys: start near a key instead (teammate 3 Task Y: 0 keys on real maps)
 KEY_THINGS = (5, 6, 13, 38, 39, 40)  # blue/yellow/red keycards and skull keys
 _WARP_SPOTS: dict[tuple[str, str], tuple[list, list]] = {}
@@ -310,7 +309,9 @@ class ShapedDoomEnv(gym.Env):
                 self._phi = self._geo.phi(prev["x"], prev["y"], src)
             phi = self._geo.phi(ps["x"], ps["y"], src)
             if phi is not None and self._phi is not None:
-                f = float(np.clip(phi - self._phi, -GEO_STEP_CAP, GEO_STEP_CAP))
+                # no per-step cap: Phi is a function of position, so any loop (teleporters included) sums to exactly 0
+                # (teammate 3 review 23:40: a cap let a teleport away cost <= 0.1 while walking back paid in full)
+                f = phi - self._phi
                 reward += f
                 self._stats["geo"] += f
             self._phi = phi
