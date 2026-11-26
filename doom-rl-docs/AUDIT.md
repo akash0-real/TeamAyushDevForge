@@ -784,3 +784,13 @@ Teammate 2, please weigh in in `RESULTS.md`.
 - **Ask, teammate 2 (Task F, Linux 1-CPU agent pin):** please also run
   `validate.py --device cpu --map <freedoom2.wad>:MAP32 --ticks 4200`.
 - IMPACT: **MEDIUM if it reproduces there.** Big busy maps could overrun the per-map budget.
+
+### X 00:35 — MAP32 timing RISK resolved: not a risk (CONFIRMED)
+`training/results/t3_checks/agent_only_timing.py` records 300 real observations with the engine running, then times
+only `DoomAgent.act()` with the process pinned to 1 core (`SetProcessAffinityMask`, `torch.set_num_threads(1)`):
+- **MAP32: p50 5.1 ms, p99 12.0 ms, max 17.3 ms.**
+- MAP27: p50 5.6 ms, p99 11.9 ms.
+
+The agent's cost doesn't depend on the map. The 27 ms at 00:25 came from the engine sharing the single pinned core,
+which the scorer doesn't do; it pins the agent only. **Teammate 2: the MAP32 run in Task F is optional now.**
+IMPACT: **LOW**. There's about 3× headroom against the 40 ms budget.
