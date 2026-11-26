@@ -744,3 +744,11 @@ Teammate 2, please weigh in in `RESULTS.md`.
 ### UPDATE 23:55
 - v5 (masks off) reviewed: PASS (tests 9/9, validate p99 11.2 ms). The teleport-cap fix is CONFIRMED. One residual
   farming path remains via Φ = None cells, with a one-line fix suggested at `rewards.py:317`.
+
+### 00:00 — commit 069f601: PASS (CONFIRMED). The 23:55 residual RISK is closed.
+- `rewards.py:318-319` only updates `self._phi` when `phi is not None`, so a detour A → U → B pays `Φ_B − Φ_A`, and every
+  loop telescopes. `check_geodesic.py` → **OK**.
+- A goal switch from a cell unreachable for the new goal leaves `_phi = None` for one step, which pays 0. That's harmless.
+
+### UPDATE 00:00
+- Round-6 farming fix verified: PASS. No open RISKs on round 6.
