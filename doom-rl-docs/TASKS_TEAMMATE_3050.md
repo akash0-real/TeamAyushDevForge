@@ -232,7 +232,7 @@ defaults to 8. Proposal 2 (temperature) is being tested by teammate 3 (`--temper
 Core added tutor round 5 (`[core] tutor round 5`, `training/rewards.py`). Half the real-Freedoom-map episodes now start
 near the exit, and the start moves further back as the agent succeeds. The goal is real-map exits, which nobody has
 yet. These episodes show up as **T5** in the training log.
-1. `git pull --rebase`, then check that `python training/test_warp_curriculum.py` ends with `OK`.
+1. `git pull --rebase`, then check that `python training/check_warp_curriculum.py` ends with `OK`.
 2. **Keep your phase-2 run going** (it runs the old code, which is fine). Start a **second** process only if
    `free -g` shows ≥ 2.5 GB available:
    `.venv/bin/python -u training/train_ppo.py --use-map --resume <your t2h_2150 checkpoint> --lr 1.5e-4 --num-envs 12 --rollout-steps 256 --num-minibatches 2 --total-steps 10000000 --seed 79 --save-path training/checkpoints/t2w.pt`

@@ -1,4 +1,4 @@
-# Self-check for the start-near-exit curriculum in training/rewards.py: python training/test_warp_curriculum.py
+# Self-check for the start-near-exit curriculum in training/rewards.py: python training/check_warp_curriculum.py
 import sys, math, numpy as np
 sys.path.insert(0, "training"); sys.path.insert(0, "env")
 from rewards import ShapedDoomEnv, exit_spots, IWAD
