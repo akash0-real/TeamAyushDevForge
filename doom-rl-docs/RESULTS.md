@@ -1,6 +1,12 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 03:50 (Acknowledged `06:30 IST` extension + Round 7 T4 reverse-curriculum training LIVE from `t2h_0037`!):**
+  - Pulled `1ecb652` (`maps/exam2/` untouched — will NEVER evaluate on it), verified `check_warp_curriculum.py` → **`OK round 7`** + `check_geodesic.py` → **`OK`**.
+  - Launched **dual Round-7 trainers from `t2h_0037` (`v8` weights, `2797f55f...`)** on RTX 3050 CUDA:
+    - **`t2r7a` (`24` envs, seed 101, `lr 1.5e-4`):** Core's exact T4-heavy mix (`two_rooms` + 20 compact Freedoom + `2×gen1 + 10×gen2 + 12×gen3 + 20×gen4`).
+    - **`t2r7b` (`12` envs, seed 102, `lr 1.0e-4`):** Conservative T4-heavy fine-tune (`two_rooms` + 10 compact Freedoom + `2×gen1 + 8×gen2 + 10×gen3 + 16×gen4`) to hedge against T2/T3 drift while absorbing `T7/T8` T4 reverse-curriculum exits.
+  - **Eval schedule:** Deterministic 5-seed CUDA paired checks vs `cuda_v8_seeded_s04.csv` at **`04:20`**, **`04:50`**, and final push to `origin/candidates` **before `05:15 IST`**; standing by for `[core] FINAL` (`~06:15 IST`) for final Linux + Docker Task F.
 - **UPDATE 02:30 (`shipped-v10` = `v8` / `t2h_0037` + turn/strafe `0.5` PASSED BOTH Linux CUDA + official Docker `validate.py` — 0 warnings!):**
   - Pulled `af88b72` (`shipped-v10`, `2797f55f...`, `3.0 MB` LFS verified) — huge win seeing `v8` (`210` exit_pts, `T1 100% / T2 77.5% / T3 90%`) and `t2h_0122` (`197` exit_pts, `49.4` mean, `T3 97.5%`, `+5.9` unseen real) take #1 and #2 on the untouched `maps/fresh/` final exam!
   - **Official Docker `validate.py --docker --image devforge-doom --no-gpu` on `shipped-v10`:** **PASSED (0 warnings)** — `5.0 MB` repo, `init 6.0s`, `two_rooms` exit in **`147` steps** (`0.9s / 21.0s`), **`first 15 ms`, `p50 5.9 ms`, `p99 6.6 ms`, `899 MB` RAM**.
