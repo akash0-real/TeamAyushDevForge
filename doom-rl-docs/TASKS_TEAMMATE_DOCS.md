@@ -5,55 +5,75 @@
 > and `git log`. **Never invent numbers, features, or results.** If a fact you need is missing, write
 > `TODO(core): <what is missing>` in the text and tell your human; don't guess.
 
-## CURRENT ORDERS (22:10 IST) — these replace your work queue. Read this block first, every cycle.
+## CURRENT ORDERS (22:25 IST) — read this block first, every cycle. It replaces the 22:10 block.
 
-**Scope lock.** From now until 03:30 IST you do **only** these three things, in this order of priority:
-1. **Task S** below (once, now).
-2. **Task R2** for each new file on the `candidates` branch.
-3. **Task R** reviews, every 10 min.
+Task S was excellent: it found the `two_rooms` leak that nobody else saw. **Answer to your QUESTION(core): yes.**
+Correct `BRIEF.md`, `04_PROCEDURAL_MAPS.md` and `DEMO_SCRIPT.md`:
+- report unseen real maps as **MAP25–32 only** (0% exits);
+- call `two_rooms` a training map;
+- commit `[t3] docs: two_rooms is a training map`.
 
-Nothing else: no new kinds of experiments, no extra eval settings, no new docs or files, no edits outside
-`doom-rl-docs/AUDIT.md`, `doom-rl-docs/EVAL_I3.md` and `training/results/i3_*.csv`. You may run at most **3 evals at once**.
-If you think something else is worth doing, **don't do it**. Write `QUESTION(core): <one sentence>` at the end of
-`AUDIT.md` and keep going with the list. Every claim you write needs evidence: a `file:line`, a CSV name, or a command
-and its output. "Looks fine" without evidence doesn't count.
+The core owner has already fixed `REVIEW_CHEATSHEET.md` and `CHECKPOINTS.md`.
 
-### Task S — Strict, thorough review of the core owner's direction (read-only, ~45 min)
-The human thinks the core owner may be heading the wrong way. Check it independently. Don't trust the core owner's
-commit messages or `CHECKPOINTS.md`; recompute everything yourself.
-1. **Rules sweep of `submission/`** (`agent.py`, `model.py`, `preprocess.py`). Go line by line against `docs/RULES.md`
-   and `AGENTS.md` §2: no hand-coded control, no planner or pathfinding over the EgoMap, nothing in the EgoMap
-   deciding actions, no network or disk writes in `act()`. Quote every suspicious line.
-2. **Shipped and backup weights are the right files.**
-   - `git show shipped-v2:submission/weights/best_agent.pt` must give oid `a5eea925…` (= `candidates:core_r2_2025.pt`).
-   - `git show shipped-v1:submission/weights/best_agent.pt` must give oid `980f05c6…` (the old shipped weights).
-   - The `sha256sum` of `submission/weights/best_agent.pt` after `git lfs pull` must match.
-3. **Is shipping `core_r2_2025` justified?** Recompute from your own CSVs with a short script, not by hand. Use
-   `i3_shipped.csv`, `i3_core_r2_2025.csv`, `i3_shipped_T0_s59.csv`, `i3_core_r2_2025_T0_s59.csv`.
-   - Compute the paired per-seed differences: overall, T0, and each tier.
-   - Is any tier significantly **worse** (difference beyond 2 standard errors)?
-   - **Verdict:** `KEEP v2` or `ROLL BACK to v1`, with the numbers.
-4. **Leakage check.** No holdout map may appear in training:
-   - MAP25–32, `maps/holdout/*`, and generated seeds ≥ 1e9 must not appear in `DEFAULT_TRAIN_MAPS`
-     (`training/train_ppo.py`).
-   - Check the seed generation in `training/rewards.py`.
-5. **Reward-hacking check of tutor round 4** (`training/rewards.py`). Can the agent farm any reward without
-   progressing? Look at: cells cap, item pickups, the health-gain reward, door re-opening, and kills.
-6. **Train/eval consistency.** `training/rewards.py` and `submission/agent.py` must build the same observation:
-   preprocess, EgoMap call order, and the action fed to the EgoMap.
+From now on, in every R2 table, also give **MAP25–32 separately** (mean and exits) and use that, not T0, for the
+"not worse on real maps" check.
 
-Write `## Strict review HH:MM` in `AUDIT.md`:
-- one line per item: `PASS` / `RISK` / `BLOCKER`, with the evidence;
-- then the item-3 verdict.
+### Your loop until 03:30 IST, in priority order
+1. **Task R2**, immediately, for each new file on `candidates`. Right now that's `t2h_2150_score46_62.pt` (teammate 2
+   claims 46.62) and `core_r2_2155.pt`.
+   - 5 seeds each, paired against the shipped `core_r2_2025` (`i3_core_r2_2025.csv`).
+   - Report Δ ± SE overall, per tier, and for MAP25–32.
+2. **Task R** reviews, every 10 min, on new commits.
+3. **Task X — explore failure outcomes**, every 30 min, one topic per cycle (list below). Run it whenever the CPU has
+   room (≤ 3 evals at once, keep ≥ 1.5 GB RAM free).
 
-Commit `[t3] strict review` and **tell your human the verdict and any BLOCKER immediately**. Report only: don't edit
-code, and don't roll anything back yourself. The core owner (or your human) does that, using the commands in
-`backups/README.txt` on the core laptop or `git checkout shipped-v1 -- submission/weights/best_agent.pt`.
+You may now also write new small check scripts, but **only under `training/results/t3_checks/`**. Never touch the
+files in hard rule 1.
 
-Repo: `https://github.com/akash0-real/TeamAyushDevForge` (branch `main`).
-Competition: Yugaantar DevForge Track 1 "Can It Play DOOM?". Rules: `docs/RULES.md`. Judges manually review the
-code, training folder and docs of top teams, and the final round rewards **custom-engineered architectures**
-(custom spatial memory, curiosity, curriculum). Your writing is what they read first.
+### Task X topics: "what could go wrong on the hidden maps that we haven't seen?"
+Pick the next unchecked topic each cycle. Write `### X HH:MM — <topic>` in `AUDIT.md`.
+1. **Official image.** Python 3.13 in the scorer: does `submission/` import and run with the torch and numpy versions
+   in `uv.lock`? Is anything Windows-only or CUDA-only?
+2. **1 CPU thread.** Run `validate.py` with the process pinned to one core (PowerShell
+   `(Get-Process -Id $pid).ProcessorAffinity = 1` in that window before launching).
+   - Check that the per-map budget holds on a 4,200-tick map, not only on `two_rooms`.
+3. **Long and huge maps.** Eval on MAP11/12/15/23 (excluded from training). Check:
+   - Does the EgoMap scroll correctly?
+   - Is any step slow?
+   - Does the agent get stuck, i.e. no new cells for over 500 steps?
+4. **Map features we never generate.** Find which of these appear in MAP25–32 and how the agent behaves there:
+   - skull keys (vs keycards);
+   - lifts and switches;
+   - exits behind a switch;
+   - teleporters;
+   - dark sectors;
+   - the agent starting while facing a wall.
+5. **Edge cases in `act()`.**
+   - Observations with 0 entities, or with all 32 entity slots filled.
+   - Vitals at extreme values.
+   - `reset()` called twice in a row.
+   - `act()` called after the episode ends.
+   - These are synthetic-obs tests only; don't change the code.
+6. **Seed and device stability.** Does the same checkpoint score differently on CPU vs CUDA, or between runs with the
+   same seed?
+7. **Anything else you think of.** Add it to this list in your AUDIT block first, then check it.
+
+### Accuracy rules: being wrong is worse than saying nothing
+- **CONFIRMED vs SUSPECTED.**
+  - A finding is `CONFIRMED` only if you reproduced it, with the command and its output quoted.
+  - Reasoning without a reproduction is `SUSPECTED`.
+  - Only `CONFIRMED` findings may be labelled `BLOCKER` or `RISK`. `SUSPECTED` ones are `HYPOTHESIS`, with how to test
+    them.
+- **Re-read the exact line at the current `HEAD` before citing it** (`git show HEAD:<file> | sed -n 'a,bp'`). Line
+  numbers move.
+- **Numbers.**
+  - Compute them with a script from the CSVs, never by hand.
+  - Always give n (seeds) and ± SE.
+  - Never call a difference within 2 SE "better" or "worse"; call it "no measurable difference".
+- **Corrections.** If an earlier claim of yours turns out wrong, put a `CORRECTION:` line at the top of your next AUDIT
+  block (as you did at 20:30).
+- **Before you tell your human "BLOCKER", run the check a second time.**
+- **Report only.** Never edit code, never roll back, and never ship. The core owner does that.
 
 ---
 

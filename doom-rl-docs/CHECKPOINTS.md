@@ -3,8 +3,10 @@
 Which weights exist, how each scored on the holdout maps, and which one is shipped in `submission/weights/best_agent.pt`.
 Updated by the core owner after every evaluation. Teammate 2's own runs go in `RESULTS.md`.
 
-**Holdout** = maps never trained on: Freedoom MAP25–32 (T0 = real maps), `two_rooms`, 8 generated maps
-(`maps/holdout/gen_t{1-4}_{1,2}.wad`). **Score** = proxy score from `training/eval_zeroshot.py` (higher is better).
+**Holdout** = maps never trained on: Freedoom MAP25–32 and 8 generated maps (`maps/holdout/gen_t{1-4}_{1,2}.wad`).
+**Correction (22:20, teammate 3's strict review):** the "T0" column also includes `two_rooms`, which is a *training*
+map, and every T0 exit came from it. On MAP25–32 alone both shipped agents have 0% exits (v1 −4.6, v2 −7.8, 10 seeds).
+From now on, real-map comparisons use **MAP25–32 only**. **Score** = proxy score from `training/eval_zeroshot.py` (higher is better).
 Unless noted, scores use the current eval (`[t2]` version: generated maps at 2,100 tics) with seeds 0 1.
 
 ## Team status board (updated 21:55 IST)
@@ -59,8 +61,8 @@ generated tier 1 cut (6 → 3 slots), learning rate halved to 1.5e-4 (each resta
 Resumed from the 1.97M-step weights (best tier 2).
 
 ## Overfitting check (shipped agent)
-Training maps Freedoom MAP01–08: score 14.3, 0% exits. Unseen MAP25–32: score 7.9, 11% exits. A modest gap,
-mostly difficulty (early Freedoom maps are easier), and it doesn't finish the maps it trained on either, so it
+Training maps Freedoom MAP01–08: score 14.3, 0% exits. Unseen MAP25–32: score −4.6, 0% exits (corrected; the old
+7.9 / 11% included `two_rooms`). A real gap, partly difficulty (early Freedoom maps are easier), and it doesn't finish the maps it trained on either, so it
 didn't memorize routes.
 
 ## Rules for shipping a new checkpoint

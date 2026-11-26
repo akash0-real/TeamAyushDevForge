@@ -39,7 +39,7 @@ Read this once before a judge comes over. Short answers first; the details follo
 | **Hands** | 6 action groups: move, strafe, turn, shoot, use, switch weapon (so it can't press forward+back at once) | `submission/model.py` |
 | **Teacher** | PPO: plays 12 games in parallel, makes rewarded actions a bit more likely each update | `training/train_ppo.py` |
 | **Report card** | Rewards (training only): exit +25, key +8, locked door +4, door +0.8, kill +1, new area +0.04, damage −, death −3 | `training/rewards.py` |
-| **Exam** | Holdout maps it never trained on: Freedoom MAP25–32, the official test map, 8 generated maps | `training/eval_zeroshot.py` |
+| **Exam** | Holdout maps it never trained on: Freedoom MAP25–32 and 8 generated maps (plus the official test map `two_rooms`, which *is* in training, so it's a sanity check only) | `training/eval_zeroshot.py` |
 
 **Size and speed:** 759K parameters, about 4 ms per decision (the limit is 40 ms), 355 MB RAM (the limit is 8 GB),
 weights 3 MB.
@@ -53,8 +53,9 @@ weights 3 MB.
 | **Our shipped agent (with EgoMap)** | **34.1** | **29%** |
 
 - Holdout per tier (shipped): Tier 1 combat **100% exits**, Tier 2 exploration **50%**, Tier 3 key→locked
-  door→exit **solved** on our unseen Tier 3 maps (needs the longer time cap), Tier 4 not yet. Real Freedoom maps:
-  ~11% exits, but it explores and fights (scores partial points).
+  door→exit **solved** on our unseen Tier 3 maps (needs the longer time cap), Tier 4 not yet. Unseen real Freedoom maps
+  (MAP25–32): **0% exits** (0/80 runs); it explores and fights, scoring partial points. The "~11% real-map exits" we
+  reported earlier all came from `two_rooms`, which is also a training map (found by teammate 3's review).
 - **The memory map alone took the score from 9.9 to 34.1.** That's the proof the USP works.
 - **Demo video** (`demo/agent_demo.mp4`, 81 s at 2× speed): the official test map exited in 246 steps; an unseen Tier 3 map
   with key → locked door → exit in 364 steps; a real Freedoom map explored with 6 kills. All three were the first attempt.
@@ -99,8 +100,8 @@ Prioritized Level Replay, curiosity rewards (RND).
   training (Tier 1 100% holdout vs ~90% in training; Tier 2 50% vs ~35–55%).
 - **Real maps:** we train on Freedoom MAP01–24 and test on MAP25–32. Overfitting would show as much better scores on the
   training maps than on the test maps. Measured with the shipped agent (same eval, 2 seeds):
-  **training maps MAP01–08: score 14.3, 0% exits** vs **unseen MAP25–32: score 7.9, 11% exits**. The gap is
-  modest, and it isn't memorization: an agent that memorized routes would at least finish the maps it practised on,
+  **training maps MAP01–08: score 14.3, 0% exits** vs **unseen MAP25–32: score −4.6, 0% exits** (10 seeds,
+  teammate 3; the earlier 7.9 / 11% wrongly included `two_rooms`). It isn't memorization: an agent that memorized routes would at least finish the maps it practised on,
   and it finishes none of them. Most of the gap is difficulty: Freedoom's early maps are designed to be easier than
   its late maps (it gets 5.6 kills and explores 94 cells there vs fewer on the late maps).
   One-liner for judges: *"It scores a bit higher on the training maps, but those are Freedoom's easier early
