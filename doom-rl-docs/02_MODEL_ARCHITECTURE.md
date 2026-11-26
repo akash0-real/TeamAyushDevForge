@@ -1,9 +1,12 @@
-# 02 — Custom Neural Architecture Specification
+# 02 — Neural Architecture (as built: `submission/model.py`, `submission/preprocess.py`)
 
 ## 1. Design Goals
-- **Custom & Judge-Worthy:** Bespoke spatial-intelligence architecture designed specifically for partial observability, variable enemy counts, and long-horizon keycard backtracking.
-- **Fast & Lightweight:** ~1.5M–2.5M parameters, **< 5 ms/decision** on 1 CPU thread / RTX 3090, **< 400 MB VRAM**.
-- **Zero-Shot Generalizable:** Operates purely on ego-centric spatial features—no global coordinate memorization.
+- **Custom and worth a judge's time:** a bespoke spatial-memory architecture for partial observability, variable
+  enemy counts and long-horizon keycard backtracking.
+- **Fast and lightweight:** **596,624 parameters** for the plain model and **759,056 with EgoMap** (the shipped
+  agent). Measured step latency with `validate.py` is p50 **4.3 ms** and p99 8.1 ms.
+- **Generalizes zero-shot:** the policy works only on ego-centric features plus a memory map built from its own
+  observations and actions. It never sees engine coordinates.
 
 ---
 
@@ -13,97 +16,134 @@
                    │   doom_env Observation   │
                    └─┬──────────┬───────────┬─┘
                      │          │           │
-   64 Rays (360°)    ▼          ▼           ▼      Vitals + Prev Action
-   (dist + hit_type) │  Visible Entities ≤32│    (HP, armor, ammo, keys,
-                     │ (dist,sin,cos,relvel,│   weapon, vel, prev_action)
-                     │       type)          │
-                     ▼                      ▼               ▼
-         ┌──────────────────┐   ┌────────────────────┐   ┌──────┐
-         │ Circular 1D-CNN  │   │ Entity Encoder MLP │   │ MLP  │
-         │ (3 layers, k=5,3)│   │ + Masked Multi-Head│   │(64d) │
-         │   -> 128-dim     │   │  Attention Pooling │   └──┬───┘
-         └────────┬─────────┘   │      -> 128-dim    │      │
-                  │             └─────────┬──────────┘      │
-                  │                       │                 │
-                  └───────────┬───────────┴─────────────────┘
+   64 Rays (360°)    ▼          ▼           ▼      Vitals 17 + Prev Action 9      EgoMap 128×128×6
+   (dist + hit_type) │  Visible Entities ≤32│      + 4 front-cone summary        (built from obs +
+                     │ (dist,sin,cos,relvel,│               = 30                  our own actions)
+                     │       type)          │                │                          │
+                     ▼                      ▼                ▼                          ▼
+         ┌──────────────────┐   ┌────────────────────┐   ┌──────┐          two 15×15 heading-up crops
+         │ Circular 1D-CNN  │   │ Type emb 16 + MLP  │   │ MLP  │          (fine + 8× coarse) → CNN → 64
+         │ 7→32→64→64 ch,   │   │ + 4-head self-attn │   │(64d) │                          │
+         │ stride 2 → 128   │   │ + 2-query pooling  │   └──┬───┘                          │
+         └────────┬─────────┘   │      → 128         │      │                              │
+                  │             └─────────┬──────────┘      │                              │
+                  └───────────┬───────────┴─────────────────┴──────────────────────────────┘
                               ▼
-                  Concat [320-dim] + Ego-Centric Local Grid Summary [64-dim]
-                              │
+                  Concat 320 (plain) / 384 (with EgoMap, shipped)
                               ▼
                  ┌────────────────────────┐
-                 │  GRU Recurrent Core    │◄── hidden h_t (reset per map)
-                 │     (hidden = 384)     │
+                 │  GRU (hidden = 256)    │◄── hidden h_t (reset per map)
+                 │  → LayerNorm           │
                  └──────┬──────────┬──────┘
-                        │          │
-          ┌─────────────┘          └─────────────┐
-          ▼                                      ▼
-   ┌─────────────┐                       ┌──────────────┐
-   │ Policy Head │                       │  Value Head  │
-   │ (6 factored │                       │  V(s_t)      │
-   │ categorical)│                       │  (extrinsic  │
-   └─────────────┘                       │  + intrinsic)│
-                                         └──────────────┘
-   [Training Only] Auxiliary Heads:
-     - Next-step HP delta / enemy proximity / door-in-front prediction
+                        ▼          ▼
+               ┌──────────────┐  ┌──────────────┐
+               │ Actor: 6     │  │ Critic: V(s) │
+               │ factored     │  │ (single head)│
+               │ categorical  │  └──────────────┘
+               └──────────────┘
 ```
 
 ---
 
-## 3. Module-by-Module Specification (`submission/model.py`)
+## 3. Module-by-Module Specification
 
 ### Module 1: Ray Encoder (`CircularRayEncoder`)
-- **Input:** Tensor `[B, 7, 64]`: `rays.distance` (already in `[0,1]`; optionally add `sqrt(d)` for more near-range resolution) + one-hot `rays.hit_type` (6: `none`, `wall`, `door`, `locked_door`, `enemy`, `item`).
+- **Input:** tensor `[B, 7, 64]`: `rays.distance` (already in `[0,1]`) plus one-hot `rays.hit_type`. The 6 hit
+  types are `none`, `wall`, `door`, `locked_door`, `enemy` and `item`.
 - **Topology:**
-  - `Conv1d(7, 32, kernel_size=5, stride=2, padding=2, padding_mode='circular')` + LayerNorm/SiLU. Rays span 360° (index 0 = ahead, CCW), so **circular padding is correct**.
-  - `Conv1d(32, 64, kernel_size=3, stride=2, padding=1)` + SiLU.
-  - `Conv1d(64, 64, kernel_size=3, stride=2, padding=1)` + SiLU.
+  - `Conv1d(7, 32, kernel_size=5, stride=2, padding=2, padding_mode='circular')` + SiLU. The rays span 360°, with
+    index 0 straight ahead and indices counter-clockwise, so **circular padding is correct**.
+  - `Conv1d(32, 64, kernel_size=3, stride=2, padding=1, padding_mode='circular')` + SiLU.
+  - `Conv1d(64, 64, kernel_size=3, stride=2, padding=1, padding_mode='circular')` + SiLU.
   - Flatten (`64 * 8 = 512`) → `Linear(512, 128)` + LayerNorm + SiLU.
-- **Why:** Preserves angular neighborhood structure so the agent immediately detects doorways, gaps, corridors, and cover edges.
+- **Why:** it keeps the angular neighbourhood structure, so the agent picks out doorways, gaps, corridors and cover
+  edges immediately.
 
 ### Module 2: Variable-Length Entity Attention (`EntityAttentionEncoder`)
-- **Input:** `visible_entities` as given: `features [B, 32, 5]` = `[dist/1024, sin(rel_angle), cos(rel_angle), rel_vel_fwd, rel_vel_right]`, `entity_type [B, 32]` (12 classes, 0 = pad), `mask [B, 32]`. Entities only come from the **90° forward FOV**; there are no `(dx, dy)` coords (derive `dx = d·cos, dy = d·sin` as extra features if useful — that's encoding, not control). Doors/switches are **not** entities — they only appear in rays.
-  - Per-entity input: the 5 features (clip `rel_vel` to ±30, divide by 30) + `nn.Embedding(12, 16)` of `entity_type` → `D_ent = 21`.
+- **Input:** `visible_entities` as given:
+  - `features [B, 32, 5]` = `[dist, sin(rel_angle), cos(rel_angle), rel_vel_fwd, rel_vel_right]`
+  - `entity_type [B, 32]`: 12 classes, 0 = pad
+  - `mask [B, 32]`
+- **What the entities cover:** only the **90° forward FOV**, and there are no `(dx, dy)` coordinates. Doors and
+  switches are not entities; they appear only in the rays.
+- **Per-entity input:** the 5 features (relative velocity squashed with `tanh(v / 15)`) plus a learned 16-d
+  embedding of `entity_type`.
 - **Topology:**
-  - Per-entity MLP: `Linear(21, 64) → SiLU → Linear(64, 64)`.
-  - 1-layer **Multi-Head Self-Attention** (`embed_dim=64, num_heads=4`, key_padding_mask for padded slots) so entities interact (e.g., comparing nearest projectile vs nearest enemy vs keycard).
-  - **Learned Query Cross-Attention Pooling** (2 learned queries: e.g., threat focus + objective focus) → outputs `[B, 128]`.
-  - Safe zero-fallback when 0 entities are visible (`mask.sum() == 0` → zeros, no NaN softmax!).
+  - Per-entity MLP.
+  - 1-layer **multi-head self-attention** with 4 heads and a key padding mask, so entities interact (for example,
+    comparing the nearest projectile, the nearest enemy and a keycard).
+  - **Learned-query cross-attention pooling** with 2 learned queries → `[B, 128]`.
+  - When no entity is visible, it falls back safely to zeros instead of a NaN softmax.
 
-### Module 3: Vitals & Action History Encoder (`VitalsEncoder`)
-- **Input (from the 17-dim `vitals`):** `health/100, armor/100` (both range 0–200), `selected_weapon` one-hot(8), `selected_weapon_ammo/50`, `log1p` of the 4 ammo counts, 6 key flags, `vel_forward/16, vel_right/16, vel_up/16`, plus `prev_action` (9 bits — the policy needs this to learn the USE release rule) and `turn_hold_count` (steps the current turn button has been held, capped at 3). **No `yaw_rate` exists in the observation** — heading change must come from our own previous turn actions.
-- **Topology:** `Linear(D_vit, 64) → LayerNorm → SiLU → Linear(64, 64) → SiLU`.
+### Module 3: Vitals & Action History Encoder
+- **Input (30):**
+  - The 17 normalized vitals: health, armor, selected weapon, ammo, 6 key flags, velocity.
+  - The previous action (9 bits). The policy needs it to learn the USE release rule.
+  - 4 front-cone summary features from the rays and entities just ahead: nearest distance, door ahead, locked door
+    ahead, enemy visible.
+- **No `yaw_rate` exists in the observation.** Heading change comes from our own previous turn actions (Module 4).
+- **Topology:** `Linear(30, 64) → LayerNorm → SiLU → Linear(64, 64) → SiLU`.
 
-### Module 4: Lightweight Ego-Centric Spatial Memory Grid (`EgoLocalMap`)
-- **Purpose:** Solves Tier 2–4 exploration and **Tier 3 keycard → locked door backtracking** without global map coordinates!
-- **How it works (inside `DoomAgent`, reset on `reset()`):**
-  - Maintain a **spawn-anchored** 2D grid `[C=5, H=128, W=128]`, `float16`, each cell = 64 Doom units (covers 8192×8192 units, ~160 KB). It must be anchored to the spawn frame, **not** re-centered on the agent: a 21×21 agent-centred window (old plan) forgets the locked door as soon as you walk ~670 units away, which breaks Tier 3 backtracking.
-    - Channel 0: **Visited** (saturating count / recency).
-    - Channel 1: **Seen free space** (cells along each ray before its hit point). `seen-free AND not-visited` = frontier, which is what drives Tier 2 exploration.
-    - Channel 2: **Wall/obstacle hits** projected from the 64 rays.
-    - Channel 3: **Door / Locked Door hits** (`hit_type` 2/3; remembers where the locked door was).
-    - Channel 4: **Key / item sightings** (entity type `key`, projected from distance + angle).
-  - Projection: ray `i` points at angle `theta_hat + i·(2π/64)` (CCW), hit at `distance·1024` units; entity at `theta_hat + atan2(sin, cos)` and `dist·1024`. (Trig here is *encoding* the observation into memory, allowed by the rules; it never chooses an action.)
-  - **Pose estimate (dead-reckoning from spawn, no global coords):**
-    - `theta_hat`: integrate our own TURN buttons with a turn table indexed by how long the button has been held. Measured on `two_rooms.wad`: a single-step tap ≈ **7.03°**, a held turn ≈ **14.06°/step** after the first step (Doom slow-turn ramp). Calibrate the full table against `privileged_state()["angle"]` in training.
-    - `(x_hat, y_hat)`: integrate `vel_forward, vel_right` × 4 tics, rotated by `theta_hat`. Measured error is large (e.g. 0.1 true vs 14.2 estimated units when blocked by a wall), because velocity is only sampled at the last tic. Better: average previous and current velocity, and consider correcting yaw/translation by circular cross-correlation of consecutive 360° ray scans.
-    - Log `|pose_hat − true pose|` per episode during training (from `privileged_state`) so we know how bad drift actually is on 1,000-step maps.
-  - Network input: crop an ego-centric, heading-rotated `21×21` patch around `(x_hat, y_hat)` + a `16×16` max-pooled view of the whole grid (keeps the far-away locked door visible) → tiny 2-layer 2D CNN → **64-dim** embedding.
-- **Fallback Safety:** If odometry drifts, the GRU hidden state + the local patch still give room-level memory; also train with injected pose noise so the policy doesn't over-trust the map.
+### Module 4: EgoMap Spatial Memory (`EgoMap` in `preprocess.py`, `EgoMapEncoder` in `model.py`)
+- **Purpose:** Tier 2–4 exploration and **Tier 3 keycard → locked door backtracking** without global map coordinates.
+- **How it works (inside `DoomAgent`, cleared on `reset()`):**
+  - A **spawn-anchored** grid `[C=6, H=128, W=128]`. Each cell is 64 map units, so the grid covers 8192×8192 units
+    around spawn.
+  - **Why spawn-anchored and not re-centred on the agent:** an agent-centred window forgets the locked door as soon
+    as you walk away from it, which breaks Tier 3 backtracking.
+  - **Channels:**
+    - 0: **Visited**.
+    - 1: **Free space seen**, the cells along each ray before its hit point. "Seen free and not visited" is the
+      frontier, which drives exploration.
+    - 2: **Wall** hits.
+    - 3: **Door** hits.
+    - 4: **Locked door** hits. This is what remembers where the locked door was.
+    - 5: **Key** sightings, projected from the entity's distance and angle.
+  - **Projection:** each ray and entity is placed using our heading estimate plus its observed angle and distance.
+    The trigonometry here *encodes* the observation into memory, which the rules allow. It never chooses an action.
+  - **Pose estimate (dead reckoning from spawn, no global coordinates):**
+    - **Heading** comes from our own turn presses, using Doom's turning rules measured per tic: a slow-turn ramp, and
+      turn input ignored during the first 7 tics of an episode. **Heading error vs. the engine is 0.0° over 600
+      steps** on three maps (`tests/test_egomap.py`).
+    - **Position** comes from the observed player-frame velocity (`vel_forward`, `vel_right`), rotated by the heading
+      and averaged over the previous and current step. Drift is **47–160 map units after 4,500–7,300 units
+      travelled**, which is 1–2 grid cells.
+  - **Network input:** two ego-centric, **heading-up 15×15 crops**, a fine one (1 cell/px) and a coarse one
+    (8 cells/px, which keeps a far-away locked door in view). They go through a small 2D CNN (`EgoMapEncoder`)
+    → **64-dim**.
+- **Warm start:** the EgoMap model was warm-started from the plain model with the new map inputs initialised to zero,
+  so behaviour is identical at the switch (`tests/test_egomap.py`).
+- **Fallback safety:** if position drifts, the GRU hidden state and the fine crop still give room-level memory.
 
 ### Module 5: Recurrent Core & Heads
-- **GRU:** `nn.GRU(input_size=384, hidden_size=384, num_layers=1)` (`128 rays + 128 entities + 64 vitals + 64 local_map = 384`).
-- **Actor Head:** `action_space` is `MultiBinary(9)`. Use **6 factored categorical heads** instead of 9 independent Bernoullis, so contradictory presses (forward+back, turn left+right) can't happen: `move {none, fwd, back}`, `strafe {none, left, right}`, `turn {none, left, right}`, `attack {0,1}`, `use {0,1}`, `next_weapon {0,1}` → 3+3+3+2+2+2 = 15 logits. Log-prob = sum of the 6 heads; map back to the 9-bit vector in `act()`.
-- **Dual Value Heads:**
-  - `V_ext(s)`: predicts discounted extrinsic reward (for PPO).
-  - `V_int(s)`: predicts discounted intrinsic curiosity reward (RND) — keeping two separate value heads prevents non-stationary curiosity from destabilizing extrinsic value estimates!
-- **Auxiliary Heads (Training-Only, dropped/unused in `act()`):**
-  - Predicts `has_enemy_nearby`, `door_ahead`, `damage_taken_next_step` from GRU output (MSE/BCE aux loss weight `0.1`).
+- **GRU:** `nn.GRU(input_size=320 or 384, hidden_size=256, num_layers=1)` → LayerNorm. The input is 128 rays + 128
+  entities + 64 vitals, plus 64 from EgoMap in the shipped model.
+- **Actor head:** `action_space` is `MultiBinary(9)`. We use **6 factored categorical heads** instead of 9
+  independent Bernoullis, so contradictory presses (forward + back, turn left + right) can't happen. The heads are
+  `move {none, fwd, back}`, `strafe {none, left, right}`, `turn {none, left, right}`, `attack {0,1}`, `use {0,1}`
+  and `next_weapon {0,1}`: 3+3+3+2+2+2 = 15 logits. The log-prob is the sum over the 6 heads; `act()` maps the
+  result back to the 9-bit vector.
+- **Value head:** a single `V(s)` for the extrinsic (shaped) return.
 
 ---
 
 ## 4. Implementation Checkpoints for `submission/agent.py`
-1. `reset()` must zero BOTH the GRU hidden state `self.h` AND `self.ego_map`.
-2. `act(obs)` must run inside `with torch.inference_mode():` and handle single-step batching `[1, ...]` with zero memory leaks.
-3. Verify action sampling: per-head `argmax` vs. sampling at low temperature (`T≈0.2–0.5`). A deterministic recurrent policy often loops in place, so test both on the 12-map holdout suite. Return `np.ndarray` of shape `(9,)`, dtype `int8`, values in `{0,1}`.
-4. Run a latency benchmark: 1,000 consecutive `act()` calls on 1 CPU thread must average **< 5 ms/step** (same target as doc 01; hard limit is 40 ms avg per map). Benchmark both `device="cuda"` and CPU; for a ~2M-param model with batch 1, CPU can beat CUDA launch overhead, and you're allowed to ignore the `device` hint.
-5. The grid update (projecting 64 rays + entities) runs in numpy every step, so include it in the latency benchmark.
+1. `reset()` zeroes both the GRU hidden state and the EgoMap.
+2. `act(obs)` runs under `torch.inference_mode()` with single-step batching `[1, ...]`.
+3. The model is warmed up in `__init__`, so the first step takes 23 ms instead of seconds.
+4. The latency benchmark uses the official `validate.py`: p50 4.3 ms, p99 8.1 ms. That includes the numpy EgoMap
+   update, which runs every step.
+
+---
+
+## Not implemented (future work)
+- **Dual value heads (`V_ext` + `V_int` for RND).** Planned to keep non-stationary curiosity rewards from
+  destabilizing the extrinsic value. We cut it because RND was not built (see doc 03). There is a single value head.
+- **Auxiliary heads** (enemy nearby, door ahead, next-step damage; training-only, loss weight 0.1). Cut for time.
+- **Original EgoMap read-out:** an agent-centred 21×21 crop plus a 16×16 max-pooled view of the whole grid. We built
+  two 15×15 heading-up crops (fine + 8× coarse) instead.
+- **A larger model (~1.5M–2.5M parameters, GRU hidden 384).** The built model is 759K parameters with GRU hidden 256.
+- **Correcting position drift** by circular cross-correlation of consecutive 360° ray scans.
+- **Training with injected pose noise**, so the policy doesn't over-trust the map.
+- **Logging pose error** (estimated vs. true pose) per training episode. Instead, the heading and position error
+  were measured offline: 0.0° heading error, and 47–160 units of drift.
