@@ -75,8 +75,11 @@ T4 mean score:  -17.73 (n=2, exit=   0%)
 - **EgoMap Seed-77 run (`training/checkpoints/egomap_s77.pt`, `--use-map`):**
   - **Warm-started from:** `900k`-step `seed7.pt` snapshot (`--use-map --init-from seed7_900k_snap.pt`)
   - **Config:** `24` envs, `--rollout-steps 256 --num-minibatches 2 --swap-every 8`, `OMP/OPENBLAS/MKL_NUM_THREADS=1`, performance power profile, 20 compact Freedoom 2 train maps (`MAP01–10, 13–14, 16–22, 24` + `two_rooms`, never touching `MAP25–32`) + `gen1–4 × 12`.
-  - **Steady-state throughput:** **`974 fps`** on RTX 3050 CUDA (`~3.5M steps/hr`, `62°C`, `1.9 GB` VRAM).
-  - **Saved record backup:** `training/checkpoints/egomap_s77_1948_score31.pt` (3.0 MB, not committed — ready to hand to core owner).
+  - **Steady-state throughput:** **`974–982 fps`** on RTX 3050 CUDA (`~3.5M steps/hr`, `62°C`, `1.9 GB` VRAM).
+  - **Saved record backup:** `training/checkpoints/egomap_s77_1948_score31.pt` (3.0 MB).
+- **Task H Primary Run (`training/checkpoints/t2h.pt`, `--use-map`, scrolling EgoMap + torch-free workers):**
+  - **Phase 1 (`20:19–21:50 IST`, round-3 rewards):** `5.25M` new steps (`~8.6M` total) at **`966–969 fps`** (`rollout 5.2–5.8s`, `update 0.9–1.0s`, `6.6 GiB` RAM free, `63.6°C`). Peaked at **`46.62` MEAN score** (`T0: 9.45`, `T1: 101.78`, `T2: 98.51`, **`T3: 124.42 / 83% exits!`**, **`T4: 29.05`**) — pushed to `origin/candidates` as `t2h_2150_score46_62.pt`!
+  - **Phase 2 (`21:57 IST` → running, round-4 rewards from `376340f`):** Resumed from `t2h_2150_score46_62.pt` (`--lr 1.5e-4`, `24` envs, `256` steps, `2` minibatches, `--seed 78`, 20 compact Freedoom + `two_rooms` + `6× gen3` + `4× gen4`).
 
 ---
 
@@ -87,7 +90,9 @@ T4 mean score:  -17.73 (n=2, exit=   0%)
 | baseline | random (17 maps, seed 0, cuda) | 0 | -1.58 | 12% | 0.0 | 0.5 | 1.0 | 7.16 | PASS (15.1 ms p50, 130 MB VRAM) |
 | 19:00 | seed7_1900 (plain; T0:-6.77 T1:100.52 T2:15.51 T3:6.62 T4:-9.75) | 563,200 | 9.70 | 12% | 0.0 | 0.4 | 1.1 | 8.53 | PASS (16.2 ms p50, 130 MB VRAM) |
 | 19:48 | egomap_s77_1948 (EgoMap latest; T0:3.15 T1:101.20 T2:56.03 T3:52.89 T4:18.36) | ~1,610,000 | 28.55 | 24% | 0.1 | 1.0 | 1.1 | 9.44 | — |
-| 19:48 | **egomap_s77_best_1948** (EgoMap best; T0:7.31 T1:101.47 T2:92.83 T3:20.32 T4:15.99) | ~1,580,000 | **31.00** | **25%** | 0.1 | **1.1** | 1.1 | **8.13** | **PASS (exit in 384 steps, 12.4 ms p50, 130 MB VRAM)** |
+| 19:48 | egomap_s77_best_1948 (EgoMap best; T0:7.31 T1:101.47 T2:92.83 T3:20.32 T4:15.99) | ~1,580,000 | 31.00 | 25% | 0.1 | 1.1 | 1.1 | 8.13 | PASS (exit in 384 steps, 12.4 ms p50, 130 MB VRAM) |
+| 21:50 | t2h_2150 (Task H latest; T0:9.03 T1:100.90 T2:112.97(100%) T3:111.51(67%) T4:12.85) | ~8,650,000 | 44.57 | 37% | 0.1 | 1.2 | **1.7** | 5.46 | — |
+| 21:50 | **t2h_best_2150** *(pushed to `candidates`!)* (T0:**9.45** T1:**101.78** T2:98.51 T3:**124.42(83%)** T4:**29.05**) | ~8,300,000 | **46.62** | **37%** | **0.2** | **1.3** | 1.4 | **3.57** | **PASS (exit in 68 steps, 9.0 ms p50, 130 MB VRAM)** |
 
 ---
 
