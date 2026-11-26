@@ -954,3 +954,7 @@ by expected points:
   Teammate 2 reports `check_warp_curriculum` OK.
 - **HYPOTHESIS:** a T4 *exit* warp can spawn inside the exit room, past both locks, so its exit rate (T7) can overstate
   real T4 skill. Judge round 7 only by the new untouched exam's T4 exits.
+
+### UPDATE 04:56
+- **Round-7 candidate fails on the i3:** −5.1 ± 2.1 overall, T3 exits 6 vs 9, T4 still 0 (`EVAL_I3.md` §11). The CUDA
+  pass isn't confirmed. **v8 stays.**

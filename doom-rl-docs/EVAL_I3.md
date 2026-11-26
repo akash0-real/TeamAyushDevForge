@@ -416,3 +416,12 @@ v9 swap): **SHIP RULE PASS.**
 **Keep v9.**
 
 **`t2h_0122` vs v7** (`i3_t2h_0122.csv`, turn 0.5, seeded): **ship rule FAIL** (weighted exits 47 vs 51; T4 −11.9 ± 3.7).
+
+### 11. Round-7 candidate `t2r7a_0420_score45_58`: SHIP RULE FAIL on the i3 (seeded, 5 seeds, vs v8)
+`i3_r7a.csv` vs `i3_v8.csv` (same agent settings):
+- overall **−5.1 ± 2.1, significantly worse**;
+- T3 exits **6/10 vs 9/10** (−29.2 ± 14.1);
+- weighted exits **42 vs 53**;
+- **T4: 0/10 exits for both**, with the same 0.2 keys per run, so round 7 hasn't moved T4 yet.
+
+Teammate 2's CUDA run passed (45.58 vs 42.65). **The two machines disagree, so it's not confirmed. Keep v8.**
