@@ -5,6 +5,51 @@
 > and `git log`. **Never invent numbers, features, or results.** If a fact you need is missing, write
 > `TODO(core): <what is missing>` in the text and tell your human; don't guess.
 
+## CURRENT ORDERS (22:10 IST) — these replace your work queue. Read this block first, every cycle.
+
+**Scope lock.** From now until 03:30 IST you do **only** these three things, in this order of priority:
+1. **Task S** below (once, now).
+2. **Task R2** for each new file on the `candidates` branch.
+3. **Task R** reviews, every 10 min.
+
+Nothing else: no new kinds of experiments, no extra eval settings, no new docs or files, no edits outside
+`doom-rl-docs/AUDIT.md`, `doom-rl-docs/EVAL_I3.md` and `training/results/i3_*.csv`. You may run at most **3 evals at once**.
+If you think something else is worth doing, **don't do it**. Write `QUESTION(core): <one sentence>` at the end of
+`AUDIT.md` and keep going with the list. Every claim you write needs evidence: a `file:line`, a CSV name, or a command
+and its output. "Looks fine" without evidence doesn't count.
+
+### Task S — Strict, thorough review of the core owner's direction (read-only, ~45 min)
+The human thinks the core owner may be heading the wrong way. Check it independently. Don't trust the core owner's
+commit messages or `CHECKPOINTS.md`; recompute everything yourself.
+1. **Rules sweep of `submission/`** (`agent.py`, `model.py`, `preprocess.py`). Go line by line against `docs/RULES.md`
+   and `AGENTS.md` §2: no hand-coded control, no planner or pathfinding over the EgoMap, nothing in the EgoMap
+   deciding actions, no network or disk writes in `act()`. Quote every suspicious line.
+2. **Shipped and backup weights are the right files.**
+   - `git show shipped-v2:submission/weights/best_agent.pt` must give oid `a5eea925…` (= `candidates:core_r2_2025.pt`).
+   - `git show shipped-v1:submission/weights/best_agent.pt` must give oid `980f05c6…` (the old shipped weights).
+   - The `sha256sum` of `submission/weights/best_agent.pt` after `git lfs pull` must match.
+3. **Is shipping `core_r2_2025` justified?** Recompute from your own CSVs with a short script, not by hand. Use
+   `i3_shipped.csv`, `i3_core_r2_2025.csv`, `i3_shipped_T0_s59.csv`, `i3_core_r2_2025_T0_s59.csv`.
+   - Compute the paired per-seed differences: overall, T0, and each tier.
+   - Is any tier significantly **worse** (difference beyond 2 standard errors)?
+   - **Verdict:** `KEEP v2` or `ROLL BACK to v1`, with the numbers.
+4. **Leakage check.** No holdout map may appear in training:
+   - MAP25–32, `maps/holdout/*`, and generated seeds ≥ 1e9 must not appear in `DEFAULT_TRAIN_MAPS`
+     (`training/train_ppo.py`).
+   - Check the seed generation in `training/rewards.py`.
+5. **Reward-hacking check of tutor round 4** (`training/rewards.py`). Can the agent farm any reward without
+   progressing? Look at: cells cap, item pickups, the health-gain reward, door re-opening, and kills.
+6. **Train/eval consistency.** `training/rewards.py` and `submission/agent.py` must build the same observation:
+   preprocess, EgoMap call order, and the action fed to the EgoMap.
+
+Write `## Strict review HH:MM` in `AUDIT.md`:
+- one line per item: `PASS` / `RISK` / `BLOCKER`, with the evidence;
+- then the item-3 verdict.
+
+Commit `[t3] strict review` and **tell your human the verdict and any BLOCKER immediately**. Report only: don't edit
+code, and don't roll anything back yourself. The core owner (or your human) does that, using the commands in
+`backups/README.txt` on the core laptop or `git checkout shipped-v1 -- submission/weights/best_agent.pt`.
+
 Repo: `https://github.com/akash0-real/TeamAyushDevForge` (branch `main`).
 Competition: Yugaantar DevForge Track 1 "Can It Play DOOM?". Rules: `docs/RULES.md`. Judges manually review the
 code, training folder and docs of top teams, and the final round rewards **custom-engineered architectures**

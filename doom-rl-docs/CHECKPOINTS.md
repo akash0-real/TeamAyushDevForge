@@ -32,6 +32,9 @@ clone (p50 8.1 ms, p99 21.6 ms while training ran). **5-seed score on the i3 (te
 old weights (better on 5/5 seeds); T0 4.3 vs 6.2 over 10 seeds (−1.9 ± 2.0, within noise; same exit rate).
 **34.85 is the bar a new checkpoint must beat.** Previous: `map_phase1` (31.2), commit `d37c9e4`.
 
+**Rollback safety:** git tags `shipped-v2` (current) and `shipped-v1` (previous) point at the exact files. Roll back with
+`git checkout shipped-v1 -- submission/weights/best_agent.pt`, commit, push. There's also an off-git copy with SHA256SUMS on the core laptop.
+
 **Temperature (teammate 3, Task T):** T = 0.5 no real gain; T = 0.7 +5.3 on real maps but 0% tier-3 exits → keep 1.0.
 
 ## Leaderboard
