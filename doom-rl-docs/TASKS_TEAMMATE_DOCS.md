@@ -20,6 +20,33 @@ The core owner has already fixed `REVIEW_CHEATSHEET.md` and `CHECKPOINTS.md`.
 From now on, in every R2 table, also give **MAP25–32 separately** (mean and exits) and use that, not T0, for the
 "not worse on real maps" check.
 
+### Task Y — Research: what stops the agent from reaching the exit on real maps? (NEW 22:45, priority after R2)
+The human wants us to **finish real Freedoom maps**, not explain why we can't. Core just added a reverse curriculum
+(tutor round 5, `training/rewards.py`, `exit_spots()`): half of the real-map training episodes start near the exit and
+move further back as the agent succeeds. Your job is to find what *else* blocks exits, with evidence.
+1. **Map facts**, by script from the WAD, for MAP01–29, 31, 32. MAP30 is a boss map with no exit line.
+   - Exit type: switch (11/51), walk-over (52/124), or shoot (197/198). Use `exit_spots()` and the special numbers in
+     `EXIT_SPECIALS`.
+   - Straight-line distance from the player start (thing type 1) to the nearest exit.
+   - Number of keys (thing types 5, 6, 13, 38, 39, 40) and of locked doors (`load_mapinfo(...).lock`).
+2. **Where the shipped agent fails.** Write a script under `training/results/t3_checks/` that runs `submission/agent.py`
+   (`DoomAgent`, shipped weights) through `doom_env.make_env` at 4,200 tics. Per episode, log from
+   `env.privileged_state()`: the closest approach to the exit; the tic of the last new 64-unit cell; and death vs
+   timeout. Run MAP25–29, 31, 32 plus MAP02, 05, 08 (training maps), 2 seeds each.
+3. **Rank the blockers by impact**, using the numbers from 1 and 2. Examples:
+   - dies on the way;
+   - stops exploring (no new cell for over 1,000 tics);
+   - the exit needs a key;
+   - the exit is a switch it walks past;
+   - it gets close (under 256 units) but never presses USE.
+
+   For each blocker: `CONFIRMED`/`SUSPECTED`, an `IMPACT` line, and **what training change would fix it** (map mix,
+   reward, curriculum).
+
+Write `### Y HH:MM — exit blockers` in `AUDIT.md`, commit `[t3] research: exit blockers`, and tell your human the top 3.
+Later, core's reverse-curriculum checkpoints (`core_warp_*.pt` on `candidates`) get your normal R2, with MAP25–32
+mean **and closest approach** as the headline numbers.
+
 ### Your loop until 03:30 IST, in priority order
 1. **Task R2**, immediately, for each new file on `candidates`. Right now that's `t2h_2150_score46_62.pt` (teammate 2
    claims 46.62) and `core_r2_2155.pt`.

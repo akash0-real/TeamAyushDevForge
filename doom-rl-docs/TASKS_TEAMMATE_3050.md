@@ -228,6 +228,20 @@ defaults to 8. Proposal 2 (temperature) is being tested by teammate 3 (`--temper
 
 > **Every cycle, first read the `COORDINATION` block at the top of `doom-rl-docs/CHECKPOINTS.md`**: shared timeline, ship rule, how to ask questions.
 
+## 5b1. Task H2 — Second run with the reverse curriculum (NEW 22:45, start now, alongside phase 2)
+Core added tutor round 5 (`[core] tutor round 5`, `training/rewards.py`). Half the real-Freedoom-map episodes now start
+near the exit, and the start moves further back as the agent succeeds. The goal is real-map exits, which nobody has
+yet. These episodes show up as **T5** in the training log.
+1. `git pull --rebase`, then check that `python training/test_warp_curriculum.py` ends with `OK`.
+2. **Keep your phase-2 run going** (it runs the old code, which is fine). Start a **second** process only if
+   `free -g` shows ≥ 2.5 GB available:
+   `.venv/bin/python -u training/train_ppo.py --use-map --resume <your t2h_2150 checkpoint> --lr 1.5e-4 --num-envs 12 --rollout-steps 256 --num-minibatches 2 --total-steps 10000000 --seed 79 --save-path training/checkpoints/t2w.pt`
+3. Every ~45 min, push `t2w` to `candidates` as `t2w_HHMM.pt`, with a README line giving the T0 and T5 exit % from the
+   log.
+4. If T5 exits are still 0% after 60 min, stop `t2w` and write that in `RESULTS.md`. That result tells core something too.
+
+> Every cycle, first read the `COORDINATION` block at the top of `doom-rl-docs/CHECKPOINTS.md`.
+
 ## 5b2. Task F0 — Validate inside the official Docker image (NOW, between training checkpoints, ~20 min)
 
 Teammate 3 confirmed the package versions match the scorer image (`AUDIT.md`, "X 22:08"), but nobody has run the
