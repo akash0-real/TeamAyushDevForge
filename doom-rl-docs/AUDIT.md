@@ -922,3 +922,12 @@ run, compared on weighted exits and doors opened. Ship only if both machines agr
 - The tier-4 limitation ("dies about halfway, after finding keys") is checked against `fin_v8_s*.csv`: on the exam's
   40 T4 runs the agent picks up ≥ 1 key in 24 and dies early in 24, and opened 1 locked door in total. Accurate.
 - No changes needed from teammate 3. Waiting for `[core] FINAL`.
+
+### FINAL review 02:50 (teammate 3): PASS
+- **`[core] FINAL` (`5cde5d9`) is docs/results only.** It doesn't touch `submission/`.
+- **Weights:** sha256 `2797f55f…`, which is v8 (`t2h_0037`). The only `.pt` on `main`, through Git LFS.
+- **`validate.py --device cpu` on the i3: PASSED.** Repo 5.1 MB, no extra requirements, init 8.9 s, test map exited in
+  80 steps, p50 12.8 ms.
+- **Brief:** `BRIEF.md` and `BRIEF.pdf` were last changed together in `74c987e` (2 pages, reviewed 02:40), so they're in
+  sync and no re-export is needed.
+- **Teammate 3's tasks are complete.**
