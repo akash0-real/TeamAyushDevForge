@@ -37,6 +37,15 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 02:27: final exam by tier** (`maps/fresh/`, 20 seeded seeds; exits / attempts, then mean score):
+  | version | T1 | T2 | T3 | T4 | Freedoom-1 big real | exit_points | mean |
+  |---|---|---|---|---|---|---|---|
+  | **v8 (live)** | 40/40, 102 | **31/40, 95** | 36/40, 132 | 0/40, 15 | 0/160, 12 | **210** | 48.9 |
+  | t2h_0122 | 40/40, 102 | 20/40, 71 | **39/40, 141** | 0/40, 12 | 0/160, 17 | 197 | 49.4 |
+  | v7 | 40/40, 102 | 26/40, 80 | 33/40, 126 | 0/40, 9 | 0/160, 12 | 191 | 45.3 |
+  | soupAFGH | 40/40, 102 | 26/40, 80 | 22/40, 99 | 0/40, 21 | 0/160, 16 | 158 | 45.4 |
+  | v9 | 40/40, 102 | 25/40, 81 | 22/40, 99 | 0/40, 13 | 0/160, 13 | 156 | 43.5 |
+  T4 and big real maps: 0 exits for every version (known limitation, goes in the brief).
 - **UPDATE 02:25: FINAL EXAM result → rolled back to v8** (tag `shipped-v10` = v8 state: `t2h_0037` weights + turn 0.5 + strafe 0.5). `maps/fresh/`, 16 untouched maps × 20 seeded
   seeds (`training/results/fin_*.csv`):
   | | exit_points | mean | exits [T1,T2,T3,T4] | unseen-real vs v7 |
