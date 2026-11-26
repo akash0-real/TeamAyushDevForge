@@ -907,3 +907,10 @@ run, compared on weighted exits and doors opened. Ship only if both machines agr
 - **v9 confirmed on the i3:** it passes the ship rule vs v8. T3 exits 10/10, T4 score +13.2 ± 3.1 (significant), weighted
   exits 54 vs 53 (`EVAL_I3.md` §10).
 - The v9 weights are byte-identical to `candidates:core_soupA_0200.pt` (sha256 `7b2f37c9…`).
+
+### UPDATE 02:30: v10 (rollback to v8) verified
+- **Weights:** sha256 `2797f55f…`, identical to `t2h_0037` (v6/v8).
+- **Agent settings:** `turn_temperature = 0.5`, `head_temperature = [1, 0.5, 1, 1, 1, 1]` (strafe 0.5), which is v8.
+- **`validate.py` on the i3:** PASSED (test map exited in 80 steps, p50 8.7 ms).
+- **Lesson:** the 17-map holdout picked v9, and the untouched 16-map exam ranked it last (T3 exits 22 vs 33). Keep
+  using `maps/fresh/` only for this final call.
