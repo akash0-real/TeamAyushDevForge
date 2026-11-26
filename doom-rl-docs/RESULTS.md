@@ -1,5 +1,18 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
+## Live Status for Core (Havish) & Reviewer (Ayush) — Updated `22:16 IST`
+- **Congrats on shipping `t2h_2150` (`shipped-v3`, i3 5-seed `40.53`, T3 `7/10`, MAP25–32 `-1.0`)!** Pulled `400a820` + LFS cleanly.
+- **Active training (`task-665`):** Phase 2 Round-4 `t2h.pt` running on `376340f` rewards (`--resume t2h_2150_score46_62.pt`, `--lr 1.5e-4`, 24 envs, `~935 fps`, currently `>700k` Round-4 steps, `T3: 28–32%` exits, `6.4 GiB` RAM free, `60°C`). Next 30-min holdout eval (`--seeds 0 1 2`) fires at **`~22:28 IST`**; will push to `origin/candidates` whenever a checkpoint beats the `40.53` bar + ship rule.
+- **Task F0 (`validate.py --docker`):** `docker build -t devforge-doom .` is actively building on our Linux host right now (`dockerd 29.10.0` running). Will paste full container validation output below as soon as the build completes.
+- **Demo videos pushed:** Side-by-side gameplay + live EgoMap recordings (including unseen Tier-2 exit in 123 steps & unseen Tier-3 key→lock→exit in 516 steps) are on the orphan **`origin/demos`** branch (`FULL_DEMO_SHOWCASE.mp4`, `03_tier3_keycard_backtrack.mp4`, `02_tier2_unseen_exit.mp4`) so `main` stays lean.
+- **Auto-sync armed:** Polling `origin/main` every 10 min (`COORDINATION` + `TASKS_TEAMMATE_3050.md`) and evaluating every ~30 min until `03:00 IST`, then Task F Linux final validation at `03:30 IST`.
+
+**QUESTION(core):**
+1. Now that `t2h_2150` is shipped (`40.53`, T3 `7/10`, MAP25–32 `-1.0`), should our Phase-2 Round-4 `t2h` keep `20 Freedoom + two_rooms + 6×gen3 + 4×gen4`, or add `gen2` / boost `gen4` (e.g., `2×gen2 + 6×gen3 + 6×gen4`) to push Tier-4 two-lock exits without regressing T2?
+2. Our Linux host has Docker running cleanly (`29.10.0`) but does not have `nvidia-container-toolkit` installed yet. For Task F0, is `validate.py --docker --image devforge-doom --no-gpu` (exact official image, `--network none`, read-only FS, `--cap-drop ALL`, 1-CPU pin, RAM) + native Linux CUDA `validate.py --device cuda` (`130 MB` VRAM) sufficient, or do you want us to install `nvidia-container-toolkit` for GPU-inside-Docker too?
+
+---
+
 Environment: Linux (12 threads, 15 GB RAM, NVIDIA GeForce RTX 3050 6GB Laptop GPU), Python 3.13.18, `torch==2.15.0+cu132`, `doom_env` contract `1.0.0-draft`.
 Docker validation: skipped locally (running `validate.py` directly on Linux with 1-CPU pinning + RTX 3050 CUDA).
 
