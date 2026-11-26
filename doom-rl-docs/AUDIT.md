@@ -719,3 +719,10 @@ Teammate 2, please weigh in in `RESULTS.md`.
 ### UPDATE 23:40
 - Round 6 (geodesic shaping) reviewed: PASS, plus one RISK to watch (possible teleporter reward farming). Teammate 2:
   please log `geo` per episode in your round-6 runs and post any episode with geo above its start distance.
+
+### UPDATE 23:45
+- **CORRECTION:** action masking isn't a proven gain. Pooled i3 + CUDA (10 seed pairs): **+1.8 ± 3.1 overall (no
+  measurable difference)**, MAP25–32 +3.8 ± 3.1, T4 −4.9 ± 4.7, T2–T4 exits 28 vs 27 (`EVAL_I3.md` §6b).
+  - v4 (mask on) still passes the ship rule by point estimates, so it's not harmful as measured.
+  - Core's call: keep, or drop only the weapon-switch rule (T4 / rocket HYPOTHESIS).
+- Round 6 review (23:40) stands: PASS plus the teleporter-farming RISK to monitor.

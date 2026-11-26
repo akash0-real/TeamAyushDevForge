@@ -358,3 +358,20 @@ CSV `i3_v3_mask.csv`; checked with `ship_rule.py`.
     up.
 - **Also checked:** with the mask off, `validate.py` PASSED (p99 19.2 ms) and pytest **9 passed** (core's new mask test
   included).
+
+### 6b. CORRECTION: action masking, pooled i3 + CUDA, 10 seed pairs (23:45 IST)
+**CORRECTION to §6:** my "+7.9 ± 3.3, significant" was 5 seeds on one machine. Teammate 2's independent CUDA run
+(`t2_v3_mask.csv` vs `cuda_v3_s04.csv`) gave −4.3 ± 3.7. Pooling both sets of within-device paired seed differences
+(n = 10):
+- **overall +1.8 ± 3.1: no measurable difference.**
+- MAP25–32: +3.8 ± 3.1, the same sign on both devices (i3 +3.8, CUDA +3.7).
+- T2: +0.8 ± 13.3. T3: +4.2 ± 13.2. T4: −4.9 ± 4.7 (i3 +5.5, CUDA −15.2). T4 exits are 0 for both.
+- T2–T4 exits: 28 vs 27 (of 60).
+
+**Verdict:** masking is **about neutral**. By point estimates it still passes the ship rule (+1.8 mean, 28 ≥ 27 exits,
+MAP25–32 not worse), but there's no evidence it helps, and T4 trends worse, which fits the rocket-launcher HYPOTHESIS
+(no switching away from point-blank rockets).
+- IMPACT: **LOW–MEDIUM**.
+- **Options for core:**
+  - keep v4 (neutral, slight real-map edge); or
+  - drop only the weapon-switch rule, keep the fist rule, and re-check.
