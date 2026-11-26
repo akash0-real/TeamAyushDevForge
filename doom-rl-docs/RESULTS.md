@@ -88,3 +88,31 @@ T4 mean score:  -17.73 (n=2, exit=   0%)
 | 19:00 | seed7_1900 (plain; T0:-6.77 T1:100.52 T2:15.51 T3:6.62 T4:-9.75) | 563,200 | 9.70 | 12% | 0.0 | 0.4 | 1.1 | 8.53 | PASS (16.2 ms p50, 130 MB VRAM) |
 | 19:48 | egomap_s77_1948 (EgoMap latest; T0:3.15 T1:101.20 T2:56.03 T3:52.89 T4:18.36) | ~1,610,000 | 28.55 | 24% | 0.1 | 1.0 | 1.1 | 9.44 | — |
 | 19:48 | **egomap_s77_best_1948** (EgoMap best; T0:7.31 T1:101.47 T2:92.83 T3:20.32 T4:15.99) | ~1,580,000 | **31.00** | **25%** | 0.1 | **1.1** | 1.1 | **8.13** | **PASS (exit in 384 steps, 12.4 ms p50, 130 MB VRAM)** |
+
+---
+
+## Notes for Core (Havish) & Docs (Ayush) — Video Review & Optimization Proposals
+
+*(Written by Teammate 2 after watching side-by-side DOOM + EgoMap video replays of `egomap_s77_1948_score31.pt` and shipped `best_agent.pt`. We did not edit code/README outside our owned files—Core/Docs can apply any of these.)*
+
+### 1. Faster Exits + Higher Remaining HP (Tutor Round 3 Reward Suggestions for `training/rewards.py`)
+From watching replays (`02_tier2_unseen_exit.mp4` 123 steps, `03_tier3_keycard_backtrack.mp4` 516 steps, `01_two_rooms` & `MAP27` deaths):
+- **Add a positive time-remaining bonus ONLY on exit (zero suicide exploit):** Currently `exit_reached` pays `+25 + 2*hp_frac` regardless of speed, so meandering for 950 steps pays the same as exiting in 150 steps—and causes Tier-3 timeouts at 2,100 tics. Suggest changing to:
+  `reward += 25.0 + 6.0 * hp_frac + 6.0 * max(0.0, 1.0 - ps["tic"] / ps["episode_ticks"])`
+  No negative per-step penalty is added, so early suicide never becomes profitable, while fast high-HP exits earn up to `+37` (matching `docs/EVALUATION.md`'s health + time efficiency bonus).
+- **Stop face-tanking enemies (higher HP & fewer early deaths):** Currently `damage_taken` is `-0.015/hp` (100 HP lost = `-1.5`), while killing one enemy pays `+1.0 + 0.6` (`DAMAGECOUNT`) = `+1.6`, making face-tanking trades net-positive. Suggest:
+  - `damage_taken`: `-0.015` → **`-0.03 / hp`**
+  - `hp_gain` while hurt: `+0.01` → **`+0.025 / hp`** (incentivizes grabbing medkits on real Freedoom maps)
+  - `dead`: `-3.0` → **`-5.0`** (cuts early deaths on `MAP26/31/32`)
+
+### 2. Free Inference-Time Score Boost to Test (`submission/agent.py`)
+- Currently `agent.py` samples stochastically at temperature `T=1.0` (`deterministic=False`), which caused noisy turns and an avoidable death on `two_rooms` even on our `31.00` checkpoint.
+- **Experiment for Core:** Benchmark **`logits / T` with `T ∈ {0.5, 0.7, 1.0}`** (and `deterministic=True`) on the frozen 17-map holdout suite. Low-temperature sampling (`T ≈ 0.5–0.6`) eliminates twitchy wasted turns (faster exits, cleaner aiming, higher HP) without pure-argmax corner loops—100% neural, zero retraining cost.
+
+### 3. Training Throughput Recipe (`974 fps` measured on RTX 3050!)
+- Setting `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1`, `--num-envs 24 --rollout-steps 256 --num-minibatches 2 --swap-every 8`, performance power profile, and excluding the 4 giant 539–863 sector straggler maps (`MAP11, MAP12, MAP15, MAP23`) pushed RTX 3050 EgoMap training from `214 → 974 fps` (~3.5M steps/hr) and jumped holdout score to **`31.00`** (`T0: +7.31`, `T1: 101.47`, `T2: 92.83`, `T4: 15.99`).
+- Core can try this on the RTX 4050 too! Also minor bug note: `training/rewards.py:103` uses `GEN_CACHE / f"{os.getpid()}.wad"`, which collides if two PID-namespaced processes share `/tmp`.
+
+### 4. Doc / README Polish Notes for Docs (Ayush)
+- **`README.md` (lines 25–28) & `training/README.md`:** `uv pip install torch==2.15.0` followed by `uv run python ...` can cause `uv run` to re-sync `uv.lock` and uninstall `torch`. Suggest changing `uv run python` → `uv run --no-sync python` (or `.venv/bin/python`).
+- **`BRIEF.md` §6–§7:** Before final lock (`03:30 IST`), replace the mixed Windows/Linux footprint table with one consistent Linux 1-CPU CUDA `validate.py` run (`p50 12.4 ms`, `first 164 ms`, `1671 MB RAM`, `130 MB VRAM`), and update the step count / speed & `31.00+` holdout numbers.
