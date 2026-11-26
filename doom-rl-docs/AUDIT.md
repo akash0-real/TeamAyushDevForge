@@ -140,3 +140,69 @@ b = B.DoomAgent(observation_space, action_space, "cpu")
 check(b, "missing weights file (falls back to random plain model)", obs())
 shutil.rmtree(tmp, ignore_errors=True)
 ```
+
+## Re-check after 3cfa239
+
+Re-run on the teammate-3 i3 at commit `bf9ee12` (which includes `3cfa239`), 20:05 IST, with the shipped
+`best_agent.pt`. The edge-case script above gained two cases: a monkeypatched `_act` that raises, and a check that
+the grid scrolls.
+
+**Code review of the fixes:**
+- **2.1 → FIXED.** `act()` wraps `_act()` in `try/except Exception`. On error it prints the error and returns
+  `np.zeros(9, int8)` (press nothing) for that step only, and resets `prev_action`. Actions still come only from the
+  network. The safety net never chooses a button. (`submission/agent.py`, `act` / `_act`)
+- **2.2 → FIXED.** `EgoMap._recenter()` scrolls the grid by multiples of 8 cells when the agent gets within ¼ of an
+  edge. The origin shift `ox`/`oy` is applied in `_cells()` and in both crops, and `reset()` zeroes it. I checked the
+  shift with a positive and a negative example: kept memory lands where it should, and the coarse view stays
+  aligned. Maps within ±2,048 units of spawn behave exactly as before. (`submission/preprocess.py`, `_recenter`,
+  `_cells`, `crops`, `reset`)
+- **NIT `--seq-len` → FIXED** (flag removed).
+
+**Dynamic results: 11/11 PASS.**
+
+```text
+PASS  device='cuda' without CUDA -> cpu, use_map=True
+PASS  0 visible entities, all rays no-hit (distance 1.0): shape=(9,) dtype=int8
+PASS  all rays distance 0.0 + locked_door type: shape=(9,) dtype=int8
+PASS  health 0: shape=(9,) dtype=int8
+PASS  32 visible keys: shape=(9,) dtype=int8
+PASS  1,050 steps (4,200 tics) moving fast, never sees a key: shape=(9,) dtype=int8
+      avg 9.8 ms/step; agent pose drifted to x=-3079
+PASS  long run stays inside the grid after scrolling: ox=-40, oy=80, agent cell=(55,73), visited cells kept=613
+PASS  reset(): h zero=True, ego grid zero=True, pose=(0.0,0.0,0.0), origin=(0,0)
+DoomAgent.act error, no-op this step: RuntimeError('injected failure')
+PASS  _act raises -> act() returns no-op zeros: shape=(9,) dtype=int8 sum=0
+PASS  next step after the injected failure plays normally: shape=(9,) dtype=int8
+PASS  missing weights file (falls back to random plain model): shape=(9,) dtype=int8
+```
+
+**`validate.py --device cpu` on the fixed code (i3): PASSED.**
+
+| | Before (`6cfa81c`) | After (`bf9ee12`) |
+|---|---:|---:|
+| Initialization | 15.0 s | 12.3 s |
+| First step | 46 ms | 73 ms |
+| p50 / p99 | 7.1 / 17.6 ms | 9.3 / 21.1 ms |
+| Test map | exit in 79 steps | exit in 388 steps |
+
+Both runs exit the test map. Step counts differ because the policy samples its actions (see `EVAL_I3.md`). p99 stays
+under the 30 ms alarm line.
+
+**Updated summary: no BLOCKERs, no open RISKs. 1 NIT still open (§2.7: missing weights silently fall back to random
+weights; covered by Git LFS).** The thread-count NIT needs no change.
+
+The two new script cases, appended to the edge-case script above:
+
+```python
+e = a.ego_map
+if hasattr(e, "ox"):  # 3cfa239+: grid scrolls instead of clipping at the edge
+    cx = int(np.floor(e.x / 64.0)) + 64 - e.ox
+    cy = int(np.floor(e.y / 64.0)) + 64 - e.oy
+    print("long run inside grid:", 0 <= cx < 128 and 0 <= cy < 128, "ox/oy:", e.ox, e.oy)
+if hasattr(a, "_act"):  # 3cfa239+: act() safety net
+    def boom(_obs):
+        raise RuntimeError("injected failure")
+    real, a._act = a._act, boom
+    act = a.act(obs())  # must be np.zeros((9,), int8)
+    a._act = real
+```
