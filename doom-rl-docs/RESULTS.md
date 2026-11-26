@@ -1,6 +1,15 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 05:09 (HUGE Round-7 CANDIDATE `t2r7b_0447_score51_57.pt` PUSHED TO `origin/candidates` — SIGNIFICANT `+8.92 ± 3.53` (`0/5` worse!), `10/10` T3, `9/10` T2, `exit_points 58 vs 45`!):**
+  - **Paired deterministic 5-seed CUDA pre-screen (`seeds 0..4`, `v8` default head temps; `t2r7b_0447_s04.csv` vs `cuda_v8_seeded_s04.csv`, `~1.67M` R7 steps from `t2h_0037` at `lr 1.0e-4`):**
+    - **(1) Overall MEAN:** **`51.57` vs `42.65`** (**`Δ = +8.92 ± 3.53`**, `t = 2.53`, **`worse_seeds = 0/5`**!) — **PASS**
+    - **(2) Exits per tier:** **`T1 10/10 (101.58)`**, **`T2 9/10 (101.35 vs 7/10 76.70)`**, **`T3 10/10 (144.33 vs 7/10 109.38)`**, `T4 0/10 (23.20 vs 20.12; gen_t4_2 +34.60)` → **`T2+T3+T4` exits `19/30 vs 14/30`**, **`exit_points = 58 vs 45 (+13)`** — **PASS**
+    - **(3) Unseen real `MAP25–32`:** **`+3.42` (POSITIVE!) vs `+0.10`** (`Δ = +3.31 ± 2.28`; `MAP25 +5.00`, `MAP28 +17.83`, `MAP30 +30.02`, `MAP32 +8.72`) — **PASS**
+    - **`ship_rule.py`: `SHIP RULE: PASS`!**
+  - **Throwaway Linux 1-CPU CUDA `validate.py`:** **PASSED** (`two_rooms` exit in `124` steps, `p50 9.1 ms`, `p99 12.9 ms`, `1596 MB` RAM, `130 MB` VRAM).
+  - **`t2r7a_0446` (`t2r7a_0446_s04.csv`, `~2.64M` R7 steps):** `44.66` (`T1 10/10`, `T2 8/10`, `T3 7/10`, `T4 0/10 (17.74)`, `MAP25–32 +3.47`). Note to Core/T3: T4 holdout exits remain `0/10` on both lines so far, though `t2r7b_0447` lifted T2+T3 to `19/20` and `MAP25–32` to `+3.42`!
+  - **Resuming both trainers until `05:24 IST`** (decayed LRs `1e-4 / 8e-5`) ahead of the `05:30 IST` final cutoff; ready to push one more update if it beats `51.57` / `58`. **Also noted `fdbffe1` (`t2r7a_0420` i3 FAIL) — please check `t2r7b_0447_score51_57.pt` on cloud & i3!**
 - **UPDATE 04:35 (NEW Round-7 CANDIDATE `t2r7a_0420_score45_58.pt` PUSHED TO `origin/candidates` — 5-seed CUDA `SHIP RULE: PASS` vs `v8`!):**
   - **Paired deterministic 5-seed CUDA pre-screen (`seeds 0..4`, `v8` default head temps; `t2r7a_0420_s04.csv` vs `cuda_v8_seeded_s04.csv`, `~1.4M` R7 steps from `t2h_0037`):**
     - **(1) Overall MEAN:** **`45.58` vs `42.65`** (**`Δ = +2.93 ± 4.76`**, `worse_seeds = 1/5`) — **PASS**
