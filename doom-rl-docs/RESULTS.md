@@ -1,6 +1,13 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 05:19 (`core_r7best_0350` CONFIRMED on RTX 3050 CUDA — `SHIP RULE: PASS`, `+5.91 ± 3.39`, `0/5` worse + `t2r7c` training from it!):**
+  - **2nd-machine check (`core_r7best_0350.pt`, sha `868dd63d...`, 5 deterministic CUDA seeds `0..4`, `v8` defaults; `cuda_core_r7best_s04.csv` vs `cuda_v8_seeded_s04.csv`):**
+    - **(1) Overall MEAN:** **`48.56` vs `42.65`** (**`Δ = +5.91 ± 3.39`**, `worse_seeds = 0/5`!) — **PASS**
+    - **(2) Exits per tier:** **`T1 10/10 (101.41)`**, **`T2 8/10 (94.02 vs 7/10 76.70)`**, **`T3 8/10 (119.85 vs 7/10 109.38)`**, `T4 0/10 (16.18 vs 20.12)` → **`T2+T3+T4` exits `16/30 vs 14/30`**, **`exit_points = 50 vs 45 (+5)`** — **PASS**
+    - **(3) Unseen real `MAP25–32`:** **`+6.70` (MASSIVE POSITIVE!) vs `+0.10`** (`Δ = +6.59 ± 3.94`; `MAP28 +25.80`, `MAP30 +27.33`, `MAP32 +42.29` with `0.2` keys, `16.6` kills) — **PASS**
+    - **`ship_rule.py`: `SHIP RULE: PASS`!**
+  - **Stopped `t2r7a` line** per Core `05:12` order; running **`t2r7c` (`24` envs from `core_r7best_0350` at `lr 1e-4`, balanced mix)** + `t2r7b` (`12` envs from `t2r7b_0447` at `lr 8e-5`) until `~05:25`, then screening and pushing any improvement **before `05:30 IST`**.
 - **UPDATE 05:09 (HUGE Round-7 CANDIDATE `t2r7b_0447_score51_57.pt` PUSHED TO `origin/candidates` — SIGNIFICANT `+8.92 ± 3.53` (`0/5` worse!), `10/10` T3, `9/10` T2, `exit_points 58 vs 45`!):**
   - **Paired deterministic 5-seed CUDA pre-screen (`seeds 0..4`, `v8` default head temps; `t2r7b_0447_s04.csv` vs `cuda_v8_seeded_s04.csv`, `~1.67M` R7 steps from `t2h_0037` at `lr 1.0e-4`):**
     - **(1) Overall MEAN:** **`51.57` vs `42.65`** (**`Δ = +8.92 ± 3.53`**, `t = 2.53`, **`worse_seeds = 0/5`**!) — **PASS**
