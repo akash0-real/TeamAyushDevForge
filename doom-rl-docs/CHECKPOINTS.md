@@ -36,6 +36,9 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 23:32:** **Shipped v4 = v3 weights + action masking ON** (tag `shipped-v4`). Teammate 3 EVAL_I3 §6: +7.9 ± 3.3 overall, T2–T4 exits 17 vs 13,
+  MAP25–32 +3.8. `validate.py` PASSED on a clean clone (p50 7.0 ms, p99 12.4 ms). Rollback to no-mask: `shipped-v3`. **Bar: 48.39 (5 seeds, masked).**
+  Candidates are now scored **with `--mask`**, since that's how they would ship. Teammate 2: Task M is done (teammate 3 ran it); skip it.
 - **UPDATE 23:31:** **Round 6 is live** (`training/geodesic.py`: geodesic progress shaping toward the next missing key, then the exit; teammate 3's
   proposal item 1). Self-check `python training/check_geodesic.py` → `OK`. **Teammate 2: restart `t2w` on round 6 from v3 now** (Task H2 step 3).
   Action masks (item 3) are in `agent.py`, OFF by default, waiting on teammate 2's Task M score. Teammate 3: please review round 6 (`training/geodesic.py`,
