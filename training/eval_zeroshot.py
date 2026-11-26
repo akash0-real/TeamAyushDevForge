@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -29,7 +30,20 @@ DEFAULT_HOLDOUT_MAPS = [
     "MAP30",
     "MAP31",
     "MAP32",
+    "maps/holdout/gen_t1_1.wad:MAP01",
+    "maps/holdout/gen_t1_2.wad:MAP01",
+    "maps/holdout/gen_t2_1.wad:MAP01",
+    "maps/holdout/gen_t2_2.wad:MAP01",
+    "maps/holdout/gen_t3_1.wad:MAP01",
+    "maps/holdout/gen_t3_2.wad:MAP01",
+    "maps/holdout/gen_t4_1.wad:MAP01",
+    "maps/holdout/gen_t4_2.wad:MAP01",
 ]
+
+
+def infer_tier(wad_path: str) -> int:
+    m = re.search(r"gen_t([1-4])_", Path(wad_path).name)
+    return int(m.group(1)) if m else 0
 
 
 def proxy_score(exit, keys, doors, locked_doors, kills, cells, damage, died_early):
@@ -45,7 +59,9 @@ def proxy_score(exit, keys, doors, locked_doors, kills, cells, damage, died_earl
     )
 
 
-def eval_map(agent: DoomAgent, wad: str, map_name: str, ticks: int, seeds: list[int]) -> tuple[dict, list[dict]]:
+def eval_map(
+    agent: DoomAgent, wad: str, map_name: str, ticks: int, seeds: list[int], tier: int
+) -> tuple[dict, list[dict]]:
     per_seed: list[dict] = []
     map_label = f"{Path(wad).name}:{map_name}"
 
@@ -101,6 +117,7 @@ def eval_map(agent: DoomAgent, wad: str, map_name: str, ticks: int, seeds: list[
             per_seed.append(
                 {
                     "map": map_label,
+                    "tier": tier,
                     "seed": seed,
                     "exit": ex,
                     "keys": keys,
@@ -120,6 +137,7 @@ def eval_map(agent: DoomAgent, wad: str, map_name: str, ticks: int, seeds: list[
 
     agg = {
         "map": map_label,
+        "tier": tier,
         "exit": float(np.mean([r["exit"] for r in per_seed])),
         "keys": float(np.mean([r["keys"] for r in per_seed])),
         "doors": float(np.mean([r["doors"] for r in per_seed])),
@@ -159,39 +177,49 @@ def main() -> None:
     for item in args.maps:
         if item == "two_rooms":
             wad, m = str(ROOT / "maps" / "two_rooms.wad"), "MAP01"
-            ticks = args.ticks if args.ticks is not None else 2100
+            tier = 0
+            default_ticks = 2100
         elif ":" in item:
             w, m = item.split(":", 1)
             wad = str(Path(w) if Path(w).is_absolute() else ROOT / w)
-            ticks = args.ticks if args.ticks is not None else 4200
+            tier = infer_tier(wad)
+            default_ticks = 2100 if tier > 0 else 4200
         else:
             wad, m = IWAD, item.upper()
-            ticks = args.ticks if args.ticks is not None else 4200
+            tier = 0
+            default_ticks = 4200
+        ticks = args.ticks if args.ticks is not None else default_ticks
 
         try:
-            agg, per_seed = eval_map(agent, wad, m, ticks, args.seeds)
+            agg, per_seed = eval_map(agent, wad, m, ticks, args.seeds, tier)
             rows.append(agg)
             csv_rows.extend(per_seed)
             print(
-                f"{agg['map']:26s} | score {agg['score']:7.2f} | exit {agg['exit']*100:4.0f}% | "
+                f"[T{tier}] {agg['map']:26s} | score {agg['score']:7.2f} | exit {agg['exit']*100:4.0f}% | "
                 f"keys {agg['keys']:3.1f} | doors {agg['doors']:4.1f} | kills {agg['kills']:4.1f} | "
                 f"cells {agg['cells']:5.1f} | hp {agg['hp']:5.1f} | {agg['ms']:.2f} ms/step",
                 flush=True,
             )
         except Exception as e:
-            print(f"{item:26s} | ERROR: {e}", flush=True)
+            print(f"[T{tier}] {item:26s} | ERROR: {e}", flush=True)
 
-    print("-" * 116)
+    print("-" * 121)
     if rows:
         mean_score = float(np.mean([r["score"] for r in rows]))
         print(
-            f"{'MEAN':26s} | score {mean_score:7.2f} | exit {np.mean([r['exit'] for r in rows])*100:4.0f}% | "
+            f"{'MEAN':31s} | score {mean_score:7.2f} | exit {np.mean([r['exit'] for r in rows])*100:4.0f}% | "
             f"keys {np.mean([r['keys'] for r in rows]):3.1f} | doors {np.mean([r['doors'] for r in rows]):4.1f} | "
             f"kills {np.mean([r['kills'] for r in rows]):4.1f} | cells {np.mean([r['cells'] for r in rows]):5.1f} | "
             f"{np.mean([r['ms'] for r in rows]):.2f} ms/step",
             flush=True,
         )
         print(f"MEAN score: {mean_score:.2f}", flush=True)
+        for t in range(5):
+            t_rows = [r for r in rows if r["tier"] == t]
+            if t_rows:
+                t_score = float(np.mean([r["score"] for r in t_rows]))
+                t_exit = float(np.mean([r["exit"] for r in t_rows])) * 100.0
+                print(f"T{t} mean score: {t_score:7.2f} (n={len(t_rows)}, exit={t_exit:4.0f}%)", flush=True)
     else:
         print("MEAN score: N/A (all maps failed)", flush=True)
 
@@ -199,7 +227,7 @@ def main() -> None:
     results_dir.mkdir(parents=True, exist_ok=True)
     csv_path = results_dir / f"{run_name}.csv"
     fieldnames = [
-        "map", "seed", "exit", "keys", "doors", "locked_doors",
+        "map", "tier", "seed", "exit", "keys", "doors", "locked_doors",
         "kills", "cells", "damage", "died_early", "hp", "ms_per_step", "score",
     ]
     with open(csv_path, "w", newline="", encoding="utf-8") as f:
