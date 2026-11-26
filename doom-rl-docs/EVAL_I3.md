@@ -334,3 +334,12 @@ SHIP RULE: FAIL
   only candidate with a large, consistent edge somewhere (real maps).
   - IMPACT: **MEDIUM**. A likely gain of a few points of mean score, mainly on real-map-like and T3 maps.
 - **Tooling:** `ship_rule.py` takes any two CSV stems, so the core owner can rerun it on future candidates.
+
+### 4f. Ship confirmation: v3 (`t2h_2150`) vs v2, 10 seeds (22:40 IST)
+**CONFIRMED: v3 is better. Keep v3.** Seeds 0–9, 17 maps, paired (`i3_t2h_2150*.csv` vs `i3_core_r2_2025*.csv`, `*_s59` = seeds 5–9):
+- **overall** 42.30 vs 33.01: **+9.3 ± 2.5** (3.8 SE, worse on 2/10 seeds).
+- **MAP25–32** −0.9 vs −8.7: **+7.8 ± 1.7** (worse on 1/10).
+- **T3** 107.9 vs 51.1: **+56.8 ± 15.6**, exits **14/20 vs 4/20**.
+- **T2–T4 exits:** 28 vs 18 (of 60).
+- **No measurable difference:** T2 −10.4 ± 16.2, T4 −2.6 ± 4.8.
+- **T1 −0.9 ± 0.4** (significant). IMPACT **LOW**: both exit 100% of T1 maps; the gap is only the HP/time bonus.

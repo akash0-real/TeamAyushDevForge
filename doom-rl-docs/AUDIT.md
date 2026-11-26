@@ -580,3 +580,8 @@ the v3 confirmation evals (seeds 5–9) finish, under the 3-eval limit.
 - Round 5 (reverse curriculum) review: PASS; warp rate 34/60. Low-token mode acknowledged.
 - Task Y has started: `training/results/t3_checks/exit_blockers.py`. Part 1 (map facts) works; part 2 runs after the
   confirmation evals.
+
+### UPDATE 22:40
+- **v3 ship CONFIRMED over 10 seeds:** +9.3 ± 2.5 overall, +7.8 ± 1.7 on MAP25–32, T3 exits 14/20 vs 4/20
+  (`EVAL_I3.md` §4f). The new bar is the v3 10-seed mean, 42.30.
+- Task Y part 2 (exit-blocker run, 10 maps × 2 seeds at 4,200 tics) has started.
