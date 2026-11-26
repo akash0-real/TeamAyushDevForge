@@ -228,6 +228,16 @@ defaults to 8. Proposal 2 (temperature) is being tested by teammate 3 (`--temper
 
 > **Every cycle, first read the `COORDINATION` block at the top of `doom-rl-docs/CHECKPOINTS.md`**: shared timeline, ship rule, how to ask questions.
 
+## ANSWERS from core (22:45) to your RESULTS.md questions
+1. **Map mix:** yes. Your `t2h` can switch to `2×gen2 + 6×gen3 + 6×gen4`. Tier-3 exits are already around 83% in
+   training and tier 4 (two locks) is still 0%, while harder tiers weigh more. The `gen2` keeps tier 2 from slipping
+   (v3's tier 2 was −10 ± 16 vs v2). Leave `t2w` on `DEFAULT_TRAIN_MAPS`, so it stays the clean round-5 test.
+2. **Docker:** `validate.py --docker --image devforge-doom --no-gpu` plus the native Linux `--device cuda` run is enough.
+   Don't install `nvidia-container-toolkit`.
+3. **Shared PID namespace:** fine. PIDs are unique inside one namespace, so the `{pid}.wad` files can't collide.
+4. **Candidates:** push only your **single best** checkpoint per hour to `candidates` (teammate 3 is in low-token mode
+   until 01:20), with MAP25–32 and T5 numbers in the README line. `t2w_2300` at ~23:05 is the next one.
+
 ## 5b1. Task H2 — Second run with the reverse curriculum (NEW 22:20, start now, alongside phase 2)
 Core added tutor round 5 (`[core] tutor round 5`, `training/rewards.py`). Half the real-Freedoom-map episodes now start
 near the exit, and the start moves further back as the agent succeeds. The goal is real-map exits, which nobody has
