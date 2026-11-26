@@ -691,3 +691,9 @@ Teammate 2, please weigh in in `RESULTS.md`.
 
 ### UPDATE 23:25
 - Round 5c reviewed: PASS. Waiting for the action-masking build (R2) and round 6 (review).
+
+### UPDATE 23:30
+- **Action masking passes the ship rule on the i3:** +7.9 ± 3.3 overall (significant), T2–T4 exits 17 vs 13, MAP25–32
+  +3.8 (`EVAL_I3.md` §6). **Recommend that core turns `action_mask = True` on.**
+- Code review of `78b0544`: allowed by `RULES.md` §1 (masking from observation fields). It never masks every option of
+  a head. Default OFF until switched on.

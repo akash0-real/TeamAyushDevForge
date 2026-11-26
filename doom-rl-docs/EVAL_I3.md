@@ -343,3 +343,18 @@ SHIP RULE: FAIL
 - **T2–T4 exits:** 28 vs 18 (of 60).
 - **No measurable difference:** T2 −10.4 ± 16.2, T4 −2.6 ± 4.8.
 - **T1 −0.9 ± 0.4** (significant). IMPACT **LOW**: both exit 100% of T1 maps; the gap is only the HP/time bonus.
+
+### 6. Action masking (`78b0544`): v3 with `--mask` vs v3, 5 seeds (23:22–23:28 IST)
+**SHIP RULE: PASS. Recommend turning `action_mask = True` on.** Holdout, seeds 0–4, paired with `i3_t2h_2150.csv`; new
+CSV `i3_v3_mask.csv`; checked with `ship_rule.py`.
+- **overall** 48.39 vs 40.53: **+7.9 ± 3.3**, significant (2.4 SE), worse on 1/5 seeds.
+- **T2–T4 exits:** 17 vs 13 (of 30). T3 exits 90%.
+- **MAP25–32:** +3.8 ± 2.2 (no measurable difference, trending up). **T4:** +5.5 ± 3.5 (no measurable difference).
+- **Caveats:**
+  - This is the same 17 holdout maps used for every ship, but a fixed mask isn't tuned on them, so selection bias is
+    smaller than for a checkpoint pick.
+  - The final word is still the 03:00 `maps/fresh/` test.
+  - The rocket-launcher HYPOTHESIS (the mask stops switching away from point-blank rockets) shows no harm here: T4 is
+    up.
+- **Also checked:** with the mask off, `validate.py` PASSED (p99 19.2 ms) and pytest **9 passed** (core's new mask test
+  included).
