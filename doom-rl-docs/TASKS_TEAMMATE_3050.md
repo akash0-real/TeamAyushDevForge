@@ -62,7 +62,7 @@ Every Python command below is run from the repo root as `uv run python ...`.
 
 ## 2. Task A — Baseline validation (~15 min)
 
-1. `uv run python validate.py`
+1. `$env:PYTHONIOENCODING = "utf-8"` then `uv run python validate.py`. Without the encoding line, Windows crashes on the validator's ✓ characters with `UnicodeEncodeError`; that's not a real failure. Set it in every new PowerShell window before `validate.py`.
 2. With no trained weights, the agent uses random network weights. It must still **pass** (no crash, valid actions, timing within limits). Copy the full output.
 3. If Docker Desktop is installed: `docker build -t devforge-doom .` then `uv run python validate.py --docker --image devforge-doom`. Skip this if Docker isn't installed; just say so in the report.
 4. Put the validator output (pass/fail lines, ms/step, peak RAM/VRAM) into `doom-rl-docs/RESULTS.md` under a heading `## Baseline validate.py (random weights)`.
@@ -139,6 +139,25 @@ Check with `git fetch` + that command every 15 minutes, doing Task B meanwhile.
    (Delete `..\validate_copy` afterwards.) Record pass/fail and ms/step in the table.
 4. Commit + push `RESULTS.md` and `training/results/*.csv` after each evaluation: `[t2] results <HHMM>`.
 5. When your human asks for your best checkpoint, send the `.pt` file to them directly (Drive, USB, chat). **Don't commit it.** The core owner puts the final weights into `submission/weights/` with Git LFS.
+
+---
+
+## 5b. Task E — Add the generated holdout maps to the eval (as soon as Task B is done)
+
+The core owner added `maps/holdout/gen_t{1,2,3,4}_{1,2}.wad`: 8 procedurally generated maps (tiers 1–4) built
+from seeds training never uses. Each is a single map named `MAP01`.
+
+1. `git pull --rebase`, then check the 8 files exist.
+2. In `training/eval_zeroshot.py`, add them to the default holdout list as
+   `maps/holdout/gen_t1_1.wad:MAP01` … `maps/holdout/gen_t4_2.wad:MAP01` (the existing `wad:MAP` parsing handles this).
+   Ticks for these maps: **2100**.
+3. Add a `tier` column to the CSV: `1`–`4` from the file name for `gen_t*` maps, `0` for Freedoom/two_rooms.
+   Print one extra summary line per tier: `T0 / T1 / T2 / T3 / T4 mean score`.
+4. Re-run the random-weights baseline (`--name random --seeds 0`) and update the table in `RESULTS.md`.
+5. Commit: `[t2] eval: generated holdout maps + per-tier summary`.
+
+Also note: `training/train_ppo.py` now has `--use-map` (memory grid model). Your Task C command stays the same (no `--use-map`).
+If your human asks you to run the map model instead, the core owner will give the exact command.
 
 ---
 
