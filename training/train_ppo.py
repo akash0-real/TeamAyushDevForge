@@ -168,6 +168,7 @@ def main() -> None:
             frac = 1.0 - (update - 1.0) / num_updates
             optimizer.param_groups[0]["lr"] = max(5e-5, args.lr * frac)
             init_h = next_h.clone()
+            t_roll = time.perf_counter()
 
             # 1. Rollout collection
             model.eval()
@@ -208,6 +209,7 @@ def main() -> None:
                 boot_h = next_h * (1.0 - next_done).view(1, B, 1)
                 _, next_value, _ = model.forward_step(next_obs, boot_h)
 
+            t_upd = time.perf_counter()
             # 2. GAE
             advantages = torch.zeros_like(buf_rewards)
             last_gae = torch.zeros(B, dtype=torch.float32, device=device)
@@ -268,6 +270,7 @@ def main() -> None:
                     v_losses.append(v_loss.item())
                     ent_losses.append(ent_loss.item())
 
+            t_end = time.perf_counter()  # rollout = t_upd - t_roll, update = t_end - t_upd (logged below)
             if update % 10 == 0 or update == num_updates:
                 torch.save({"model": model.state_dict(), "step": global_step}, save_path)  # latest, for holdout eval
             if update % 5 == 0 or update == num_updates:
@@ -289,7 +292,8 @@ def main() -> None:
                         f"upd {update:4d}/{num_updates} | step {global_step:8d} | fps {fps:6.0f} | "
                         f"ret {avg_ret:6.2f} | exit {exit_r*100:4.0f}% | kills {kills:4.1f} | "
                         f"doors {doors:3.1f} | keys {keys:3.1f} | cells {cells:4.1f} | "
-                        f"ent {np.mean(ent_losses):.2f} | exit-by-tier {tiers}",
+                        f"ent {np.mean(ent_losses):.2f} | exit-by-tier {tiers} | "
+                        f"rollout {t_upd - t_roll:.1f}s update {t_end - t_upd:.1f}s",
                         flush=True,
                     )
                     if avg_ret > best_return:

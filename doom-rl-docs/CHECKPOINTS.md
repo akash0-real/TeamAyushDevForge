@@ -11,7 +11,7 @@ Unless noted, scores use the current eval (`[t2]` version: generated maps at 2,1
 
 | Who | Doing now | Next |
 |---|---|---|
-| Core (i7 + RTX 4050) | Memory-grid training, round 4: 20 envs, all speed fixes (379+ steps/s vs 273) | Score a new checkpoint every ~40 min; ship only if it beats the shipped one incl. real maps |
+| Core (i7 + RTX 4050) | **Two** memory-grid runs in parallel (run 1: 20 envs, run 2: 16 envs, different seeds). PPO update 3 s → 0.6 s; the single-threaded game loop is the remaining limit, so a 2nd process uses the idle CPU/GPU/RAM | Score new checkpoints every ~40 min; ship only if it beats the shipped one incl. real maps |
 | Teammate 2 (3050, Linux) | Seed-7 plain run (scores 9.7) | **Task G now:** switch to the memory-grid model from the shipped weights with the fixes |
 | Teammate 3 (i3) | Brief, README, docs, audit, demo script done | Task E (i3 validation + 5-seed score), then Task D2 (re-check audit) |
 
@@ -24,7 +24,8 @@ timestep at a time in the PPO update (GPU idle), memory grid smearing on big map
 ## Currently shipped
 
 **`map_phase1`**: EgoMap model, 645k total training steps (184k plain + 460k EgoMap). Shipped 18:03, commit `d37c9e4`.
-`validate.py` PASSED (p50 4.3 ms/step).
+`validate.py` PASSED (p50 4.3 ms/step). **5-seed score on the i3 (teammate 3): 31.2**, T0 6.9, T3 map 1 exits 60%
+at 2,100 tics; i3 validation PASSED (p50 7.1 ms, p99 17.6 ms). **31.2 is the bar a new checkpoint must beat.**
 
 ## Leaderboard
 
