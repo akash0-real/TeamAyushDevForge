@@ -914,3 +914,11 @@ run, compared on weighted exits and doors opened. Ship only if both machines agr
 - **`validate.py` on the i3:** PASSED (test map exited in 80 steps, p50 8.7 ms).
 - **Lesson:** the 17-map holdout picked v9, and the untouched 16-map exam ranked it last (T3 exits 22 vs 33). Keep
   using `maps/fresh/` only for this final call.
+
+### UPDATE 02:40: brief (74c987e) reviewed: PASS
+- `BRIEF.pdf` is **2 pages**.
+- The RESULTS block (v8: exam T1–T3 40/31/36 of 40, T4 0/40, unseen big real 0/160) matches core's exam numbers.
+  `two_rooms` is correctly called a training map.
+- The tier-4 limitation ("dies about halfway, after finding keys") is checked against `fin_v8_s*.csv`: on the exam's
+  40 T4 runs the agent picks up ≥ 1 key in 24 and dies early in 24, and opened 1 locked door in total. Accurate.
+- No changes needed from teammate 3. Waiting for `[core] FINAL`.
