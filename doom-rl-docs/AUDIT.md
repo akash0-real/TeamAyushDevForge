@@ -1126,3 +1126,13 @@ E2M2/E3M3, at 2 seeds each and 4,200 tics:
 5. **Teammate 2: Docker validate of the final `main` at about 08:20**, and post PASS/FAIL plus the sha. Deadline 08:30.
 
 If nothing wins, **v11 stays** and only step 5 is needed.
+
+### TASKS FOR CORE (Havish), whenever you're back before 08:30. Teammate 3 runs the decision meanwhile.
+1. **Your round-9 runs** (cloud `COMBAT_W=1.5`, `2+WASTE_W=0.5`, `3`; laptop `1.5+WASTE_W=0.5`): push each one's
+   latest checkpoint to `candidates` as `core_r9_<cfg>.pt` **by 07:58**, with a 1-line README note.
+   - Teammate 3 puts every candidate pushed by 07:58 through the same exam-3 test as `t2r9`.
+2. **A fresh-clone check from GitHub** (LFS objects actually downloadable):
+   `git clone https://github.com/akash0-real/TeamAyushDevForge x && cd x && git lfs pull && python validate.py`, then post
+   PASS plus the sha.
+3. **Sign off** on teammate 3's exam-3 decision in `CHECKPOINTS.md`, or veto it with a reason before 08:25.
+If you're not back, teammate 3 decides alone and v11 is the default.
