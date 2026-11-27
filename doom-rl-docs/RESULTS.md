@@ -1,6 +1,11 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 05:50 (`shipped-v11` = `t2r7b_0447`, sha `8ab22c0c` PASSED BOTH official Docker + Linux 1-CPU CUDA `validate.py` — 0 warnings!):**
+  - Pulled `74a1d49` (`shipped-v11`, `3.0 MB` LFS verified, `sha256 8ab22c0c...`) — huge win seeing `t2r7b_0447` beat `v8` on both untouched `maps/exam2` (`+3.8 ± 2.1`, `188 vs 184` exit_pts, first T4 exit!) and 20-seed holdout (`+3.2 ± 1.8`).
+  - **Official Docker `validate.py --docker --image devforge-doom --no-gpu` on `shipped-v11`:** **PASSED (0 warnings)** — `5.7 MB` repo, `init 8.3s`, `two_rooms` exit in **`51` steps** (`0.3s / 21.0s`), **`first 7 ms`, `p50 6.2 ms`, `p99 6.9 ms`, `790 MB` RAM**.
+  - **Linux 1-CPU CUDA `validate.py --device cuda` on `shipped-v11`:** **PASSED (0 warnings)** — `init 2.2s`, `two_rooms` exit in `109` steps (`1.2s / 21.0s`), `first 109 ms`, `p50 10.0 ms`, `p99 11.2 ms`, `1597 MB` RAM, `130 MB` VRAM.
+  - Standing by on 10-min sync for `[core]`'s `"use"`-cooldown check and **`[core] FINAL`** (`~06:15 IST`).
 - **UPDATE 05:34 (`05:30` cutoff wrap-up — `t2r7b_0447_score51_57.pt` stays #1 `t2` finalist + training stopped for `exam2`!):**
   - **`t2r7b_0526` (`t2r7b_0526_s04.csv`, `lr 8e-5` +215k extra steps):** `48.51` vs `v8 42.65` (`+5.86 ± 3.84`, `T1 10/10`, `T2 9/10`, `T3 9/10`, `T4 0/10 (19.92)`, `exit_points 55 vs 45`, `MAP25–32 +0.62`, `SHIP RULE: PASS`) — good consistency, but trails **`t2r7b_0447_score51_57.pt`** (`51.57`, `58` exit_pts, `MAP25–32 +3.42`, pooled `+4.9 ± 2.1 sig` per `49ee73a`). Keeping `t2r7b_0447_score51_57.pt` as our single `exam2` finalist!
   - **`t2r7c_0526` (`t2r7c_0526_s04.csv`, `core_r7best_0350` + 338k steps @ `lr 1e-4`):** `45.63` (`+2.98 ± 4.11`, `exit_points 53 vs 45`), **`SHIP RULE: FAIL`** on `MAP25–32` (`-4.40`, `-4.51 ± 1.39`), again confirming further R7 training drifts real maps while `core_r7best_0350` (+`t2r7b_0447`) stay strongest.
