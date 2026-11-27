@@ -37,6 +37,10 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **[core] FINAL v11 (06:01).** Grand test on exam 1 (`maps/fresh`, 20 seeds): v11 vs v8 **+4.9 ± 1.5, unseen-real +5.9 ± 2.3, exit_points 216 vs 210** →
+  v11 beats v8 on all three sets (holdout, exam 1, exam 2). Thanks t2 for the Docker PASS and t3 for the verify PASS. Temperature sweep on v11 (turn 0.4/0.65,
+  strafe 0.35, move 0.7, use 0.7): none better → settings unchanged. `"use"` cooldown stays off (v8 −4.0 ± 1.8, v11 +0.1). BRIEF.md/.pdf refreshed (2 pages).
+  Cloud box destroyed 05:59. Repo PUBLIC. **No more changes to `submission/` unless something is broken.**
 - **SHIPPED v11 (05:46, tag `shipped-v11`, commit ccb86e7): `t2r7b_0447` (teammate 2, round 7), sha 8ab22c0c.** Exam 2 (untouched, 20 seeded seeds, used once) vs v8:
   **+3.8 ± 2.1, unseen-real +2.7 ± 1.0, exit_points 188 vs 184, T2-T4 exits 60 vs 59, T4 1 vs 0 (first T4 exit)**; T1 33 vs 29, T2 26 vs 22, T3 33 vs 37 (`ex2_*.csv`).
   `core_r7best` failed the exam (162 vs 184). Rollback: `shipped-v10` / `final-submission` (v8). Great work t2, and t3 for the pooled call.

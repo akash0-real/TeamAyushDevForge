@@ -13,7 +13,7 @@
 - **An infinite procedural map generator** (`maps/gen_maps.py`) for tiers 1–4, every map load a brand-new level, with
   a **solvability proof** for key/lock levels in its self-test.
 - **A "tutor" training loop:** we read the training logs, diagnose the failing skill, adjust rewards or curriculum,
-  and resume from the same weights (six rounds, §4). Highlights:
+  and resume from the same weights (seven rounds, §4). Highlights:
   - an adaptive **reverse curriculum** that starts episodes near the exit or a key on real maps and moves the start back
     after each success;
   - **geodesic progress shaping** toward the next key, then the exit, which pays exactly zero for loops (training only).
@@ -95,6 +95,7 @@ There is no per-step penalty, so the agent can't learn that dying early pays.
 4. Replays showed slow, damaged exits: exit bonus for health and time left, plus a stronger damage penalty.
 5. Real maps had 0 exits: a reverse curriculum (start near an exit or a key) and an early-death penalty.
 6. Geodesic progress shaping toward the next key, then the exit; loops (teleporters included) sum to 0.
+7. Tier 4 at 0% exits: start near the exit/key on generated tier-3/4 maps too, with a tier-4-heavy mix.
 
 ## 5. Procedural map factory (`maps/gen_maps.py`)
 
@@ -117,43 +118,39 @@ pickups.
 ## 6. Results (holdout; proxy score from `training/eval_zeroshot.py`, higher is better)
 
 <!-- RESULTS:START -->
-**Final submission: v8** (`shipped-v10`): weights `t2h_0037`, turn/strafe temperature 0.5. Seeded eval, 20 seeds; exits / attempts.
+**Final submission: v11** (`shipped-v11`, weights `t2r7b_0447`, round 7). Seeded, 20 seeds per map; exits (v8 in brackets).
 
 | Test set | T1 | T2 | T3 | T4 | Unseen big real maps | Mean |
 |---|---|---|---|---|---|---:|
-| Final exam: 16 untouched maps | 40/40 | 31/40 | 36/40 | 0/40 | 0/160 | 48.9 |
-| Holdout: 17 maps | 40/40 | 34/40 | 34/40 | 0/40 | 0/160 | 45.2 |
+| Final exam 2: 16 untouched maps | 33/40 (29) | 26/40 (22) | 33/40 (37) | **1/40** (0) | 0/160 (0) | 42.2 (38.4) |
+| Exam 1: 16 maps | 40/40 (40) | 34/40 (31) | 36/40 (36) | 0/40 (0) | 0/160 (0) | 53.8 (48.9) |
+| Holdout: 17 maps | 40/40 (40) | 35/40 (34) | 34/40 (34) | 0/40 (0) | 0/160 (0) | 48.4 (45.2) |
 
-- **Holdout mean over time:** random −13.2 → first EgoMap model 31.2 → v3 40.5 → v8 45.2.
+- **v11 vs v8, paired by seed:** exam 2 +3.8 ± 2.1, exam 1 +4.9 ± 1.5, holdout +3.2 ± 1.8; unseen real maps +2.7 ± 1.0
+  and +5.9 ± 2.3 on the two exams.
+- **Holdout mean over time:** random −13.2 → first EgoMap model 31.2 → v3 40.5 → v8 45.2 → v11 48.4.
 <!-- RESULTS:END -->
 
 **Footprint** (official `validate.py`, PASSED):
 
 | Measure | Value |
 |---|---|
-| Step latency | p50 5.6 ms (v8, clean clone); MAP32 agent-only p50 5.1 ms on 1 core |
-| Official Docker image (`validate.py --docker`) | PASSED, 0 warnings (v8, Linux) |
-| First step | 23 ms (warm-up in `__init__`) |
+| Step latency | p50 6.2 ms (v11, official Docker image); MAP32 agent-only p50 5.1 ms on 1 core |
+| Official Docker image (`validate.py --docker`) | PASSED, 0 warnings (v11, Linux), 788 MB RAM |
 | Compute used on the test map | 0.6 s of the 21 s per-map budget |
-| RAM, Linux pinned to 1 CPU | 355 MB of 8,192 MB (random weights) |
 | Repo size | 3.4 MB (weights 3.05 MB via Git LFS) |
 
 ## 7. Honest limitations and next steps
 
 **Limitations:**
 
-- Tier 4 (two locks) is still at 0% exits: the agent usually dies about halfway through, after finding keys.
-- On big real levels it has never seen (Freedoom 2 MAP25–32, Freedoom 1), it hasn't reached an exit: 0 of 320 episodes.
+- Tier 4 (two locks): 1 exit in 40 on the final exam; the agent usually dies halfway, after finding keys.
+- On big real levels it has never seen (Freedoom 2 MAP25–32, Freedoom 1), it hasn't reached an exit: 0 of 480 episodes.
   It explores and fights there for partial points.
-- Selection bias: our 17-map holdout over-rated one candidate (v9), so the final pick used an untouched 16-map set.
+- Selection bias: the holdout over-rated v9, so final picks use untouched exam sets.
 - Position dead reckoning drifts 1–2 cells over long episodes. Heading stays exact.
 - One night of training: about 12M steps behind the shipped weights (RTX 3050 laptop), plus experiment runs.
 
-**With more time:**
-
-- Many more training steps.
-- Prioritized Level Replay instead of our hand-set map mix.
-- RND curiosity.
-- Correcting position drift.
-
-PLR and RND are planned but **not implemented**.
+**With more time:** many more training steps; a tiny zero-initialized camera branch (`rgb`) to learn to spot exit
+switches; Prioritized Level Replay instead of the hand-set map mix; RND curiosity; correcting position drift.
+PLR, RND and the camera branch are planned but **not implemented**.
