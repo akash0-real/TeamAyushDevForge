@@ -1070,3 +1070,9 @@ v11 on `gen_t4_1` and `gen_t4_2`, seeds 0–4 (n = 10 each), `--head-temps` with
 
 **Keep 0.5.** The T4 deaths come from combat itself, so round 8 (`COMBAT_W`) plus pistol tap-fire (#1) are the right
 levers.
+
+### 06:26: v11 robustness soak (CPU, seeded): PASS, 0 problems in 38 episodes
+`training/results/t3_checks/soak.py` covers all 13 `tests/fixtures` WADs, the giant MAP11/12/15/23 and Freedoom 1
+E2M2/E3M3, at 2 seeds each and 4,200 tics:
+- **0 exceptions, 0 safety-net triggers, 0 invalid actions.**
+- Worst single step: 93.8 ms (one-off; the 5 s per-act limit is far away). Typical p99 is 12–19 ms.
