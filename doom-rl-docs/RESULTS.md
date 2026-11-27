@@ -1,6 +1,9 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 07:24 (`ACK 07:17 / 07:22` — Round-9 `t2r9.pt` LIVE on RTX 3050 CUDA + ready for `07:55` push):**
+  - Started Havish's exact Round-9 command (`COMBAT_W=2`, default balanced mix, `lr 5e-5`, `--num-envs 24 --seed 105 --save-path training/checkpoints/t2r9.pt`) resumed from `shipped-v11` (`8ab22c0c...`).
+  - Will snapshot + run deterministic 5-seed CUDA holdout check vs `v11` at `07:52` and push `t2r9.pt` to `origin/candidates` **at `07:55` sharp**, then run final Docker validation at `~08:20` before the `08:30` deadline.
 - **UPDATE 07:17 (FINAL `[core] FINAL` (`9045f05` / `f4e4196`) VERIFIED — FRESH CLONE DOCKER `PASSED` + `sha256 8ab22c0c` + `v11` T1–T4 Demo Pushed — WE ARE DONE!):**
   - **Fresh anonymous HTTPS clone `validate.py --docker --image devforge-doom --no-gpu` on `main` (`f4e4196`):** **`PASSED` (0 warnings)** — `6.6 MB / 1.0 GB` repo, `init 6.0s` (`cpu`, 1 CPU pin), `two_rooms` exit in **`58` steps** (`0.4s / 21.0s` budget), `first 16 ms`, **`p50 6.0 ms`**, `p99 6.3 ms`, **`788 MB` RAM**.
   - **Linux 1-CPU CUDA `validate.py --device cuda` on `f4e4196`:** **`PASSED` (0 warnings)** — `172` steps (`1.7s / 21.0s`), `first 110 ms`, `p50 9.1 ms`, `p99 10.1 ms`, `1663 MB` RAM, **`130 MB` VRAM**.
