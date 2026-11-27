@@ -467,3 +467,10 @@ exam 3 shows a clear gain.
 
 Overall mean 33.0. Exam 3 is much harder than the holdout (T3 2/10 here vs 7–9/10). A candidate ships only if
 `REAL=freedoom1 ship_rule.py` passes **and** no tier's exits drop.
+
+### 16. Exam 3: `t2r9_0740` vs v11. FAIL. v11 stays for now.
+- Exits T1–T4: 9/6/1/0 vs v11 10/5/2/0.
+- Deaths T2/T3/T4: 2/7/8 vs 4/8/9. Survival is improving.
+- Mean 29.9 vs 33.0; ship rule FAIL; T1 and T3 exits dropped.
+
+Next: the 07:50 and 08:00 snapshots.
