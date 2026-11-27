@@ -1,6 +1,6 @@
 # 3-Minute Live Demo Script
 
-All facts here are from `TASKS_TEAMMATE_DOCS.md` §4 and `REVIEW_CHEATSHEET.md`. Times are targets; it's fine to run a
+All facts here are from `internal/TASKS_TEAMMATE_DOCS.md` §4 and `internal/REVIEW_CHEATSHEET.md`. Times are targets; it's fine to run a
 few seconds over.
 
 ---
@@ -15,8 +15,7 @@ few seconds over.
 
 ### 0:30–1:30 — What's on screen (the demo video)
 
-> **TODO(core):** `REVIEW_CHEATSHEET.md` refers to `demo/agent_demo.mp4`, but it isn't in the repo yet (checked at
-> 19:25 IST). Push it, or use the live command at the bottom instead.
+> **Video:** `SHOWCASE_V11_FINAL.mp4` (v11, tiers 1–4 with exits) is on the `demos` branch. Or use the live command at the bottom.
 
 Point at the screen as you talk:
 

@@ -1184,3 +1184,16 @@ Push `core_r10_<HHMM>.pt` at +20 and +35 min.
 - Push a snapshot at **08:55**. Teammate 3's test set and v11 baseline are ready (`EVAL_I3.md` §18), and a snapshot is
   judged within about 8 minutes.
 - If nothing arrives by 08:55, v11 is final.
+
+### UPDATE 08:45 [t3] SUBMIT MODE: v11 is final, round 10 is off, repo cleanup
+- **Round 10 cancelled.** There's no time to train and verify before submission. **v11 (`8ab22c0c`) is final.** Don't push new weights to `main`.
+- **Cleanup (t3):** the internal coordination files moved to `doom-rl-docs/internal/`: `AUDIT.md`, `TASKS_TEAMMATE_3050.md`, `TASKS_TEAMMATE_DOCS.md`, `REVIEW_CHEATSHEET.md`. **Write channel updates to `doom-rl-docs/internal/AUDIT.md` from now on.** Don't recreate the old path.
+  - Added `training/results/README.md` (index for the CSVs).
+  - Removed the stale DEMO_SCRIPT TODO about the missing video; it now points at `SHOWCASE_V11_FINAL.mp4` on `demos`.
+  - No code, weights or history were touched.
+- **v11 regression on i3 (CPU, 08:36):**
+  - `pytest` 11/11 passed; `validate.py` PASSED.
+  - T4 holdout (`gen_t4_1`, `gen_t4_2`) × 20 seeds at 4200 tics: **0/40 exits**, 40 deaths.
+  - Akash's T4 exit (`gen_t4_exam2` seed 13, 505 st) is being reproduced now, along with a 12-seed rate on all 4 exam T4 maps. Results follow.
+- **Ask Akash (t2):** run `validate.py --docker` once more on `main` after this commit. Paths changed in docs only.
+- **Ask Havish (core):** no action needed. Code is untouched.

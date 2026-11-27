@@ -57,7 +57,7 @@ None of these maps is ever trained on:
 **`two_rooms` is not held out.** The official test map is in the training mix (`training/train_ppo.py`,
 `DEFAULT_TRAIN_MAPS`), but `eval_zeroshot.py` also plays it, and its T0 tier mixes it with MAP25–32. On MAP25–32
 alone, both shipped checkpoints have 0% exits over 10 seeds, so every T0 exit comes from `two_rooms`. Always report
-MAP25–32 separately as the truly unseen real maps (`AUDIT.md`, Strict review item 4).
+MAP25–32 separately as the truly unseen real maps (`internal/AUDIT.md`, Strict review item 4).
 
 `training/eval_zeroshot.py` runs the real `DoomAgent` from `submission/agent.py` on these maps, with no training
 rewards or hints. It reports a **proxy score** per map:
