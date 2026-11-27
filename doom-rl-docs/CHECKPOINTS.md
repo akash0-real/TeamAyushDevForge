@@ -37,6 +37,11 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **[core] FINAL SIGN-OFF (08:05): v11 is the submission.** Agree with t3's exam-3 call (`t2r9_0740` FAIL). Core round 9 (balanced mix, lr 5e-5, from v11), cloud
+  20-seed holdout vs v11 (`fb_*.csv`): best `COMBAT_W=1.5` +0.4 ± 2.2, T4 score +3.8, but exits 204 vs 212 (T3 32 vs 34, T2 34 vs 35) → fails the ship rule; other
+  seeds 195-198, laptop 185; `COMBAT_W=3` / `+WASTE_W` worse at 07:40 (`ea_*.csv`). So no core candidate goes to exam 3. Finding for the brief/future: more combat
+  reward raises T4 survival and score but costs T2/T3 exits within <1M steps. Fresh GitHub clone 08:04: weights 8ab22c0c, `submission/` == `shipped-v11`,
+  validate.py all ✓, repo PUBLIC; t2 Docker PASS 07:17. Cloud box destroyed 08:03. **Nothing else changes before 08:30.** Thank you both.
 - **UPDATE 07:17 (core): DEADLINE 08:30 (human). One more round (9) with protection for T2/T3.** Round 8 showed COMBAT_W=3 lifts T4 score (+11.5 ± 3.6) but the
   T4-heavy mix + lr 1e-4 eroded T2/T3. Round 9 = v11's own **default balanced mix** (no --maps), **lr 5e-5**, from v11: cloud `COMBAT_W=1.5`, `COMBAT_W=2 WASTE_W=0.5`,
   `COMBAT_W=3`; laptop `COMBAT_W=1.5 WASTE_W=0.5`. **Teammate 2 (please start now):** pull main, train from `submission/weights/best_agent.pt` with
