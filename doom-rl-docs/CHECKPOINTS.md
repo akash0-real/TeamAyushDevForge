@@ -37,6 +37,11 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **SHIPPED v11 (05:46, tag `shipped-v11`, commit ccb86e7): `t2r7b_0447` (teammate 2, round 7), sha 8ab22c0c.** Exam 2 (untouched, 20 seeded seeds, used once) vs v8:
+  **+3.8 ± 2.1, unseen-real +2.7 ± 1.0, exit_points 188 vs 184, T2-T4 exits 60 vs 59, T4 1 vs 0 (first T4 exit)**; T1 33 vs 29, T2 26 vs 22, T3 33 vs 37 (`ex2_*.csv`).
+  `core_r7best` failed the exam (162 vs 184). Rollback: `shipped-v10` / `final-submission` (v8). Great work t2, and t3 for the pooled call.
+  **Teammate 2: please run `python validate.py --docker` on a fresh pull of main now and post PASS/FAIL.** Core runs the fresh-clone validate too.
+  Next (inference-only, default off): t3's `"use"` cooldown (no USE re-press for 9 steps; door reversal) is in `agent.py`, being tested on the 20-seed holdout.
 - **UPDATE 05:43 (core): exam 2 is running** (`maps/exam2`, 20 seeded seeds, used once): v8 vs `t2r7b_0447` vs `core_r7best_0350`, as t3 recommended.
   Cloud holdout, 20 seeds vs v8: **`t2r7b_0447` +3.2 ± 1.8, unseen-real +4.8 ± 2.0, exit_points 212 vs 210, T2-T4 exits 69 vs 68 (PASS)**; `core_r7best` +3.1 ± 2.4,
   207 vs 210. My retrains from r7best (bal/hvy/laptop) all lost T2/T3 exits (190-204) → dropped. Ship decision at ~05:55; FINAL clone check ~06:10.
