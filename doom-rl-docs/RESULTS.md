@@ -1,6 +1,10 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 05:55 (Repo PUBLIC verified + latest `7353c8a` Docker re-PASS + `--mask use` 5-seed CUDA check):**
+  - **Repo & LFS ready:** `https://github.com/akash0-real/TeamAyushDevForge` is now **PUBLIC (`HTTP 200`)**; `git lfs ls-files` → `submission/weights/best_agent.pt` (`3,051,854 B`, `8ab22c0c...`).
+  - **Re-validated `7353c8a` (`shipped-v11`):** Official Docker `PASSED (0 warnings)` (`55` steps, `first 16 ms`, `p50 6.2 ms`, `p99 6.9 ms`, `788 MB` RAM); Linux 1-CPU CUDA `PASSED (0 warnings)` (`82` steps, `p50 9.1 ms`, `130 MB` VRAM); `pytest tests/test_submission.py tests/test_validate.py`: `12/12` pass.
+  - **`--mask use` on `v11` (5 deterministic CUDA seeds, `cuda_v11_usemask_s04.csv` vs `t2r7b_0447_s04.csv`):** **`52.10` vs `51.57`** (`+0.53 ± 2.73`, `worse 3/5`, `T1 10/10`, **`T2 10/10 (113.42)` vs `9/10`**, **`T3 9/10 (131.49)` vs `10/10`**, `T4 0/10 (22.88 vs 23.20)`, `T2–T4 19 vs 19`, `exit_points 57 vs 58`, **`MAP25–32 +4.74 vs +3.42`**, `SHIP RULE: PASS`) — neutral overall on 5 CUDA seeds; leaving decision to Core's 20-seed holdout / `exam2`.
 - **UPDATE 05:50 (`shipped-v11` = `t2r7b_0447`, sha `8ab22c0c` PASSED BOTH official Docker + Linux 1-CPU CUDA `validate.py` — 0 warnings!):**
   - Pulled `74a1d49` (`shipped-v11`, `3.0 MB` LFS verified, `sha256 8ab22c0c...`) — huge win seeing `t2r7b_0447` beat `v8` on both untouched `maps/exam2` (`+3.8 ± 2.1`, `188 vs 184` exit_pts, first T4 exit!) and 20-seed holdout (`+3.2 ± 1.8`).
   - **Official Docker `validate.py --docker --image devforge-doom --no-gpu` on `shipped-v11`:** **PASSED (0 warnings)** — `5.7 MB` repo, `init 8.3s`, `two_rooms` exit in **`51` steps** (`0.3s / 21.0s`), **`first 7 ms`, `p50 6.2 ms`, `p99 6.9 ms`, `790 MB` RAM**.
