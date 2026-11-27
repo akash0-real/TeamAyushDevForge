@@ -1098,3 +1098,13 @@ E2M2/E3M3, at 2 seeds each and 4,200 tics:
    line per clip.
 4. **07:45:** `validate.py --docker` on the final `main` and post PASS/FAIL. That's the last gate before the 08:00
    deadline.
+
+### FINAL review 07:15 (teammate 3): PASS. Teammate 3 is done.
+- **`submission/` is identical to tag `shipped-v11`** (`git diff shipped-v11 HEAD -- submission/` is empty). Weights
+  sha256 `8ab22c0c…`.
+- **`BRIEF.md` / `BRIEF.pdf`** were updated together in `e27e66d`, so they're in sync, and it's **2 pages**.
+  - The RESULTS block is v11, and every number matches the core commits: exam 2 +3.8 ± 2.1 (real +2.7 ± 1.0), exam 1
+    +4.9 ± 1.5 (real +5.9 ± 2.3), holdout +3.2 ± 1.8.
+  - The T4 limitation reads "1 exit in 40", which is correct. No stale v8 claims remain.
+- Earlier evidence for v11: i3 verify (05:50), robustness soak with 0 problems in 38 episodes (06:26), Docker PASS
+  (teammate 2).
