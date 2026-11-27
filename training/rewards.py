@@ -12,6 +12,8 @@ import os
 import random
 import struct
 import sys
+
+COMBAT_W = float(os.environ.get("COMBAT_W", "1.0"))  # kill and damage-dealt weight; default = rounds 1-7
 from pathlib import Path
 
 import gymnasium as gym
@@ -296,7 +298,7 @@ class ShapedDoomEnv(gym.Env):
         # 4. Combat & survival
         new_kills = max(0, int(ps["kills"] - prev["kills"]))
         if new_kills > 0:
-            reward += 1.0 * new_kills
+            reward += COMBAT_W * new_kills  # round 8 (06:10): T4 deaths 75-85%, so COMBAT_W=3 pays fighting more
             self._stats["kills"] += float(new_kills)
 
         new_items = max(0, int(ps["items"] - prev["items"]))
@@ -306,7 +308,7 @@ class ShapedDoomEnv(gym.Env):
         # Damage dealt to enemies: dense aiming signal (imp = 60 hp -> +0.6 total)
         if not (terminated or truncated):  # engine state is gone after the episode ends
             dealt = self._damage_dealt()
-            reward += 0.01 * max(0.0, dealt - self._prev_dmg_dealt)
+            reward += 0.01 * COMBAT_W * max(0.0, dealt - self._prev_dmg_dealt)
             self._prev_dmg_dealt = dealt
 
         # Health pickups while hurt (the scorer's exit bonus counts remaining health)
