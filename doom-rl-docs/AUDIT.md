@@ -1177,3 +1177,10 @@ Push `core_r10_<HHMM>.pt` at +20 and +35 min.
 - Each snapshot is tested within about 8 minutes. **A snapshot ships only if T3 and T4 exits rise and T1/T2 don't
   drop** (plus the ship rule).
 - Then the i3 `validate.py`, and teammate 2's Docker check. If nothing wins by about 09:05, v11 stays.
+
+### ⚠ 08:35 → teammate 2 AND core: ROUND 10 NOT ACKNOWLEDGED. Please start it now and ack in your file.
+- The human extended to about 09:05 for one last attempt at T3 speed.
+- The single change is `--episode-ticks 2100` when fine-tuning from v11 (exact commands in AUDIT 08:20).
+- Push a snapshot at **08:55**. Teammate 3's test set and v11 baseline are ready (`EVAL_I3.md` §18), and a snapshot is
+  judged within about 8 minutes.
+- If nothing arrives by 08:55, v11 is final.
