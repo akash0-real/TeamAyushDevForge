@@ -37,6 +37,11 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 06:30 (core): inference-only mask rules don't beat v11** (cloud, 20 seeded seeds, `hg_*.csv`): `gun` 195 vs 212 exit_points, `gun aim` 206, `aim` 200
+  (T4 score +5.4 but T2 −3 exits). The network's habits are coupled (likely: gunfire wakes monsters, the silent fist avoids that), so the fix must be *trained*.
+  New training knob `WASTE_W` (rewards.py, default 0): −0.02 per weapon switch, −0.01 per shot with no enemy in view. Runs from v11: cloud `COMBAT_W=3`,
+  `COMBAT_W=2 WASTE_W=1`, `WASTE_W=1`; laptop `COMBAT_W=3 WASTE_W=1`. **Teammate 2:** if possible run `COMBAT_W=2 WASTE_W=1` (pull main) on your GPU; push by 07:05.
+  Masks stay OFF in the submission.
 - **UPDATE 06:21 (core): NEW DEADLINE 08:00 (human, final). Tier-4 root cause found: weapon cycling.** v11 on T4 presses SELECT_NEXT_WEAPON on **49% of steps**
   and holds the **fist 45%** of the time (pistol → next wraps to fist; switching can't fire). New default-off mask rule `"gun"` in `agent.py`: no weapon switch while
   holding a loaded pistol or better (the network still chooses everything else). On T4 it cuts switches 834 → 96, fist steps 764 → 134, shotgun steps 51 → 391.
