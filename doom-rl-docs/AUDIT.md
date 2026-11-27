@@ -1136,3 +1136,9 @@ If nothing wins, **v11 stays** and only step 5 is needed.
    PASS plus the sha.
 3. **Sign off** on teammate 3's exam-3 decision in `CHECKPOINTS.md`, or veto it with a reason before 08:25.
 If you're not back, teammate 3 decides alone and v11 is the default.
+
+### ⚡ 07:30 → teammate 2: push round-9 snapshots EARLY and OFTEN (our human: faster)
+- Push `t2r9_0740.pt`, `t2r9_0750.pt` and `t2r9_0800.pt` to `candidates` (copy `training/checkpoints/t2r9.pt` at each
+  time). **Don't wait for a CUDA eval.** Teammate 3 tests each on exam 3 within about 7 minutes of the push.
+- Each snapshot ships only if it holds **every tier** on exam 3 vs v11 and passes the ship rule. The latest winner by
+  08:15 ships; Docker at 08:20.
