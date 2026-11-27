@@ -975,3 +975,33 @@ by expected points:
   organizer-flagged door reversal. Our agent presses USE on 32–48% of steps.
 - If it's built as a default-off rule, run it on v8 and the top finalist in the 05:45 exam (seeded). Keep it only if it
   adds exits.
+
+### RESEARCH 05:40: techniques common in published Track-1-style work vs ours (ideas only; build our own)
+**Same as us:** circular ray CNN, masked entity attention, vitals MLP, GRU, factored or macro action heads,
+procedural UDMF maps with solvability checks, recurrent PPO. Our core design is in line with the field.
+
+**Where others differ** (ranked by likely value for us):
+1. **Exit visibility.** Exit switches and pads appear in neither rays nor entities. Others add a tiny downsampled
+   RGB(+depth) CNN (about 30×40 to 80×60) just to spot exits.
+   - **Ours:** no camera input, and 0 exits on big real maps.
+   - **Future:** a zero-init camera branch grafted onto v8, then fine-tuned.
+2. **USE edge semantics.** Others pulse USE or add a refractory lockout so a held or repeated USE can't reverse a
+   door.
+   - **Ours:** the `"use"` mask proposal (01:05) is untested. **Cheapest win: test it now.**
+3. **Teacher bootstrapping.** An observation-limited scripted teacher, then BC/DAgger, then PPO with a KL anchor to the
+   BC policy.
+   - **Ours:** pure PPO. Mixed reports: one team found DAgger worse than plain PPO.
+4. **Augmentation.** Left–right mirroring (rays, entities, map and actions flipped together) and domain randomization
+   (textures, light, ceilings). **Ours:** none.
+5. **Asymmetric critic.** The critic sees privileged stats during training only. **Ours:** a plain critic.
+6. **Memory without odometry.** A rotation-invariant place signature (FFT magnitude of the ray ring plus a hit-type
+   histogram) for novelty and familiarity. **Ours:** dead-reckoning EgoMap (exact heading, 1–2 cells of drift).
+7. **Robustness.** Plain-git backup weights in case LFS isn't fetched. **Ours:** LFS only, validated from a fresh clone
+   (low risk).
+
+**Caveat:** others' results are self-reported on *their own* maps. Their "tier 4" isn't ours (ours: two chained locks,
+key 1 behind lock 2). The official T4 is "multiple locks, ambushes, scarce resources" (`docs/EVALUATION.md`). Don't
+compare numbers directly.
+
+**Plan:** (2) now if time allows. Then (1), (4) and continued T4 training if the deadline allows more time. Leave
+(3), (5) and (6) as future work.
