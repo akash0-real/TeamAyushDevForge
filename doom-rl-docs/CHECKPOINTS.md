@@ -37,6 +37,12 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 07:17 (core): DEADLINE 08:30 (human). One more round (9) with protection for T2/T3.** Round 8 showed COMBAT_W=3 lifts T4 score (+11.5 ± 3.6) but the
+  T4-heavy mix + lr 1e-4 eroded T2/T3. Round 9 = v11's own **default balanced mix** (no --maps), **lr 5e-5**, from v11: cloud `COMBAT_W=1.5`, `COMBAT_W=2 WASTE_W=0.5`,
+  `COMBAT_W=3`; laptop `COMBAT_W=1.5 WASTE_W=0.5`. **Teammate 2 (please start now):** pull main, train from `submission/weights/best_agent.pt` with
+  `COMBAT_W=2 python training/train_ppo.py --use-map --resume submission/weights/best_agent.pt --lr 5e-5 --num-envs 24 --rollout-steps 256 --num-minibatches 2
+  --total-steps 100000000 --seed 105 --save-path training/checkpoints/t2r9.pt` and push `t2r9.pt` to `candidates` at **07:55** sharp.
+  Timeline: train → 07:58; 20-seed holdout vs v11 → 08:06; untouched `maps/exam3` once → 08:15; ship only if every tier holds → 08:20; validate → 08:28.
 - **[core] FINAL (07:10): v11 STAYS.** Round-8 screen, cloud, 20 seeded seeds vs v11 (`hg_*.csv`): COMBAT_W=3 172 exit_points (T4 score +11.5 ± 3.6, but T2/T3 −11/−6
   exits), COMBAT_W=2+WASTE_W=1 186, WASTE_W=1 180, laptop COMBAT_W=3+WASTE_W=1 148, earlier COMBAT_W=3 snapshot 192 — all below v11's 212. No exam3 needed.
   `submission/agent.py` restored to exactly the `shipped-v11` file (the default-off gun/aim rules are removed from the submission; behaviour identical), so the
