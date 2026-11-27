@@ -446,3 +446,12 @@ Teammate 2's CUDA run passed (45.58 vs 42.65). **The two machines disagree, so i
 
 **Recommendation for exam 2 (05:45):** finalists `t2r7b_0447` (first) and `core_r7best_0350` (pooled +4.4 ± 2.5) vs
 v8. Ship only whichever beats v8 on the untouched set.
+
+### 14. `gun` mask on v11 (i3, seeded, 5 seeds): ship rule PASS, but neutral; T4 deaths not reduced
+`i3_v11gun.csv` vs `i3_r7b.csv` (v11 weights, same settings):
+- mean +1.3 ± 3.4; weighted exits 50 vs 49 (T2 8 vs 9, T3 8 vs 7);
+- **T4 deaths 9/10 vs 8/10, T4 score −9.3 ± 6.6, T4 kills 3.5 vs 3.0**;
+- MAP25–32 +3.4 ± 2.6.
+
+**Verdict:** no measurable gain, and it **doesn't fix T4 deaths** on the i3. Keep it off unless core's 20-seed holdout or
+exam 3 shows a clear gain.
