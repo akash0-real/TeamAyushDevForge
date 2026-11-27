@@ -15,6 +15,7 @@ from preprocess import NUM_ACTIONS, EgoMap, factored_to_multibinary, preprocess_
 
 ENEMY_TYPES = (1, 2, 3)  # doom_env.spaces.ENTITY_TYPES: enemy_melee, enemy_hitscan, enemy_projectile
 FIST_REACH = 100.0 / 1024.0  # entity features[0] is distance / 1024; melee range 64 + monster radius
+USE_COOLDOWN = 9  # steps (x4 tics, ~1 s): roughly one door-opening cycle
 
 SUBMISSION_DIR = Path(__file__).resolve().parent
 WEIGHTS_PATH = SUBMISSION_DIR / "weights" / "best_agent.pt"
@@ -59,6 +60,7 @@ class DoomAgent:
         self.h = self.model.initial_state(batch_size=1, device=self.device)
         self.prev_action = np.zeros(NUM_ACTIONS, dtype=np.int8)
         self.first_step = True
+        self.use_cooldown = 0
         if self.ego_map is not None:
             self.ego_map.reset()
 
@@ -74,7 +76,7 @@ class DoomAgent:
             return self.prev_action
 
     @staticmethod
-    def _mask(observation: dict, logits: list, rules: frozenset) -> list:
+    def _mask(observation: dict, logits: list, rules: frozenset, use_cooldown: int = 0) -> list:
         """Remove two never-useful options, read from observation fields only; the network still picks every action.
         Heads: [move, strafe, turn, attack, use, weapon]; option 1 of attack/weapon = press."""
         vit = np.asarray(observation["vitals"], dtype=np.float32)
@@ -89,6 +91,9 @@ class DoomAgent:
         if "fist" in rules and slot <= 1 and not near.any():  # fist/chainsaw, nothing in reach: don't swing at air
             logits[3] = logits[3].clone()
             logits[3][..., 1] = float("-inf")
+        if "use" in rules and use_cooldown > 0:  # a re-press on a moving door reverses it (organizer notice; AUDIT 01:05)
+            logits[4] = logits[4].clone()
+            logits[4][..., 1] = float("-inf")
         return logits
 
     @torch.inference_mode()
@@ -105,8 +110,9 @@ class DoomAgent:
         logits[2] = logits[2] / self.turn_temperature  # heads: move, strafe, turn, attack, use, weapon
         logits = [lg / t for lg, t in zip(logits, self.head_temperature)]
         if self.action_mask:
-            logits = self._mask(observation, logits, self.action_mask)
+            logits = self._mask(observation, logits, self.action_mask, self.use_cooldown)
         factored, _, _ = self.model.sample_and_logprob(logits)
+        self.use_cooldown = USE_COOLDOWN if int(factored[0, 4]) == 1 else max(self.use_cooldown - 1, 0)
         action = factored_to_multibinary(factored.squeeze(0).cpu().numpy())
         self.prev_action = action
         return action
