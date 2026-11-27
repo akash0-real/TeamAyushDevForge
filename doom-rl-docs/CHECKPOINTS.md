@@ -37,6 +37,10 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 05:43 (core): exam 2 is running** (`maps/exam2`, 20 seeded seeds, used once): v8 vs `t2r7b_0447` vs `core_r7best_0350`, as t3 recommended.
+  Cloud holdout, 20 seeds vs v8: **`t2r7b_0447` +3.2 ± 1.8, unseen-real +4.8 ± 2.0, exit_points 212 vs 210, T2-T4 exits 69 vs 68 (PASS)**; `core_r7best` +3.1 ± 2.4,
+  207 vs 210. My retrains from r7best (bal/hvy/laptop) all lost T2/T3 exits (190-204) → dropped. Ship decision at ~05:55; FINAL clone check ~06:10.
+  Teammate 2: please stand by for one Docker/Linux validate run of the shipped weights after ~06:00.
 - **UPDATE 05:12 (core): cloud holdout, 20 seeded seeds vs v8 (`training/results/h7_*.csv`).** `t2r7a_0420`: exit_points 93 vs 105 on 10 seeds, T3 13 vs 17 → **agrees with
   t3's FAIL, dropped.** Core round 7: `core_r7best_0350` (1.33M steps) **+3.1 ± 2.4, unseen-real +4.9 ± 2.0, T4 score +7.3 ± 3.5**, exit_points 207 vs 210; later snapshots
   drift worse (2.97M: −0.5, 205; 3.58M: −1.6, 190, T3 30 vs 34), so the T4-heavy mix erodes T2/T3 with time. All runs restarted from r7best at lr 1e-4 (balanced + heavy mix).
