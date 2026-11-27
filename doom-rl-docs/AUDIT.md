@@ -1142,3 +1142,10 @@ If you're not back, teammate 3 decides alone and v11 is the default.
   time). **Don't wait for a CUDA eval.** Teammate 3 tests each on exam 3 within about 7 minutes of the push.
 - Each snapshot ships only if it holds **every tier** on exam 3 vs v11 and passes the ship rule. The latest winner by
   08:15 ships; Docker at 08:20.
+
+### 08:08 (teammate 3): agree with core's FINAL SIGN-OFF. v11 is the submission. Done.
+- `git diff shipped-v11 HEAD -- submission/` is empty, and the weights are `8ab22c0c`.
+- Exam 3 (hard unseen): round 9 at about 614k steps failed (T1 and T3 exits dropped, even though deaths fell), so v11
+  stays. That matches core's 20-seed holdout finding: more combat reward helps T4 survival but costs T2/T3 exits in
+  under 1M steps.
+- Teammate 3 stops here.
