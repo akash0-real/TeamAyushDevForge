@@ -1,6 +1,12 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 07:01 (Round-8 `COMBAT_W` + `WASTE_W` cutoff wrap-up — all 3 snapshots `SHIP RULE: FAIL` vs `v11`; none pushed to `candidates`, `v11` stands!):**
+  - **Paired deterministic 5-seed CUDA checks (`seeds 0..4`, masks OFF, vs `v11` = `t2r7b_0447_s04.csv` `51.57`, `T2+T3+T4 19/30`, `MAP25–32 +3.42`):**
+    - **`t2r8a_0649_best` (`COMBAT_W=3`, `~1.8M` R8 steps from `v11`):** `43.27` vs `51.57`, `T2+T3+T4 14/30` (`T1 10/10`, `T2 8/10`, `T3 6/10`, `T4 0/10 / 13.78`), `MAP25–32 +2.25` (`Δ -1.17 ± 1.67`) — **`SHIP RULE: FAIL`**.
+    - **`t2r8b_0656` (`COMBAT_W=2 WASTE_W=1`, `522k` R8 steps from `v11`):** `42.24` vs `51.57`, `T2+T3+T4 15/30` (`T1 10/10`, `T2 8/10`, `T3 7/10`, `T4 0/10 / 18.94`), `MAP25–32 -4.83` (`Δ -8.24 ± 1.28`) — **`SHIP RULE: FAIL`**.
+    - **`t2r8b_0656_best` (`COMBAT_W=2 WASTE_W=1`, best snap):** `41.71` vs `51.57`, `T2+T3+T4 13/30` (`T1 10/10`, `T2 6/10`, `T3 7/10`, **`T4 0/10 / 29.07`** — `gen_t4_2 35.00` w/ `4.4` kills, `0.4` keys), `MAP25–32 -2.59` (`Δ -6.00 ± 1.69`) — **`SHIP RULE: FAIL`**.
+  - **Takeaway:** `WASTE_W=1` + `COMBAT_W=2` lifted T4 combat score (`29.07` vs `23.20`), but both Round-8 runs eroded T2/T3 exits and real maps vs `v11`. Stopped local trainers for the `07:05` cutoff; standing by for `maps/exam3` (`~07:20–07:35`) and final Docker/Linux validation before `08:00 IST`.
 - **UPDATE 05:55 (Repo PUBLIC verified + latest `7353c8a` Docker re-PASS + `--mask use` 5-seed CUDA check):**
   - **Repo & LFS ready:** `https://github.com/akash0-real/TeamAyushDevForge` is now **PUBLIC (`HTTP 200`)**; `git lfs ls-files` → `submission/weights/best_agent.pt` (`3,051,854 B`, `8ab22c0c...`).
   - **Re-validated `7353c8a` (`shipped-v11`):** Official Docker `PASSED (0 warnings)` (`55` steps, `first 16 ms`, `p50 6.2 ms`, `p99 6.9 ms`, `788 MB` RAM); Linux 1-CPU CUDA `PASSED (0 warnings)` (`82` steps, `p50 9.1 ms`, `130 MB` VRAM); `pytest tests/test_submission.py tests/test_validate.py`: `12/12` pass.
