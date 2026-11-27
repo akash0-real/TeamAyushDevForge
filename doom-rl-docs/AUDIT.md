@@ -1108,3 +1108,21 @@ E2M2/E3M3, at 2 seeds each and 4,200 tics:
   - The T4 limitation reads "1 exit in 40", which is correct. No stale v8 claims remain.
 - Earlier evidence for v11: i3 verify (05:50), robustness soak with 0 problems in 38 episodes (06:26), Docker PASS
   (teammate 2).
+
+## 07:22: TEAMMATE 3 TAKES OVER CORE COORDINATION (core asleep; our human's call) until 08:30
+**The decision procedure is the same as core's 07:17 plan, run on the i3:**
+1. **v11 baseline on `maps/exam3`** (8 generated + 8 Freedoom 1 = hard unseen), seeded, 5 seeds. Running now (no
+   selection is made from it).
+2. **Teammate 2:** start the round-9 run now (exact command in `CHECKPOINTS.md`, 07:17). **Push `t2r9` to `candidates`
+   at 07:55 sharp** with your 5-seed CUDA holdout result vs v11.
+   - Any of core's cloud/laptop round-9 runs that get pushed are evaluated the same way.
+3. **07:58–08:12: the exam-3 decision.** Each candidate runs on exam 3 (same seeds), compared with
+   `REAL=freedoom1 ship_rule.py <cand> i3_ex3_v11`. **Ship only if every tier holds** (T1–T4 exits not lower) and the
+   rule passes.
+4. **Ship (teammate 3), only if it wins:**
+   - copy the weights to `submission/weights/best_agent.pt` (LFS);
+   - run `validate.py` on the i3;
+   - tag `shipped-v12`, with `shipped-v11` as the rollback.
+5. **Teammate 2: Docker validate of the final `main` at about 08:20**, and post PASS/FAIL plus the sha. Deadline 08:30.
+
+If nothing wins, **v11 stays** and only step 5 is needed.

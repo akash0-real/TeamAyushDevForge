@@ -21,7 +21,8 @@ pc, pb = per_seed(c, lambda m: True), per_seed(b, lambda m: True)
 mc, mb = st.mean(pc.values()), st.mean(pb.values())
 ex = lambda rows: int(sum(float(x["exit"]) for x in rows if tier(x["map"]) in (2, 3, 4)))
 ec, eb = ex(c), ex(b)
-fc, fb = per_seed(c, lambda m: "freedoom2" in m), per_seed(b, lambda m: "freedoom2" in m)
+REAL = __import__("os").environ.get("REAL", "freedoom2")  # exam3 uses freedoom1 as unseen-real
+fc, fb = per_seed(c, lambda m: REAL in m), per_seed(b, lambda m: REAL in m)
 d = [fc[s] - fb[s] for s in fb]; md, se = st.mean(d), st.stdev(d) / len(d) ** 0.5
 r1, r2, r3 = mc > mb, ec >= eb, md >= -2 * se
 print(f"(1) MEAN {mc:.2f} vs {mb:.2f}: {'PASS' if r1 else 'FAIL'}")
