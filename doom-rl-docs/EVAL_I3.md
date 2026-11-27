@@ -494,3 +494,13 @@ seeds 0–1 (`i3_hard_gen_s0/1.csv`):
 **Finding (CONFIRMED): T3 at 2,100 tics is time-bound, not skill-bound.** A key is found in 70% of runs and only 2/10
 die, so about 7/10 *time out* during backtracking. That's the slow-backtracking limit already noted in the brief.
 If the hidden T3 maps use the 2,100-tic example cap, it's the biggest remaining risk.
+
+### 18. Final-push decision set (20 new maps, seeds 6e9 + 100·t + k, local only; 2,100 tics; seeds 0–2)
+| Model | Exits T1/T2/T3/T4 | Deaths T1/T2/T3/T4 | Mean |
+|---|---|---|---:|
+| v11 (`i3_fin_v11.csv`) | 15/11/9/0 (of 15) | 0/3/5/14 | 75.4 |
+| `t2r9_0800`, 2.4M R9 steps (`i3_fin_t2r9_0800.csv`) | 15/**12**/9/0 | 0/1/4/14 | 81.2 (+5.8 ± 5.9) |
+
+- `t2r9_0800`: better survival, +1 T2 exit, but **T3 and T4 exits unchanged**, so it fails the push criterion (T3 + T4 up,
+  T1/T2 held). v11 stays.
+- Round-10 snapshots (2,100-tic training) are next.
