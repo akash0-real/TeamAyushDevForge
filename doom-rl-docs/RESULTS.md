@@ -1,6 +1,10 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 05:34 (`05:30` cutoff wrap-up — `t2r7b_0447_score51_57.pt` stays #1 `t2` finalist + training stopped for `exam2`!):**
+  - **`t2r7b_0526` (`t2r7b_0526_s04.csv`, `lr 8e-5` +215k extra steps):** `48.51` vs `v8 42.65` (`+5.86 ± 3.84`, `T1 10/10`, `T2 9/10`, `T3 9/10`, `T4 0/10 (19.92)`, `exit_points 55 vs 45`, `MAP25–32 +0.62`, `SHIP RULE: PASS`) — good consistency, but trails **`t2r7b_0447_score51_57.pt`** (`51.57`, `58` exit_pts, `MAP25–32 +3.42`, pooled `+4.9 ± 2.1 sig` per `49ee73a`). Keeping `t2r7b_0447_score51_57.pt` as our single `exam2` finalist!
+  - **`t2r7c_0526` (`t2r7c_0526_s04.csv`, `core_r7best_0350` + 338k steps @ `lr 1e-4`):** `45.63` (`+2.98 ± 4.11`, `exit_points 53 vs 45`), **`SHIP RULE: FAIL`** on `MAP25–32` (`-4.40`, `-4.51 ± 1.39`), again confirming further R7 training drifts real maps while `core_r7best_0350` (+`t2r7b_0447`) stay strongest.
+  - **All local trainers stopped** (`9.5 GiB` RAM free); standing by on 10-min sync for `maps/exam2` results (`~05:45–05:55`) and **`[core] FINAL` (`~06:15 IST`)** to run final **Task F** (Linux 1-CPU CUDA + official Docker `validate.py` + `FINAL` eval). Also ready to 5-seed CUDA test `"use"` cooldown mask if Core builds it before `05:45`.
 - **UPDATE 05:19 (`core_r7best_0350` CONFIRMED on RTX 3050 CUDA — `SHIP RULE: PASS`, `+5.91 ± 3.39`, `0/5` worse + `t2r7c` training from it!):**
   - **2nd-machine check (`core_r7best_0350.pt`, sha `868dd63d...`, 5 deterministic CUDA seeds `0..4`, `v8` defaults; `cuda_core_r7best_s04.csv` vs `cuda_v8_seeded_s04.csv`):**
     - **(1) Overall MEAN:** **`48.56` vs `42.65`** (**`Δ = +5.91 ± 3.39`**, `worse_seeds = 0/5`!) — **PASS**
