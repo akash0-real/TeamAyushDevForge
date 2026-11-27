@@ -474,3 +474,23 @@ Overall mean 33.0. Exam 3 is much harder than the holdout (T3 2/10 here vs 7–9
 - Mean 29.9 vs 33.0; ship rule FAIL; T1 and T3 exits dropped.
 
 Next: the 07:50 and 08:00 snapshots.
+
+### 17. Post-FINAL hard tests of v11 (read-only; the submission is unchanged)
+**A. 20 brand-new generated maps** (5 per tier, seeds 5e9 + 100·t + k, never seen by any model), **2,100-tic cap**,
+seeds 0–1 (`i3_hard_gen_s0/1.csv`):
+
+| Tier | Exits | Deaths | Keys/run | Kills/run | Mean |
+|---|---|---|---|---|---:|
+| T1 | 9/10 | 1 | — | 0.4 | 93.0 |
+| T2 | 7/10 | 3 | — | 1.0 | 84.0 |
+| T3 | **1/10** | 2 | **0.70** | 1.2 | 46.6 |
+| T4 | 0/10 | 8 | 0.10 | 2.1 | 17.3 |
+
+**B. 8 untouched Freedoom 1 maps** (E1M2 E1M5 E1M7 E2M5 E2M7 E3M2 E3M5 E4M2), 4,200 tics, 2 seeds
+(`i3_hard_f1.csv`): 0/16 exits, 14 deaths, **93 cells and 3.7 kills per run** (partial points).
+
+**Latency:** mean 6.4 ms/step, worst map average 8.9 ms (budget 40).
+
+**Finding (CONFIRMED): T3 at 2,100 tics is time-bound, not skill-bound.** A key is found in 70% of runs and only 2/10
+die, so about 7/10 *time out* during backtracking. That's the slow-backtracking limit already noted in the brief.
+If the hidden T3 maps use the 2,100-tic example cap, it's the biggest remaining risk.
