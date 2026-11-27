@@ -14,6 +14,7 @@ import struct
 import sys
 
 COMBAT_W = float(os.environ.get("COMBAT_W", "1.0"))  # kill and damage-dealt weight; default = rounds 1-7
+WASTE_W = float(os.environ.get("WASTE_W", "0.0"))  # round 8: penalty weight for weapon cycling / firing at nothing (0 = off)
 from pathlib import Path
 
 import gymnasium as gym
@@ -300,6 +301,15 @@ class ShapedDoomEnv(gym.Env):
         if new_kills > 0:
             reward += COMBAT_W * new_kills  # round 8 (06:10): T4 deaths 75-85%, so COMBAT_W=3 pays fighting more
             self._stats["kills"] += float(new_kills)
+
+        # round 8 (06:27 T4 audit: weapon switch on 49% of steps, fist held 45%, fires on 46% of steps with no enemy in view;
+        # gunfire wakes monsters). Judged on the observation after the step; training-only.
+        if WASTE_W > 0.0:
+            if mb_action[8]:
+                reward -= 0.02 * WASTE_W
+            seen = np.any((np.asarray(ent["mask"]) > 0) & np.isin(np.asarray(ent["entity_type"]), (1, 2, 3)))
+            if mb_action[6] and not seen:
+                reward -= 0.01 * WASTE_W
 
         new_items = max(0, int(ps["items"] - prev["items"]))
         if new_items > 0:

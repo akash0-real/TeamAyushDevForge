@@ -89,7 +89,8 @@ class DoomAgent:
         if ("weapon" in rules and slot >= 3 and ammo > 0) or ("gun" in rules and slot >= 2 and ammo > 0):
             logits[5] = logits[5].clone()
             logits[5][..., 1] = float("-inf")
-        if "fist" in rules and slot <= 1 and not near.any():  # fist/chainsaw, nothing in reach: don't swing at air
+        # "aim": no enemy in view, don't fire (gunfire wakes monsters and empties the pistol; T4 audit: fires on 46% of empty steps)
+        if ("fist" in rules and slot <= 1 and not near.any()) or ("aim" in rules and not enemy.any()):
             logits[3] = logits[3].clone()
             logits[3][..., 1] = float("-inf")
         if "use" in rules and use_cooldown > 0:  # a re-press on a moving door reverses it (organizer notice; AUDIT 01:05)
