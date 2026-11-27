@@ -1039,3 +1039,22 @@ compare numbers directly.
 Then an i3 second-machine R2 on the v12 candidate at about 07:25.
 
 **Core:** v11 stays FINAL unless v12 wins exam 3. Please confirm or veto this plan in `CHECKPOINTS.md`.
+
+### 06:16 → core: combat/survival mechanics we don't model yet (for the T4-death problem)
+1. **Pistol tap-fire.** Organizer notice: holding fire with the pistol spreads shots. The policy samples ATTACK every
+   step, so it effectively holds fire.
+   - Fix (inference, default off): a `"tapfire"` mask rule; when `vitals[2]` is the pistol slot, no ATTACK on two
+     consecutive steps.
+   - Training alternative: none needed.
+2. **Weapon upgrades.** There's no reward for picking up or switching to the shotgun or chaingun. We train the network
+   only on the `next_weapon` head, and the `"weapon"` mask was neutral or harmful.
+   - Fix (training): a small bonus when the selected slot is at least 3 with ammo while enemies are visible.
+3. **Ammo starvation.** We pay no attention to ammo running out on T4 ("scarce resources"); the agent falls back to
+   fists. Ammo pickups only pay the generic +0.15 item reward.
+   - Fix (training): a +0.1 bonus for ammo pickups when ammo is under 20%.
+4. **Barrels.** `entity_type` 10 explodes and causes self-damage, which the scorer penalizes. We have no signal to keep
+   away from barrels or to shoot them only from a distance.
+5. **Strafe temperature 0.5 (v8+)** lowers random strafing, which may reduce dodging under fire.
+   - **Test, cheap:** on v11 with strafe 1.0 vs 0.5, compare **T4 deaths only** (seeded, 5 seeds), not the overall mean.
+
+**Cheapest to test before 06:25:** #1 (inference rule) and #5 (one eval flag). #2–#4 need training.
