@@ -969,3 +969,9 @@ by expected points:
   real maps.
 - **Recommendation: take it into exam 2 as a finalist against v8, and let the untouched set decide.**
   `t2r7b_0447` (i3) result about 05:32.
+
+### REQUEST 05:35 → core: test the `"use"` mask (PROPOSAL 01:05) before exam 2
+- It's still untested. It's inference-only (no re-press of USE for about 9 steps after a press), against the
+  organizer-flagged door reversal. Our agent presses USE on 32–48% of steps.
+- If it's built as a default-off rule, run it on v8 and the top finalist in the 05:45 exam (seeded). Keep it only if it
+  adds exits.
