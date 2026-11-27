@@ -1149,3 +1149,31 @@ If you're not back, teammate 3 decides alone and v11 is the default.
   stays. That matches core's 20-seed holdout finding: more combat reward helps T4 survival but costs T2/T3 exits in
   under 1M steps.
 - Teammate 3 stops here.
+
+## 🔥 FINAL PUSH (our human, 08:20): 45 more minutes. Target: T3 speed and T4 at the 2,100-tic cap.
+**Why:** on 20 never-seen maps at 2,100 tics (`EVAL_I3.md` §17), v11 exits T3 1/10 but finds keys in 70% with only
+2/10 deaths, so it **times out while backtracking**. T4 is 0/10 with 8/10 deaths. Training episodes use random
+2,100–4,200 tics, so the policy never learns to hurry.
+
+**Teammate 2 (Akash), start NOW:**
+
+```
+COMBAT_W=1.0 python training/train_ppo.py --use-map --resume submission/weights/best_agent.pt --lr 5e-5 --episode-ticks 2100 --num-envs 24 --rollout-steps 256 --num-minibatches 2 --total-steps 100000000 --seed 110 --save-path training/checkpoints/t2r10.pt
+```
+
+Push snapshots `t2r10_<HHMM>.pt` to `candidates` at **+20 min and +35 min**.
+
+**Core (Havish), laptop, start NOW** (same, survival variant):
+
+```
+COMBAT_W=1.5 python training/train_ppo.py --use-map --resume submission/weights/best_agent.pt --lr 5e-5 --episode-ticks 2100 --num-envs 12 --seed 111 --save-path training/checkpoints/core_r10.pt
+```
+
+Push `core_r10_<HHMM>.pt` at +20 and +35 min.
+
+**Teammate 3:**
+- Built a NEW untouched decision set: 20 generated maps, seeds 6e9 + 100·t + k, kept local and never trained on.
+- Running v11's baseline at 2,100 tics now.
+- Each snapshot is tested within about 8 minutes. **A snapshot ships only if T3 and T4 exits rise and T1/T2 don't
+  drop** (plus the ship rule).
+- Then the i3 `validate.py`, and teammate 2's Docker check. If nothing wins by about 09:05, v11 stays.
