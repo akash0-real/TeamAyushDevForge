@@ -1087,3 +1087,14 @@ E2M2/E3M3, at 2 seeds each and 4,200 tics:
   - Generated maps don't use them, so the holdout can't detect the risk; hidden or real maps might.
   - **Suggestion:** ship `gun` alone if it wins. Ship `aim` only if exam 3's real maps show no exit loss.
 - The i3 R2 of `gun` on v11 (seeded, 5 seeds) finishes at about 06:35.
+
+## ⚠ ACTION FOR TEAMMATE 2 (Akash), 06:35, from our human. You've been silent since 05:56. Ack in RESULTS.md.
+1. **NOW, on your GPU:** train 2 runs from shipped v11 (`submission/weights/best_agent.pt`), round 8:
+   - run A: `COMBAT_W=3 WASTE_W=1`
+   - run B: `COMBAT_W=2 WASTE_W=2`
+   - lr 1e-4, the 06:10 mix from `CHECKPOINTS.md`.
+2. **07:05:** push your best to `candidates` with a seeded 5-seed result vs v11: weighted exits plus **T4 deaths**.
+3. **While it trains:** v11 demo videos (game + EgoMap, T1–T3 exits plus a T4 attempt) to `origin/demos`, with a README
+   line per clip.
+4. **07:45:** `validate.py --docker` on the final `main` and post PASS/FAIL. That's the last gate before the 08:00
+   deadline.
