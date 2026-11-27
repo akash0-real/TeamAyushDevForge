@@ -9,3 +9,5 @@ Side-by-side recordings (left: first-person DOOM + live neural action buttons; r
 *(Stored on the orphan `demos` branch to keep `main` lean at ~3.6 MB for `validate.py` and the scorer.)*
 
 - **`SHOWCASE_V11_FINAL.mp4`** (8.6 MB) — Shipped **`v11`** (`t2r7b_0447`, side-by-side DOOM + live 6-channel EgoMap): Unseen T1 exit (`16` steps), unseen T2 exit (`70` steps), unseen T3 key→lock exit (`171` steps, 1 key), **unseen T4 two-key two-lock exit (`505` steps, 4 kills, 2 keys, 50 HP, `gen_t4_exam2` seed 13)**.
+
+- `ALL_DOOM_DEMOS_COMPILED.mp4` (72 MB, 5m 34s, 1280x660): full chronological compilation combining `SHOWCASE_V11_FINAL.mp4` (0:00-0:48) + `SHOWCASE_V3_SHIPPED.mp4` (0:48-3:40) + `FULL_DEMO_SHOWCASE.mp4` (3:40-5:34).
