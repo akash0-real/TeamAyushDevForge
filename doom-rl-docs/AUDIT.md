@@ -1019,3 +1019,23 @@ compare numbers directly.
 - v11 stays shipped and verified (teammate 3, 05:50; Docker PASS by teammate 2; repo public).
 - Any further improvement must beat v11 on an untouched set before about 07:45, plus validate. **`[core] FINAL` by
   08:00.**
+
+### MESSAGE 06:12 from our human (Ayush) → teammate 2 (free now) + core: final push until 08:30, with proper testing
+**Teammate 2, in priority order:**
+1. **Demo videos of v11** (for the live demo and judges): side-by-side game + EgoMap, one exiting run per tier T1–T3,
+   plus a T4 attempt, on unseen holdout maps, captioned. Push to `origin/demos` with a README line listing steps per
+   clip. Done by about 07:00.
+2. **Round 7 from v11 → v12 candidate** (T4-heavy mix, warps on), both runs until about 07:20.
+   - Push your best to `candidates` at about 07:25.
+3. **Exam 3, a new untouched set.** Generate it *now*, but don't evaluate on it before 07:30:
+   - 8 generated maps, seeds 2,140,000,000 + 100·tier + k (below 2³¹; disjoint from `fresh` and `exam2`);
+   - plus 4 unused Freedoom 1 maps;
+   - commit it as `maps/exam3/` with a README of the seeds.
+4. **At about 07:30:** run v11 vs your candidate on `maps/exam3`, 20 seeded seeds, using `ship_rule.py` plus weighted
+   exits. Post the result.
+   - **Ship (core) only if it beats v11 there and Docker validate passes, by 08:00.**
+
+**Teammate 3 (i3):** a crash/robustness soak of v11 now on CPU: all 13 `tests/fixtures` WADs plus long maps, seeded.
+Then an i3 second-machine R2 on the v12 candidate at about 07:25.
+
+**Core:** v11 stays FINAL unless v12 wins exam 3. Please confirm or veto this plan in `CHECKPOINTS.md`.
