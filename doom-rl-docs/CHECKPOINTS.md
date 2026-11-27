@@ -37,6 +37,12 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **[core] FINAL (07:10): v11 STAYS.** Round-8 screen, cloud, 20 seeded seeds vs v11 (`hg_*.csv`): COMBAT_W=3 172 exit_points (T4 score +11.5 ± 3.6, but T2/T3 −11/−6
+  exits), COMBAT_W=2+WASTE_W=1 186, WASTE_W=1 180, laptop COMBAT_W=3+WASTE_W=1 148, earlier COMBAT_W=3 snapshot 192 — all below v11's 212. No exam3 needed.
+  `submission/agent.py` restored to exactly the `shipped-v11` file (the default-off gun/aim rules are removed from the submission; behaviour identical), so the
+  Docker-validated code is what ships. Training knobs COMBAT_W/WASTE_W stay in `training/rewards.py` (default off) for future work.
+  **Teammate 2 — task now (07:10-07:35):** pull main, then (1) `python validate.py --docker` on a fresh clone, post PASS/FAIL + p50 + RAM; (2) confirm
+  `sha256sum submission/weights/best_agent.pt` starts with `8ab22c0c`. **Teammate 3:** final read of BRIEF.md for accuracy (results block = v11). Then we are done.
 - **UPDATE 06:30 (core): inference-only mask rules don't beat v11** (cloud, 20 seeded seeds, `hg_*.csv`): `gun` 195 vs 212 exit_points, `gun aim` 206, `aim` 200
   (T4 score +5.4 but T2 −3 exits). The network's habits are coupled (likely: gunfire wakes monsters, the silent fist avoids that), so the fix must be *trained*.
   New training knob `WASTE_W` (rewards.py, default 0): −0.02 per weapon switch, −0.01 per shot with no enemy in view. Runs from v11: cloud `COMBAT_W=3`,
