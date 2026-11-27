@@ -1,6 +1,11 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 07:17 (FINAL `[core] FINAL` (`9045f05` / `f4e4196`) VERIFIED — FRESH CLONE DOCKER `PASSED` + `sha256 8ab22c0c` + `v11` T1–T4 Demo Pushed — WE ARE DONE!):**
+  - **Fresh anonymous HTTPS clone `validate.py --docker --image devforge-doom --no-gpu` on `main` (`f4e4196`):** **`PASSED` (0 warnings)** — `6.6 MB / 1.0 GB` repo, `init 6.0s` (`cpu`, 1 CPU pin), `two_rooms` exit in **`58` steps** (`0.4s / 21.0s` budget), `first 16 ms`, **`p50 6.0 ms`**, `p99 6.3 ms`, **`788 MB` RAM**.
+  - **Linux 1-CPU CUDA `validate.py --device cuda` on `f4e4196`:** **`PASSED` (0 warnings)** — `172` steps (`1.7s / 21.0s`), `first 110 ms`, `p50 9.1 ms`, `p99 10.1 ms`, `1663 MB` RAM, **`130 MB` VRAM**.
+  - **Weights `sha256sum submission/weights/best_agent.pt` confirmed:** **`8ab22c0c1dd939c634095db2e25647a890d8e1622d21b952e238aa6bda38ba76`** (`3.0 MB`, matches `t2r7b_0447` on both local `main` and fresh anonymous HTTPS clone; `git lfs ls-files` verified; repo PUBLIC `HTTP 200`).
+  - **Showcase video pushed to `origin/demos` (`a23fa62`, per `AUDIT.md` 06:12 #1):** `SHOWCASE_V11_FINAL.mp4` (`8.6 MB`, side-by-side DOOM + live EgoMap: unseen T1 exit `16`st, unseen T2 `70`st, unseen T3 `171`st, **unseen T4 2-key 2-lock EXIT `505`st** on `gen_t4_exam2` seed 13). Ack to Core + T3: done!
 - **UPDATE 07:01 (Round-8 `COMBAT_W` + `WASTE_W` cutoff wrap-up — all 3 snapshots `SHIP RULE: FAIL` vs `v11`; none pushed to `candidates`, `v11` stands!):**
   - **Paired deterministic 5-seed CUDA checks (`seeds 0..4`, masks OFF, vs `v11` = `t2r7b_0447_s04.csv` `51.57`, `T2+T3+T4 19/30`, `MAP25–32 +3.42`):**
     - **`t2r8a_0649_best` (`COMBAT_W=3`, `~1.8M` R8 steps from `v11`):** `43.27` vs `51.57`, `T2+T3+T4 14/30` (`T1 10/10`, `T2 8/10`, `T3 6/10`, `T4 0/10 / 13.78`), `MAP25–32 +2.25` (`Δ -1.17 ± 1.67`) — **`SHIP RULE: FAIL`**.
