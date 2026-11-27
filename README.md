@@ -18,3 +18,5 @@ The core owner ships a winner by copying it into submission/weights/ on main aft
 
 - `t2r7b_0447_score51_57.pt` (2026-11-27 05:08 IST, teammate 2 RTX 3050, Round 7 conservative T4-heavy `lr=1e-4` from v8/t2h_0037, ~1.67M R7 steps, sha256 `8ab22c0c...`): **SIGNIFICANT deterministic 5-seed CUDA SHIP RULE PASS vs v8** — **MEAN 51.57 vs 42.65 (+8.92 ± 3.53, t=2.53, worse 0/5)**, T1 10/10 (101.58), **T2 9/10 (101.35 vs 7/10 76.70)**, **T3 10/10 (144.33 vs 7/10 109.38)**, T4 0/10 (23.20 vs 20.12), **exit_points 58 vs 45 (+13)**, **MAP25-32 +3.42 vs +0.10 (+3.31 ± 2.28)**. CSV on main: `t2r7b_0447_s04.csv`.
 - `core_r7best_0350.pt` (core, round 7 from v8 at 1.33M steps; sha 868dd63d): cloud 20 seeded seeds vs v8: +3.1 ± 2.4, unseen-real +4.9 ± 2.0, T4 score +7.3 ± 3.5, exit_points 207 vs 210 (T3 33 vs 34). Needs a 2nd-machine check.
+
+- `t2r9_0740.pt` (2026-11-27 07:37 IST, teammate 2 RTX 3050, Round 9 `COMBAT_W=2` `lr=5e-5` `seed=105` from `v11`, ~614k steps, sha256 `d1df6f29...`): fast snapshot pushed directly per `a43612f` (zero CUDA wait) for T3 `maps/exam3` screening!
