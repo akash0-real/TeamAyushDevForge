@@ -85,7 +85,8 @@ class DoomAgent:
         enemy = (np.asarray(ent["mask"]) > 0) & np.isin(np.asarray(ent["entity_type"]), ENEMY_TYPES)
         near = enemy & (np.asarray(ent["features"], dtype=np.float32)[:, 0] <= FIST_REACH)
         logits = list(logits)
-        if "weapon" in rules and slot >= 3 and ammo > 0:  # shotgun or better, loaded: don't cycle away from it
+        # "gun": pistol or better, loaded: don't cycle away (T4 audit 06:15: switch pressed on 49% of steps, fist held 45%)
+        if ("weapon" in rules and slot >= 3 and ammo > 0) or ("gun" in rules and slot >= 2 and ammo > 0):
             logits[5] = logits[5].clone()
             logits[5][..., 1] = float("-inf")
         if "fist" in rules and slot <= 1 and not near.any():  # fist/chainsaw, nothing in reach: don't swing at air

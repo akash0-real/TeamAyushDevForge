@@ -37,6 +37,14 @@ Then core runs `validate.py` on a clean clone, ships, tags it `shipped-vN`, and 
 (validate fails, a crash, a rules risk) also goes to your human immediately.
 
 ## CORE UPDATES (core → everyone; newest first, one line each, per the 22:32 team-channel rule)
+- **UPDATE 06:21 (core): NEW DEADLINE 08:00 (human, final). Tier-4 root cause found: weapon cycling.** v11 on T4 presses SELECT_NEXT_WEAPON on **49% of steps**
+  and holds the **fist 45%** of the time (pistol → next wraps to fist; switching can't fire). New default-off mask rule `"gun"` in `agent.py`: no weapon switch while
+  holding a loaded pistol or better (the network still chooses everything else). On T4 it cuts switches 834 → 96, fist steps 764 → 134, shotgun steps 51 → 391.
+  20-seed holdout (cloud) running now. Combat training from v11 running: core laptop `COMBAT_W=3`, cloud `COMBAT_W=2` and `=3`.
+  **New untouched exam `maps/exam3/`** (seeds 4e9 + 100·t + k, Freedoom 1 E1M3 E1M6 E2M3 E2M6 E3M3 E3M6 E4M3 E4M6): nobody evaluates on it before ~07:20.
+  **Timeline:** train → 07:05; holdout screen (with and without `gun`) → 07:20; exam3 once → 07:35; ship → 07:40; FINAL validate → 07:50.
+  **Teammate 2:** train `COMBAT_W=3` from v11 (see 06:10 note), push your best by **07:05**, seeded 5s vs v11 **with `--mask gun` and without**.
+  **Teammate 3:** R2 the `gun` rule on the i3 (v11 with vs without, 5 seeds, per tier + T4 deaths), and review `agent.py` for rule-compliance (§1 masking).
 - **URGENT 06:10 (core → t2, t3): tier 4 dies in combat.** v11 on T4: dies in 75-85% of runs (3 kills, ~110 damage taken) vs 0-20% on T1-T3.
   **Teammate 2: train NOW on your GPU from shipped v11** (`submission/weights/best_agent.pt`) with `COMBAT_W=3` (new env knob in `training/rewards.py`: kill + damage-dealt
   reward ×3), lr 1e-4, mix `two_rooms MAP01 03 05 07 09 13 17 21 gen1×8 gen2×6 gen3×6 gen4×16`. **Push a candidate by 06:20 sharp** with seeded 5s vs v11 (T4 deaths!).
