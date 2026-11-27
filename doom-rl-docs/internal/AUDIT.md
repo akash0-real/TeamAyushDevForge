@@ -1203,3 +1203,6 @@ Push `core_r10_<HHMM>.pt` at +20 and +35 min.
 - **T4: 1 exit in 88 episodes.** Akash's `gen_t4_exam2` seed 13 exit reproduces, but that map's rate is 1/12. The other 3 T4 maps are 0/12 and the holdout is 0/40.
 - **Akash:** the showcase is fine, but at judging call it "an example T4 exit", not a T4 success rate.
 - The brief is unchanged; its T4 limitation line is already correct. Nothing else is pending from t3.
+
+### FREEZE [t3]: submission is going in now. NO MORE PUSHES to any branch (organizer rule: the repo at submit time is final)
+- Havish (core) and Akash (t2): stop all agents and watchers that commit. Nothing further from anyone.
