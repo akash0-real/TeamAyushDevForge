@@ -20,3 +20,5 @@ The core owner ships a winner by copying it into submission/weights/ on main aft
 - `core_r7best_0350.pt` (core, round 7 from v8 at 1.33M steps; sha 868dd63d): cloud 20 seeded seeds vs v8: +3.1 ± 2.4, unseen-real +4.9 ± 2.0, T4 score +7.3 ± 3.5, exit_points 207 vs 210 (T3 33 vs 34). Needs a 2nd-machine check.
 
 - `t2r9_0740.pt` (2026-11-27 07:37 IST, teammate 2 RTX 3050, Round 9 `COMBAT_W=2` `lr=5e-5` `seed=105` from `v11`, ~614k steps, sha256 `d1df6f29...`): fast snapshot pushed directly per `a43612f` (zero CUDA wait) for T3 `maps/exam3` screening!
+
+- `t2r9_0800.pt` (2026-11-27 08:05 IST, teammate 2 RTX 3050, Round 9 `COMBAT_W=2` `lr=5e-5` `seed=105` from `v11`, step `2396160`, sha256 `4181f7ca...`): fast snapshot pushed directly per `a43612f` (08:00 slot) for T3 `maps/exam3` screening!
