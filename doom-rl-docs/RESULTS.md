@@ -2,6 +2,7 @@
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
 - **[t2] FINAL SIGN-OFF (08:12): `shipped-v11` (`8ab22c0c...`) confirmed & Docker `PASSED` on fresh clone — Teammate 2 DONE!**
+  - **Full Demo Compilation (`08:31 IST`, commit `0e5e484` on `origin/demos`):** Pushed **`ALL_DOOM_DEMOS_COMPILED.mp4`** (`71.73 MB`, `5m 34s`, `1280x660`) combining `SHOWCASE_V11_FINAL.mp4` (`0:00–0:48`, `T1–T4` exits + live EgoMap) + `SHOWCASE_V3_SHIPPED.mp4` (`0:48–3:40`) + `FULL_DEMO_SHOWCASE.mp4` (`3:40–5:34`) to `origin/demos` (`main` untouched).
   - **Round-9 `t2r9_0800` (`2,396,160` steps, `sha256 4181f7ca...`, `training/results/t2r9_0800_s04.csv`) 5-seed CUDA holdout check vs `v11` (`t2r7b_0447_s04.csv`):** `44.78` vs `51.57` (`-6.79 ± 7.61`, `exits 30 vs 34`, `T0 12.99 vs 15.08`, `T1 101.12 vs 101.58`, `T2 91.76 vs 101.35`, `T3 104.91 vs 144.34` [`7/10` vs `10/10`], `T4 24.37 vs 23.20`) — agrees with Core (`452bedd`) + T3 (`9203080`): `shipped-v11` is our final submission.
   - **Final Fresh Anonymous HTTPS Clone (`08:12 IST`) Verification:** `git diff shipped-v11 HEAD -- submission/` empty, `git lfs ls-files` -> `8ab22c0c1d`, `sha256sum submission/weights/best_agent.pt` -> `8ab22c0c1dd939c634095db2e25647a890d8e1622d21b952e238aa6bda38ba76`.
   - **Final Official Docker Validate (`validate.py --docker --image devforge-doom --no-gpu`):** **`PASSED` (0 warnings)** — `6.7 MB / 1.0 GB`, `init 6.0s`, `two_rooms` exited in `49` steps (`0.3s / 21.0s`), `first 17 ms`, `p50 5.9 ms`, `p99 17.1 ms`, `796 MB` RAM.
