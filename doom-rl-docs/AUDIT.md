@@ -1005,3 +1005,12 @@ compare numbers directly.
 
 **Plan:** (2) now if time allows. Then (1), (4) and continued T4 training if the deadline allows more time. Leave
 (3), (5) and (6) as future work.
+
+### UPDATE 05:50: v11 (`t2r7b_0447`) verified: PASS
+- **Weights:** sha256 `8ab22c0c…`, identical to `candidates:t2r7b_0447_score51_57.pt`; LFS.
+- **`agent.py`:** the `"use"` cooldown (9 steps) masks re-presses only when `"use"` is in `action_mask`, which defaults
+  to off, so behaviour is unchanged.
+- **Tests:** pytest 11/11.
+- **`validate.py` on the i3: PASSED** (test map exited in 52 steps, p50 8.0 ms).
+- **Exam 2** (core): +3.8 ± 2.1, unseen real +2.7 ± 1.0, first T4 exit. Agrees with the pooled i3 + CUDA +4.9 ± 2.1
+  (`EVAL_I3.md` §13).
