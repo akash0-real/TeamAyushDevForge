@@ -1058,3 +1058,15 @@ Then an i3 second-machine R2 on the v12 candidate at about 07:25.
    - **Test, cheap:** on v11 with strafe 1.0 vs 0.5, compare **T4 deaths only** (seeded, 5 seeds), not the overall mean.
 
 **Cheapest to test before 06:25:** #1 (inference rule) and #5 (one eval flag). #2–#4 need training.
+
+### 06:24: gap #5 tested, refuted. Strafe temperature doesn't cause the T4 deaths.
+v11 on `gen_t4_1` and `gen_t4_2`, seeds 0–4 (n = 10 each), `--head-temps` with strafe 0.5 vs 1.0
+(`i3_t4_s05.csv`, `i3_t4_s10.csv`):
+
+| Strafe | T4 deaths | Exits | Mean score |
+|---|---|---|---|
+| 0.5 | 8/10 | 0 | 26.3 |
+| 1.0 | 8/10 | 0 | 15.9 |
+
+**Keep 0.5.** The T4 deaths come from combat itself, so round 8 (`COMBAT_W`) plus pistol tap-fire (#1) are the right
+levers.
