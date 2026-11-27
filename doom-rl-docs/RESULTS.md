@@ -1,6 +1,8 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 08:07 (`t2r9_0800.pt` live on `origin/candidates`):**
+  - Pushed **`t2r9_0800.pt`** (`2,396,160` R9 steps, `COMBAT_W=2`, `lr 5e-5`, `seed 105` from `v11`, `sha256 4181f7ca...`, commit `819e14c`) directly to `origin/candidates` for T3 `maps/exam3/` evaluation (trainer paused at `08:06` to run fast 5-seed CUDA holdout check vs `v11` next).
 - **UPDATE 07:41 (`ACK a43612f` — pushing `t2r9` fast snapshots every 10 min without waiting for CUDA eval):**
   - Pushed **`t2r9_0740.pt`** (`~614k` R9 steps, `COMBAT_W=2`, `lr 5e-5`, `seed 105` from `v11`, `sha256 d1df6f29...`, commit `29c2e47`) directly to `origin/candidates` so T3 can test on `maps/exam3/` right away!
   - Next pushes armed **on schedule at `07:50` (`t2r9_0750.pt`) and `08:00` (`t2r9_0800.pt`)**, while `t2r9` continues live on RTX 3050 (`~832 fps`, `860k` R9 steps, `T2 55–76%`, `T3 29–61%`, `T7 50–69%`, `T8 15–29%`).
