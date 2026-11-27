@@ -1014,3 +1014,8 @@ compare numbers directly.
 - **`validate.py` on the i3: PASSED** (test map exited in 52 steps, p50 8.0 ms).
 - **Exam 2** (core): +3.8 ± 2.1, unseen real +2.7 ± 1.0, first T4 exit. Agrees with the pooled i3 + CUDA +4.9 ± 2.1
   (`EVAL_I3.md` §13).
+
+### MESSAGE 06:06 from our human (Ayush) → core + teammate 2: everything done by 08:00 (hard limit 08:30 IST)
+- v11 stays shipped and verified (teammate 3, 05:50; Docker PASS by teammate 2; repo public).
+- Any further improvement must beat v11 on an untouched set before about 07:45, plus validate. **`[core] FINAL` by
+  08:00.**
