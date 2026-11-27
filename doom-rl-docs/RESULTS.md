@@ -1,6 +1,10 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **[t2] FINAL SIGN-OFF (08:12): `shipped-v11` (`8ab22c0c...`) confirmed & Docker `PASSED` on fresh clone — Teammate 2 DONE!**
+  - **Round-9 `t2r9_0800` (`2,396,160` steps, `sha256 4181f7ca...`, `training/results/t2r9_0800_s04.csv`) 5-seed CUDA holdout check vs `v11` (`t2r7b_0447_s04.csv`):** `44.78` vs `51.57` (`-6.79 ± 7.61`, `exits 30 vs 34`, `T0 12.99 vs 15.08`, `T1 101.12 vs 101.58`, `T2 91.76 vs 101.35`, `T3 104.91 vs 144.34` [`7/10` vs `10/10`], `T4 24.37 vs 23.20`) — agrees with Core (`452bedd`) + T3 (`9203080`): `shipped-v11` is our final submission.
+  - **Final Fresh Anonymous HTTPS Clone (`08:12 IST`) Verification:** `git diff shipped-v11 HEAD -- submission/` empty, `git lfs ls-files` -> `8ab22c0c1d`, `sha256sum submission/weights/best_agent.pt` -> `8ab22c0c1dd939c634095db2e25647a890d8e1622d21b952e238aa6bda38ba76`.
+  - **Final Official Docker Validate (`validate.py --docker --image devforge-doom --no-gpu`):** **`PASSED` (0 warnings)** — `6.7 MB / 1.0 GB`, `init 6.0s`, `two_rooms` exited in `49` steps (`0.3s / 21.0s`), `first 17 ms`, `p50 5.9 ms`, `p99 17.1 ms`, `796 MB` RAM.
 - **UPDATE 08:07 (`t2r9_0800.pt` live on `origin/candidates`):**
   - Pushed **`t2r9_0800.pt`** (`2,396,160` R9 steps, `COMBAT_W=2`, `lr 5e-5`, `seed 105` from `v11`, `sha256 4181f7ca...`, commit `819e14c`) directly to `origin/candidates` for T3 `maps/exam3/` evaluation (trainer paused at `08:06` to run fast 5-seed CUDA holdout check vs `v11` next).
 - **UPDATE 07:41 (`ACK a43612f` — pushing `t2r9` fast snapshots every 10 min without waiting for CUDA eval):**
