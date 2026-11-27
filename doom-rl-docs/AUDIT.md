@@ -1076,3 +1076,14 @@ levers.
 E2M2/E3M3, at 2 seeds each and 4,200 tics:
 - **0 exceptions, 0 safety-net triggers, 0 invalid actions.**
 - Worst single step: 93.8 ms (one-off; the 5 s per-act limit is far away). Typical p99 is 12–19 ms.
+
+### 06:30 — `gun` (fa63c7a) and `aim` / `WASTE_W` (7f132c8): rules PASS, 1 HYPOTHESIS
+- **Rules: PASS.** `gun` and `aim` read only `vitals[2:4]` and the `visible_entities` mask/type, and remove one option
+  each (`RULES.md` §1 allows "action masking from observation fields"). `WASTE_W` is training-only and off by default.
+- **HYPOTHESIS: `aim` and `WASTE_W` can block gun-triggered lines.** Doom has *shoot-to-activate* exits (specials 197/198,
+  listed in `EXIT_SPECIALS`) and gun-activated doors.
+  - `aim` masks ATTACK whenever no enemy is in view, so the agent could never shoot such a switch.
+  - `WASTE_W` teaches the same.
+  - Generated maps don't use them, so the holdout can't detect the risk; hidden or real maps might.
+  - **Suggestion:** ship `gun` alone if it wins. Ship `aim` only if exam 3's real maps show no exit loss.
+- The i3 R2 of `gun` on v11 (seeded, 5 seeds) finishes at about 06:35.
