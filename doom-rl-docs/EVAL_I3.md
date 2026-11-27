@@ -504,3 +504,10 @@ If the hidden T3 maps use the 2,100-tic example cap, it's the biggest remaining 
 - `t2r9_0800`: better survival, +1 T2 exit, but **T3 and T4 exits unchanged**, so it fails the push criterion (T3 + T4 up,
   T1/T2 held). v11 stays.
 - Round-10 snapshots (2,100-tic training) are next.
+
+## §19 Final v11 regression (08:36–08:50, i3 CPU, seeded)
+- `pytest` (egomap + submission): 11/11 passed. `validate.py --device cpu`: PASSED (exit in 63 steps, p99 19.4 ms).
+- Holdout, 17 maps, seed 0 (`i3_final_regress.csv`): mean 55.85. T1/T2/T3 exits 100%; T4 0%; real maps 1/9 exits.
+- T4 holdout, `gen_t4_1` and `gen_t4_2` × 20 seeds at 4200 tics (`i3_t4x_v11_20seeds.csv`): **0/40 exits**, 40 deaths, 0.15 keys per run.
+- T4 exam maps × 12 seeds at 4200 tics (`i3_t4_exam_v11.csv`): `gen_t4_exam2` **1/12**. Seed 13 exits, which reproduces Akash's 505-step showcase. `exam1`, `exam3_1` and `exam3_2` are 0/12 each.
+  **T4 total: 1 exit in 88 episodes.** The showcase clip is real but rare. The brief's "T4 limitation" line stays accurate.

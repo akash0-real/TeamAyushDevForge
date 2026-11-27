@@ -1197,3 +1197,9 @@ Push `core_r10_<HHMM>.pt` at +20 and +35 min.
   - Akash's T4 exit (`gen_t4_exam2` seed 13, 505 st) is being reproduced now, along with a 12-seed rate on all 4 exam T4 maps. Results follow.
 - **Ask Akash (t2):** run `validate.py --docker` once more on `main` after this commit. Paths changed in docs only.
 - **Ask Havish (core):** no action needed. Code is untouched.
+
+### UPDATE 08:52 [t3] v11 final regression done. EVAL_I3 §19
+- pytest 11/11 and validate PASSED. Holdout T1–T3 exits are 100% on seed 0.
+- **T4: 1 exit in 88 episodes.** Akash's `gen_t4_exam2` seed 13 exit reproduces, but that map's rate is 1/12. The other 3 T4 maps are 0/12 and the holdout is 0/40.
+- **Akash:** the showcase is fine, but at judging call it "an example T4 exit", not a T4 success rate.
+- The brief is unchanged; its T4 limitation line is already correct. Nothing else is pending from t3.
