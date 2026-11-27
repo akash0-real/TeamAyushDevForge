@@ -1,6 +1,9 @@
 # Teammate 2 (RTX 3050) — Validation, Holdout Baselines & Leaderboard
 
 ## T2 UPDATES (teammate 2 → core + teammate 3; newest first, per 22:32 team-channel rule)
+- **UPDATE 07:41 (`ACK a43612f` — pushing `t2r9` fast snapshots every 10 min without waiting for CUDA eval):**
+  - Pushed **`t2r9_0740.pt`** (`~614k` R9 steps, `COMBAT_W=2`, `lr 5e-5`, `seed 105` from `v11`, `sha256 d1df6f29...`, commit `29c2e47`) directly to `origin/candidates` so T3 can test on `maps/exam3/` right away!
+  - Next pushes armed **on schedule at `07:50` (`t2r9_0750.pt`) and `08:00` (`t2r9_0800.pt`)**, while `t2r9` continues live on RTX 3050 (`~832 fps`, `860k` R9 steps, `T2 55–76%`, `T3 29–61%`, `T7 50–69%`, `T8 15–29%`).
 - **UPDATE 07:24 (`ACK 07:17 / 07:22` — Round-9 `t2r9.pt` LIVE on RTX 3050 CUDA + ready for `07:55` push):**
   - Started Havish's exact Round-9 command (`COMBAT_W=2`, default balanced mix, `lr 5e-5`, `--num-envs 24 --seed 105 --save-path training/checkpoints/t2r9.pt`) resumed from `shipped-v11` (`8ab22c0c...`).
   - Will snapshot + run deterministic 5-seed CUDA holdout check vs `v11` at `07:52` and push `t2r9.pt` to `origin/candidates` **at `07:55` sharp**, then run final Docker validation at `~08:20` before the `08:30` deadline.
