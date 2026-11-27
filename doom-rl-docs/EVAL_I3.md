@@ -455,3 +455,15 @@ v8. Ship only whichever beats v8 on the untouched set.
 
 **Verdict:** no measurable gain, and it **doesn't fix T4 deaths** on the i3. Keep it off unless core's 20-seed holdout or
 exam 3 shows a clear gain.
+
+### 15. Exam 3 baseline: v11 (i3, seeded, seeds 0–4; `i3_ex3_v11.csv`). This is the bar for round 9.
+| Slice | Exits | Mean score | Deaths |
+|---|---|---:|---|
+| T1 | 10/10 | 103.2 | 0 |
+| T2 | 5/10 | 78.7 | 4 |
+| T3 | 2/10 | 49.1 | 8 |
+| T4 | 0/10 | 14.6 | 9 |
+| Freedoom 1 (8 maps) | 0/40 | 4.6 | 40 |
+
+Overall mean 33.0. Exam 3 is much harder than the holdout (T3 2/10 here vs 7–9/10). A candidate ships only if
+`REAL=freedoom1 ship_rule.py` passes **and** no tier's exits drop.
